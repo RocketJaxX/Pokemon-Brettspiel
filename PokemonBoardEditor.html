@@ -1,0 +1,2078 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pokémon Brettspiel Editor</title>
+<style>
+  :root {
+    --bg-0: #17171b;
+    --bg-1: #201f26;
+    --bg-2: #2a2932;
+    --bg-3: #34333e;
+    --border: #3d3c48;
+    --text: #e9e9ee;
+    --text-dim: #9c9ba8;
+    --accent: #5aa8e0;
+    --accent-dim: #3d7aad;
+    --danger: #e0796a;
+    --ok: #8ccf5a;
+    --radius: 6px;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; height: 100%; overflow: hidden;
+    font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg-0); color: var(--text);
+    font-size: 13px; user-select: none;
+  }
+  #app { display: flex; flex-direction: column; height: 100vh; }
+
+  /* ---------- Menu Bar ---------- */
+  #menu-bar {
+    display: flex; align-items: center; height: 38px; flex: 0 0 auto;
+    background: var(--bg-2); border-bottom: 1px solid var(--border);
+    padding: 0 8px; gap: 2px; position: relative; z-index: 50;
+  }
+  #menu-bar .brand {
+    font-weight: 600; color: var(--accent); margin-right: 16px; letter-spacing: .3px;
+  }
+  .menu-root { position: relative; }
+  .menu-btn {
+    background: none; border: none; color: var(--text); padding: 7px 12px;
+    cursor: pointer; border-radius: var(--radius); font-size: 13px;
+  }
+  .menu-btn:hover, .menu-root.open .menu-btn { background: var(--bg-3); }
+  .menu-dropdown {
+    display: none; position: absolute; top: 100%; left: 0; min-width: 240px;
+    background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--radius);
+    box-shadow: 0 8px 24px rgba(0,0,0,.4); padding: 4px; flex-direction: column;
+  }
+  .menu-root.open .menu-dropdown { display: flex; }
+  .menu-item {
+    display: flex; justify-content: space-between; gap: 12px; padding: 7px 10px;
+    border-radius: 4px; cursor: pointer; background: none; border: none; color: var(--text);
+    text-align: left; font-size: 13px; width: 100%;
+  }
+  .menu-item:hover { background: var(--accent-dim); }
+  .menu-item:disabled { color: var(--text-dim); cursor: not-allowed; background: none; }
+  .menu-item .hint { color: var(--text-dim); font-size: 11px; }
+  .menu-sep { height: 1px; background: var(--border); margin: 4px 2px; }
+
+  /* ---------- Layout ---------- */
+  #main-layout { flex: 1; display: flex; min-height: 0; }
+  #tool-panel, #properties-panel {
+    flex: 0 0 auto; background: var(--bg-1); overflow-y: auto; padding: 10px;
+  }
+  #tool-panel { width: 176px; border-right: 1px solid var(--border); }
+  #properties-panel { width: 300px; border-left: 1px solid var(--border); }
+  #canvas-container {
+    flex: 1; position: relative; background: #0e0e11; overflow: hidden; min-width: 0;
+  }
+  #board-canvas { display: block; position: absolute; top: 0; left: 0; touch-action: none; }
+
+  .panel-section { margin-bottom: 16px; }
+  .panel-title {
+    font-size: 11px; text-transform: uppercase; letter-spacing: .6px; color: var(--text-dim);
+    margin: 0 0 8px 0; font-weight: 600;
+  }
+
+  /* ---------- Tool grid ---------- */
+  .tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .tool-btn {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--radius);
+    color: var(--text); padding: 8px 4px; cursor: pointer; font-size: 11px;
+  }
+  .tool-btn .glyph { font-size: 18px; line-height: 1; }
+  .tool-btn:hover { background: var(--bg-3); }
+  .tool-btn.active { background: var(--accent-dim); border-color: var(--accent); }
+
+  /* ---------- Layer list ---------- */
+  .layer-row {
+    display: flex; align-items: center; gap: 6px; padding: 5px 6px; border-radius: 4px;
+  }
+  .layer-row:hover { background: var(--bg-2); }
+  .layer-row .layer-name { flex: 1; font-size: 12px; }
+  .layer-row button {
+    background: none; border: 1px solid transparent; color: var(--text-dim);
+    cursor: pointer; border-radius: 4px; width: 24px; height: 24px; font-size: 13px;
+  }
+  .layer-row button:hover { background: var(--bg-3); color: var(--text); }
+  .layer-row button.on { color: var(--accent); }
+  .layer-row button.locked { color: var(--danger); }
+
+  /* ---------- Form controls ---------- */
+  label.field { display: block; margin-bottom: 10px; }
+  label.field .field-label { display: block; margin-bottom: 4px; color: var(--text-dim); font-size: 11px; }
+  select, input[type=text], input[type=number], input[type=url], input[type=range] {
+    width: 100%; background: var(--bg-2); border: 1px solid var(--border); color: var(--text);
+    border-radius: 4px; padding: 6px 8px; font-size: 12px;
+  }
+  input[type=range] { padding: 0; }
+  .btn {
+    background: var(--bg-3); border: 1px solid var(--border); color: var(--text);
+    padding: 7px 10px; border-radius: var(--radius); cursor: pointer; font-size: 12px; width: 100%;
+    margin-bottom: 6px;
+  }
+  .btn:hover { background: var(--accent-dim); border-color: var(--accent); }
+  .btn.danger:hover { background: var(--danger); border-color: var(--danger); }
+  .swatch-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+  .swatch {
+    aspect-ratio: 1; border-radius: 4px; border: 2px solid transparent; cursor: pointer;
+  }
+  .swatch.active { border-color: var(--text); }
+  .radio-grid { display: flex; flex-direction: column; gap: 4px; }
+  .radio-opt { display: flex; align-items: center; gap: 6px; font-size: 12px; cursor: pointer; }
+  .kv { font-size: 11px; color: var(--text-dim); display: flex; justify-content: space-between; padding: 2px 0; }
+  .kv b { color: var(--text); font-weight: 500; }
+  .inspector-box {
+    background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 8px;
+  }
+  .hint-text { color: var(--text-dim); font-size: 11px; line-height: 1.5; }
+
+  /* ---------- Status Bar ---------- */
+  #status-bar {
+    flex: 0 0 auto; height: 26px; background: var(--bg-2); border-top: 1px solid var(--border);
+    display: flex; align-items: center; padding: 0 12px; gap: 18px; font-size: 11px; color: var(--text-dim);
+  }
+  #status-bar b { color: var(--text); font-weight: 500; }
+  #status-message { margin-left: auto; color: var(--accent); }
+
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-thumb { background: var(--bg-3); border-radius: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <header id="menu-bar">
+    <span class="brand">Pokémon Board Editor</span>
+
+    <div class="menu-root" data-menu="file">
+      <button class="menu-btn" type="button">Datei</button>
+      <div class="menu-dropdown">
+        <button class="menu-item" data-action="new-project">Neues Projekt</button>
+        <div class="menu-sep"></div>
+        <button class="menu-item" data-action="save-json">Projekt speichern (JSON)</button>
+        <button class="menu-item" data-action="save-html">Projekt speichern (HTML)</button>
+        <button class="menu-item" data-action="load-project">Projekt laden…</button>
+        <div class="menu-sep"></div>
+        <button class="menu-item" data-action="load-background">Hintergrundbild laden…</button>
+        <div class="menu-sep"></div>
+        <button class="menu-item" data-action="export-png">Export als PNG</button>
+        <button class="menu-item" data-action="export-json">Export als JSON</button>
+        <button class="menu-item" data-action="export-html">Export als HTML</button>
+      </div>
+    </div>
+
+    <div class="menu-root" data-menu="edit">
+      <button class="menu-btn" type="button">Bearbeiten</button>
+      <div class="menu-dropdown">
+        <button class="menu-item" data-action="undo">Rückgängig <span class="hint">Strg+Z</span></button>
+        <button class="menu-item" data-action="redo">Wiederholen <span class="hint">Strg+Y</span></button>
+      </div>
+    </div>
+
+    <div class="menu-root" data-menu="view">
+      <button class="menu-btn" type="button">Ansicht</button>
+      <div class="menu-dropdown">
+        <button class="menu-item" data-action="zoom-in">Vergrößern <span class="hint">+</span></button>
+        <button class="menu-item" data-action="zoom-out">Verkleinern <span class="hint">-</span></button>
+        <button class="menu-item" data-action="zoom-reset">Zoom 100% <span class="hint">0</span></button>
+        <button class="menu-item" data-action="zoom-fit">An Board anpassen <span class="hint">F</span></button>
+      </div>
+    </div>
+  </header>
+
+  <div id="main-layout">
+    <aside id="tool-panel">
+      <div class="panel-section">
+        <h3 class="panel-title">Werkzeuge</h3>
+        <div class="tool-grid" id="tool-grid"></div>
+      </div>
+    </aside>
+
+    <main id="canvas-container">
+      <canvas id="board-canvas"></canvas>
+    </main>
+
+    <aside id="properties-panel">
+      <div class="panel-section" id="section-tool-options">
+        <h3 class="panel-title">Werkzeugoptionen</h3>
+        <div id="tool-options-body"></div>
+      </div>
+      <div class="panel-section" id="section-layers">
+        <h3 class="panel-title">Ebenen</h3>
+        <div id="layer-list"></div>
+      </div>
+      <div class="panel-section" id="section-background">
+        <h3 class="panel-title">Hintergrundbild</h3>
+        <button class="btn" data-action="load-background">Bild laden…</button>
+        <label class="field">
+          <span class="field-label">Deckkraft</span>
+          <input type="range" id="bg-opacity" min="0" max="1" step="0.05" value="1">
+        </label>
+        <button class="btn danger" data-action="remove-background">Bild entfernen</button>
+      </div>
+      <div class="panel-section" id="section-inspector">
+        <h3 class="panel-title">Kachel-Inspektor</h3>
+        <div class="inspector-box" id="inspector-body">
+          <span class="hint-text">Keine Kachel ausgewählt.</span>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <footer id="status-bar">
+    <span>Zelle: <b id="status-cell">–</b></span>
+    <span>Zoom: <b id="status-zoom">100%</b></span>
+    <span>Werkzeug: <b id="status-tool">–</b></span>
+    <span>Board: <b>40 × 60 cm</b></span>
+    <span id="status-message"></span>
+  </footer>
+
+</div>
+
+<input type="file" id="file-input-project" accept=".json,.html" hidden>
+<input type="file" id="file-input-image" accept="image/*" hidden>
+
+<script type="application/json" id="embedded-project-data">null</script>
+
+<script>
+'use strict';
+
+/* =========================================================================
+ * CONFIG
+ * ========================================================================= */
+const CONFIG = Object.freeze({
+  BOARD_COLS: 40,
+  BOARD_ROWS: 60,
+  BASE_PIXELS_PER_CM: 20,
+  ZOOM_MIN: 0.25,
+  ZOOM_MAX: 6.0,
+  ZOOM_STEP: 0.12,
+  AUTOSAVE_INTERVAL_MS: 30000,
+  HISTORY_LIMIT: 150,
+  STORAGE_KEY: 'pokemonBoardEditor.autosave.v1',
+  EXPORT_DPI: 300,
+  GRID_LINE_WIDTH_CM: 0.02,
+  GRID_MAJOR_LINE_WIDTH_CM: 0.045,
+  BORDER_LINE_WIDTH_CM: 0.12,
+  CONNECTION_LINE_WIDTH_CM: 0.04,
+  CONNECTION_MARKER_RADIUS_CM: 0.32,
+  LABEL_FONT_SIZE_CM: 1.1,
+  LABEL_PADDING_CM: 0.18,
+  TERRAIN_COLORS: {
+    grass: '#8CCF5A',
+    water: '#5AA8E0',
+    road: '#E8D6A8',
+    cave: '#9A6B3F',
+    city: '#E0796A'
+  },
+  TERRAIN_LABELS: {
+    grass: 'Gras', water: 'Wasser', road: 'Straße', cave: 'Höhle', city: 'Stadt'
+  },
+  BUILDING_TYPES: ['arena', 'pokecenter', 'supermarket'],
+  BUILDING_LABELS: { arena: 'Arena', pokecenter: 'PokéCenter', supermarket: 'PokéSupermarkt' },
+  BUILDING_COLORS: { arena: '#c94f4f', pokecenter: '#4fae5c', supermarket: '#4f7fc9' },
+  EVENT_TYPES: ['trainer', 'quest', 'pokemon'],
+  EVENT_LABELS: { trainer: 'Trainer', quest: 'Quest', pokemon: 'Pokémon' },
+  EVENT_COLORS: { trainer: '#e0a13a', quest: '#c060d0', pokemon: '#3ac0c0' },
+  BARRIER_TYPES: ['tree', 'rock', 'pokeflute'],
+  BARRIER_LABELS: { tree: 'Baum', rock: 'Felsen', pokeflute: 'Pokéflöte' },
+  CONNECTION_TYPES: ['route-route', 'route-city', 'cave'],
+  CONNECTION_LABELS: { 'route-route': 'Route → Route', 'route-city': 'Route → Stadt', cave: 'Höhle' },
+  ERASER_TARGETS: ['terrain', 'buildings', 'events', 'barriers', 'borders', 'connections', 'labels'],
+  LAYER_TO_TILE_FIELD: { terrain: 'terrain', buildings: 'building', events: 'event', barriers: 'barrier' },
+  LAYER_ORDER: ['grid', 'terrain', 'buildings', 'events', 'barriers', 'connections', 'labels'],
+  LAYER_NAMES: {
+    grid: 'Raster', terrain: 'Gelände', buildings: 'Gebäude', events: 'Events',
+    barriers: 'Barrieren', connections: 'Verbindungen', labels: 'Beschriftungen'
+  },
+  BORDER_EDGES: ['top', 'right', 'bottom', 'left']
+});
+
+/* =========================================================================
+ * UTILITIES
+ * ========================================================================= */
+function clamp(value, min, max) { return Math.min(max, Math.max(min, value)); }
+
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = filename;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function readFileAsText(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsText(file);
+  });
+}
+
+function readFileAsDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
+}
+
+/** Shared, transform-independent text metrics for canvas labels. */
+class LabelMetrics {
+  static _ctx = document.createElement('canvas').getContext('2d');
+
+  static measure(text, fontSizeCm) {
+    const ctx = LabelMetrics._ctx;
+    ctx.font = `600 ${fontSizeCm}px "Segoe UI", sans-serif`;
+    const width = Math.max(0.4, ctx.measureText(text || ' ').width);
+    const height = fontSizeCm * 1.35;
+    return { width, height };
+  }
+}
+
+/* =========================================================================
+ * DATA MODEL: Tile
+ * ========================================================================= */
+class Tile {
+  constructor(col, row) {
+    this.col = col;
+    this.row = row;
+    this.terrain = null;
+    this.building = null;   // { type, iconUrl }
+    this.event = null;      // { type }
+    this.barrier = null;    // { type }
+    this.borders = { top: false, right: false, bottom: false, left: false };
+  }
+
+  toJSON() {
+    return {
+      col: this.col, row: this.row, terrain: this.terrain,
+      building: this.building, event: this.event, barrier: this.barrier,
+      borders: { ...this.borders }
+    };
+  }
+
+  static fromJSON(data) {
+    const tile = new Tile(data.col, data.row);
+    tile.terrain = data.terrain ?? null;
+    tile.building = data.building ?? null;
+    tile.event = data.event ?? null;
+    tile.barrier = data.barrier ?? null;
+    tile.borders = { top: false, right: false, bottom: false, left: false, ...(data.borders || {}) };
+    return tile;
+  }
+}
+
+/* =========================================================================
+ * DATA MODEL: Connection
+ * ========================================================================= */
+class Connection {
+  constructor(id, fromCol, fromRow, toCol, toRow, type) {
+    this.id = id;
+    this.fromCol = fromCol; this.fromRow = fromRow;
+    this.toCol = toCol; this.toRow = toRow;
+    this.type = type;
+  }
+
+  touches(col, row) {
+    return (this.fromCol === col && this.fromRow === row) || (this.toCol === col && this.toRow === row);
+  }
+
+  toJSON() {
+    return { id: this.id, fromCol: this.fromCol, fromRow: this.fromRow, toCol: this.toCol, toRow: this.toRow, type: this.type };
+  }
+
+  static fromJSON(data) {
+    return new Connection(data.id, data.fromCol, data.fromRow, data.toCol, data.toRow, data.type);
+  }
+}
+
+/* =========================================================================
+ * DATA MODEL: Label
+ * ========================================================================= */
+class Label {
+  constructor(id, x, y, text, orientation = 'horizontal') {
+    this.id = id;
+    this.x = x; this.y = y; // world cm, top-left anchor
+    this.text = text;
+    this.orientation = orientation; // 'horizontal' | 'vertical'
+    this.fontSizeCm = CONFIG.LABEL_FONT_SIZE_CM;
+  }
+
+  toJSON() {
+    return { id: this.id, x: this.x, y: this.y, text: this.text, orientation: this.orientation, fontSizeCm: this.fontSizeCm };
+  }
+
+  static fromJSON(data) {
+    const label = new Label(data.id, data.x, data.y, data.text, data.orientation);
+    label.fontSizeCm = data.fontSizeCm || CONFIG.LABEL_FONT_SIZE_CM;
+    return label;
+  }
+}
+
+/* =========================================================================
+ * DATA MODEL: Board
+ * ========================================================================= */
+class Board {
+  constructor(cols = CONFIG.BOARD_COLS, rows = CONFIG.BOARD_ROWS) {
+    this.cols = cols;
+    this.rows = rows;
+    this.tiles = [];
+    this.connections = [];
+    this.labels = [];
+    this.background = null; // { src, opacity }
+    this._nextId = 1;
+    this._initTiles();
+  }
+
+  _initTiles() {
+    this.tiles = new Array(this.cols * this.rows);
+    for (let row = 0; row < this.rows; row++) {
+      for (let col = 0; col < this.cols; col++) {
+        this.tiles[row * this.cols + col] = new Tile(col, row);
+      }
+    }
+  }
+
+  isInBounds(col, row) {
+    return col >= 0 && row >= 0 && col < this.cols && row < this.rows;
+  }
+
+  getTile(col, row) {
+    if (!this.isInBounds(col, row)) return null;
+    return this.tiles[row * this.cols + col];
+  }
+
+  forEachTileInRange(colStart, rowStart, colEnd, rowEnd, callback) {
+    for (let row = rowStart; row <= rowEnd; row++) {
+      const base = row * this.cols;
+      for (let col = colStart; col <= colEnd; col++) {
+        callback(this.tiles[base + col]);
+      }
+    }
+  }
+
+  generateId() { return this._nextId++; }
+
+  addConnection(fromCol, fromRow, toCol, toRow, type) {
+    const connection = new Connection(this.generateId(), fromCol, fromRow, toCol, toRow, type);
+    this.connections.push(connection);
+    return connection;
+  }
+
+  removeConnectionById(id) {
+    const index = this.connections.findIndex(c => c.id === id);
+    if (index === -1) return null;
+    return this.connections.splice(index, 1)[0];
+  }
+
+  insertConnection(connection, index = this.connections.length) {
+    this.connections.splice(index, 0, connection);
+  }
+
+  findConnectionAt(col, row) {
+    for (let i = this.connections.length - 1; i >= 0; i--) {
+      if (this.connections[i].touches(col, row)) return this.connections[i];
+    }
+    return null;
+  }
+
+  addLabel(x, y, text, orientation) {
+    const label = new Label(this.generateId(), x, y, text, orientation);
+    this.labels.push(label);
+    return label;
+  }
+
+  removeLabelById(id) {
+    const index = this.labels.findIndex(l => l.id === id);
+    if (index === -1) return null;
+    return this.labels.splice(index, 1)[0];
+  }
+
+  insertLabel(label, index = this.labels.length) {
+    this.labels.splice(index, 0, label);
+  }
+
+  getLabelById(id) { return this.labels.find(l => l.id === id) || null; }
+
+  clear() {
+    this._initTiles();
+    this.connections = [];
+    this.labels = [];
+    this.background = null;
+    this._nextId = 1;
+  }
+
+  toJSON() {
+    return {
+      cols: this.cols, rows: this.rows,
+      tiles: this.tiles.map(t => t.toJSON()),
+      connections: this.connections.map(c => c.toJSON()),
+      labels: this.labels.map(l => l.toJSON()),
+      background: this.background,
+      nextId: this._nextId
+    };
+  }
+
+  static fromJSON(data) {
+    const board = new Board(data.cols || CONFIG.BOARD_COLS, data.rows || CONFIG.BOARD_ROWS);
+    if (Array.isArray(data.tiles)) {
+      for (const tileData of data.tiles) {
+        if (board.isInBounds(tileData.col, tileData.row)) {
+          board.tiles[tileData.row * board.cols + tileData.col] = Tile.fromJSON(tileData);
+        }
+      }
+    }
+    board.connections = (data.connections || []).map(Connection.fromJSON);
+    board.labels = (data.labels || []).map(Label.fromJSON);
+    board.background = data.background || null;
+    board._nextId = data.nextId || 1;
+    return board;
+  }
+}
+
+/* =========================================================================
+ * Camera
+ * ========================================================================= */
+class Camera {
+  constructor() {
+    this.offsetX = 40;
+    this.offsetY = 40;
+    this.zoom = 1;
+  }
+
+  get pixelsPerCm() { return this.zoom * CONFIG.BASE_PIXELS_PER_CM; }
+
+  worldToScreen(xCm, yCm) {
+    return { x: xCm * this.pixelsPerCm + this.offsetX, y: yCm * this.pixelsPerCm + this.offsetY };
+  }
+
+  screenToWorld(xPx, yPx) {
+    return { x: (xPx - this.offsetX) / this.pixelsPerCm, y: (yPx - this.offsetY) / this.pixelsPerCm };
+  }
+
+  pan(dxPx, dyPx) {
+    this.offsetX += dxPx;
+    this.offsetY += dyPx;
+  }
+
+  zoomAt(screenX, screenY, factor) {
+    const before = this.screenToWorld(screenX, screenY);
+    this.zoom = clamp(this.zoom * factor, CONFIG.ZOOM_MIN, CONFIG.ZOOM_MAX);
+    const after = this.worldToScreen(before.x, before.y);
+    this.offsetX += screenX - after.x;
+    this.offsetY += screenY - after.y;
+  }
+
+  setZoom(zoom, canvasWidth, canvasHeight) {
+    this.zoomAt(canvasWidth / 2, canvasHeight / 2, clamp(zoom, CONFIG.ZOOM_MIN, CONFIG.ZOOM_MAX) / this.zoom);
+  }
+
+  fitToBoard(board, canvasWidth, canvasHeight) {
+    const margin = 32;
+    const scaleX = (canvasWidth - margin * 2) / (board.cols * CONFIG.BASE_PIXELS_PER_CM);
+    const scaleY = (canvasHeight - margin * 2) / (board.rows * CONFIG.BASE_PIXELS_PER_CM);
+    this.zoom = clamp(Math.min(scaleX, scaleY), CONFIG.ZOOM_MIN, CONFIG.ZOOM_MAX);
+    const boardWidthPx = board.cols * this.pixelsPerCm;
+    const boardHeightPx = board.rows * this.pixelsPerCm;
+    this.offsetX = (canvasWidth - boardWidthPx) / 2;
+    this.offsetY = (canvasHeight - boardHeightPx) / 2;
+  }
+
+  getVisibleCellRange(board, canvasWidth, canvasHeight) {
+    const topLeft = this.screenToWorld(0, 0);
+    const bottomRight = this.screenToWorld(canvasWidth, canvasHeight);
+    return {
+      colStart: clamp(Math.floor(topLeft.x) - 1, 0, board.cols - 1),
+      rowStart: clamp(Math.floor(topLeft.y) - 1, 0, board.rows - 1),
+      colEnd: clamp(Math.ceil(bottomRight.x) + 1, 0, board.cols - 1),
+      rowEnd: clamp(Math.ceil(bottomRight.y) + 1, 0, board.rows - 1)
+    };
+  }
+}
+
+/* =========================================================================
+ * LayerManager
+ * ========================================================================= */
+class LayerManager {
+  constructor() {
+    this.layers = new Map();
+    for (const key of CONFIG.LAYER_ORDER) {
+      this.layers.set(key, { key, name: CONFIG.LAYER_NAMES[key], visible: true, locked: false });
+    }
+  }
+
+  isVisible(key) { return this.layers.get(key)?.visible ?? true; }
+  isLocked(key) { return this.layers.get(key)?.locked ?? false; }
+
+  setVisible(key, value) {
+    const layer = this.layers.get(key);
+    if (layer) layer.visible = value;
+  }
+
+  setLocked(key, value) {
+    const layer = this.layers.get(key);
+    if (layer) layer.locked = value;
+  }
+
+  toggleVisible(key) { this.setVisible(key, !this.isVisible(key)); }
+  toggleLocked(key) { this.setLocked(key, !this.isLocked(key)); }
+
+  list() { return CONFIG.LAYER_ORDER.map(key => this.layers.get(key)); }
+
+  toJSON() {
+    const out = {};
+    for (const layer of this.layers.values()) out[layer.key] = { visible: layer.visible, locked: layer.locked };
+    return out;
+  }
+
+  static fromJSON(data) {
+    const manager = new LayerManager();
+    if (data) {
+      for (const key of CONFIG.LAYER_ORDER) {
+        if (data[key]) {
+          manager.setVisible(key, data[key].visible !== false);
+          manager.setLocked(key, !!data[key].locked);
+        }
+      }
+    }
+    return manager;
+  }
+}
+
+/* =========================================================================
+ * Selection
+ * ========================================================================= */
+class Selection {
+  constructor() {
+    this.hoverCol = null;
+    this.hoverRow = null;
+    this.tileCol = null;
+    this.tileRow = null;
+    this.connectionDraft = null; // { col, row }
+    this.activeLabelId = null;
+    this.draggingLabel = false;
+  }
+
+  setHover(col, row) { this.hoverCol = col; this.hoverRow = row; }
+
+  selectTile(col, row) { this.tileCol = col; this.tileRow = row; }
+
+  clearTileSelection() { this.tileCol = null; this.tileRow = null; }
+
+  startConnectionDraft(col, row) { this.connectionDraft = { col, row }; }
+
+  clearConnectionDraft() { this.connectionDraft = null; }
+
+  selectLabel(id) { this.activeLabelId = id; }
+
+  clearLabelSelection() { this.activeLabelId = null; this.draggingLabel = false; }
+}
+
+/* =========================================================================
+ * History (Command Pattern)
+ * ========================================================================= */
+class BatchCommand {
+  constructor(commands) { this.commands = commands; }
+  redo() { for (const cmd of this.commands) cmd.redo(); }
+  undo() { for (let i = this.commands.length - 1; i >= 0; i--) this.commands[i].undo(); }
+}
+
+function makeSetFieldCommand(target, field, newValue) {
+  const oldValue = target[field];
+  return { redo() { target[field] = newValue; }, undo() { target[field] = oldValue; } };
+}
+
+function makeSetBorderCommand(tile, edge, newValue) {
+  const oldValue = tile.borders[edge];
+  return { redo() { tile.borders[edge] = newValue; }, undo() { tile.borders[edge] = oldValue; } };
+}
+
+function makeAddConnectionCommand(board, connection) {
+  return {
+    redo() { board.insertConnection(connection); },
+    undo() { board.removeConnectionById(connection.id); }
+  };
+}
+
+function makeRemoveConnectionCommand(board, connection) {
+  let index = board.connections.indexOf(connection);
+  return {
+    redo() { index = board.connections.indexOf(connection); board.removeConnectionById(connection.id); },
+    undo() { board.insertConnection(connection, index); }
+  };
+}
+
+function makeAddLabelCommand(board, label) {
+  return {
+    redo() { board.insertLabel(label); },
+    undo() { board.removeLabelById(label.id); }
+  };
+}
+
+function makeRemoveLabelCommand(board, label) {
+  let index = board.labels.indexOf(label);
+  return {
+    redo() { index = board.labels.indexOf(label); board.removeLabelById(label.id); },
+    undo() { board.insertLabel(label, index); }
+  };
+}
+
+function makeMoveLabelCommand(label, oldX, oldY, newX, newY) {
+  return {
+    redo() { label.x = newX; label.y = newY; },
+    undo() { label.x = oldX; label.y = oldY; }
+  };
+}
+
+class HistoryManager {
+  constructor(onChange) {
+    this.undoStack = [];
+    this.redoStack = [];
+    this.onChange = onChange || (() => {});
+  }
+
+  /** Applies the command and records it. Use for single, atomic edits. */
+  execute(command) {
+    command.redo();
+    this._push(command);
+  }
+
+  /** Records an already-applied command (e.g. after live drag painting). */
+  record(command) {
+    this._push(command);
+  }
+
+  _push(command) {
+    this.undoStack.push(command);
+    if (this.undoStack.length > CONFIG.HISTORY_LIMIT) this.undoStack.shift();
+    this.redoStack.length = 0;
+    this.onChange();
+  }
+
+  undo() {
+    const command = this.undoStack.pop();
+    if (!command) return;
+    command.undo();
+    this.redoStack.push(command);
+    this.onChange();
+  }
+
+  redo() {
+    const command = this.redoStack.pop();
+    if (!command) return;
+    command.redo();
+    this.undoStack.push(command);
+    this.onChange();
+  }
+
+  canUndo() { return this.undoStack.length > 0; }
+  canRedo() { return this.redoStack.length > 0; }
+
+  reset() {
+    this.undoStack.length = 0;
+    this.redoStack.length = 0;
+    this.onChange();
+  }
+}
+
+/* =========================================================================
+ * IconCache
+ * ========================================================================= */
+class IconCache {
+  constructor(onLoad) {
+    this.cache = new Map();
+    this.onLoad = onLoad || (() => {});
+  }
+
+  get(url) {
+    if (!url) return null;
+    let entry = this.cache.get(url);
+    if (!entry) {
+      entry = { image: new Image(), loaded: false, failed: false };
+      entry.image.onload = () => { entry.loaded = true; this.onLoad(); };
+      entry.image.onerror = () => { entry.failed = true; };
+      entry.image.src = url;
+      this.cache.set(url, entry);
+    }
+    return entry;
+  }
+}
+
+/* =========================================================================
+ * Renderer
+ * ========================================================================= */
+class Renderer {
+  constructor(canvas, board, camera, layerManager, selection, iconCache, toolManager) {
+    this.canvas = canvas;
+    this.ctx = canvas.getContext('2d');
+    this.board = board;
+    this.camera = camera;
+    this.layerManager = layerManager;
+    this.selection = selection;
+    this.iconCache = iconCache;
+    this.toolManager = toolManager;
+    this.dirty = true;
+  }
+
+  requestRender() { this.dirty = true; }
+
+  renderIfNeeded() {
+    if (!this.dirty) return;
+    this.render();
+    this.dirty = false;
+  }
+
+  resizeToContainer(cssWidth, cssHeight) {
+    const dpr = window.devicePixelRatio || 1;
+    this.canvas.style.width = cssWidth + 'px';
+    this.canvas.style.height = cssHeight + 'px';
+    this.canvas.width = Math.max(1, Math.round(cssWidth * dpr));
+    this.canvas.height = Math.max(1, Math.round(cssHeight * dpr));
+    this.requestRender();
+  }
+
+  render() {
+    const dpr = window.devicePixelRatio || 1;
+    this._paint(this.ctx, this.canvas.width, this.canvas.height, this.camera, dpr, false);
+  }
+
+  /** Renders the full board (no culling, no interactive overlays) into an offscreen context. */
+  renderExport(ctx, canvasWidth, canvasHeight, camera) {
+    this._paint(ctx, canvasWidth, canvasHeight, camera, 1, true);
+  }
+
+  _paint(ctx, canvasWidthDevice, canvasHeightDevice, camera, dpr, exportMode) {
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, canvasWidthDevice, canvasHeightDevice);
+    ctx.fillStyle = '#0e0e11';
+    ctx.fillRect(0, 0, canvasWidthDevice, canvasHeightDevice);
+
+    const scale = camera.pixelsPerCm * dpr;
+    ctx.setTransform(scale, 0, 0, scale, camera.offsetX * dpr, camera.offsetY * dpr);
+
+    const cssWidth = canvasWidthDevice / dpr;
+    const cssHeight = canvasHeightDevice / dpr;
+    const range = exportMode
+      ? { colStart: 0, rowStart: 0, colEnd: this.board.cols - 1, rowEnd: this.board.rows - 1 }
+      : camera.getVisibleCellRange(this.board, cssWidth, cssHeight);
+
+    this._drawBoardBackdrop(ctx);
+    this._drawBackgroundImage(ctx);
+    if (this.layerManager.isVisible('grid')) this._drawGrid(ctx);
+    if (this.layerManager.isVisible('terrain')) this._drawTerrain(ctx, range);
+    this._drawBorders(ctx, range);
+    if (this.layerManager.isVisible('buildings')) this._drawBuildings(ctx, range);
+    if (this.layerManager.isVisible('events')) this._drawEvents(ctx, range);
+    if (this.layerManager.isVisible('barriers')) this._drawBarriers(ctx, range);
+    if (this.layerManager.isVisible('connections')) this._drawConnections(ctx);
+    if (this.layerManager.isVisible('labels')) this._drawLabels(ctx);
+
+    if (!exportMode) {
+      this._drawSelection(ctx);
+      this._drawToolOverlay(ctx);
+    }
+  }
+
+  _drawBoardBackdrop(ctx) {
+    ctx.fillStyle = '#f4f0e6';
+    ctx.fillRect(0, 0, this.board.cols, this.board.rows);
+  }
+
+  _drawBackgroundImage(ctx) {
+    const bg = this.board.background;
+    if (!bg || !bg.src) return;
+    const entry = this.iconCache.get(bg.src);
+    if (!entry || !entry.loaded) return;
+    ctx.save();
+    ctx.globalAlpha = bg.opacity ?? 1;
+    ctx.drawImage(entry.image, 0, 0, this.board.cols, this.board.rows);
+    ctx.restore();
+  }
+
+  _drawGrid(ctx) {
+    ctx.save();
+    ctx.strokeStyle = 'rgba(0,0,0,0.16)';
+    ctx.lineWidth = CONFIG.GRID_LINE_WIDTH_CM;
+    ctx.beginPath();
+    for (let col = 0; col <= this.board.cols; col++) {
+      ctx.moveTo(col, 0); ctx.lineTo(col, this.board.rows);
+    }
+    for (let row = 0; row <= this.board.rows; row++) {
+      ctx.moveTo(0, row); ctx.lineTo(this.board.cols, row);
+    }
+    ctx.stroke();
+
+    ctx.strokeStyle = 'rgba(0,0,0,0.32)';
+    ctx.lineWidth = CONFIG.GRID_MAJOR_LINE_WIDTH_CM;
+    ctx.beginPath();
+    for (let col = 0; col <= this.board.cols; col += 10) { ctx.moveTo(col, 0); ctx.lineTo(col, this.board.rows); }
+    for (let row = 0; row <= this.board.rows; row += 10) { ctx.moveTo(0, row); ctx.lineTo(this.board.cols, row); }
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  _drawTerrain(ctx, range) {
+    this.board.forEachTileInRange(range.colStart, range.rowStart, range.colEnd, range.rowEnd, tile => {
+      if (!tile.terrain) return;
+      ctx.fillStyle = CONFIG.TERRAIN_COLORS[tile.terrain] || '#cccccc';
+      ctx.fillRect(tile.col, tile.row, 1, 1);
+    });
+  }
+
+  _drawBorders(ctx, range) {
+    ctx.save();
+    ctx.strokeStyle = '#1a1a1a';
+    ctx.lineWidth = CONFIG.BORDER_LINE_WIDTH_CM;
+    ctx.lineCap = 'square';
+    ctx.beginPath();
+    this.board.forEachTileInRange(range.colStart, range.rowStart, range.colEnd, range.rowEnd, tile => {
+      const b = tile.borders;
+      const x = tile.col, y = tile.row;
+      if (b.top) { ctx.moveTo(x, y); ctx.lineTo(x + 1, y); }
+      if (b.right) { ctx.moveTo(x + 1, y); ctx.lineTo(x + 1, y + 1); }
+      if (b.bottom) { ctx.moveTo(x, y + 1); ctx.lineTo(x + 1, y + 1); }
+      if (b.left) { ctx.moveTo(x, y); ctx.lineTo(x, y + 1); }
+    });
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  _drawBuildings(ctx, range) {
+    this.board.forEachTileInRange(range.colStart, range.rowStart, range.colEnd, range.rowEnd, tile => {
+      if (!tile.building) return;
+      this._drawIconTile(ctx, tile.col, tile.row, tile.building.type, tile.building.iconUrl, CONFIG.BUILDING_COLORS, CONFIG.BUILDING_LABELS, 'rect');
+    });
+  }
+
+  _drawEvents(ctx, range) {
+    this.board.forEachTileInRange(range.colStart, range.rowStart, range.colEnd, range.rowEnd, tile => {
+      if (!tile.event) return;
+      this._drawIconTile(ctx, tile.col, tile.row, tile.event.type, null, CONFIG.EVENT_COLORS, CONFIG.EVENT_LABELS, 'circle');
+    });
+  }
+
+  _drawBarriers(ctx, range) {
+    this.board.forEachTileInRange(range.colStart, range.rowStart, range.colEnd, range.rowEnd, tile => {
+      if (!tile.barrier) return;
+      this._drawBarrierGlyph(ctx, tile.col, tile.row, tile.barrier.type);
+    });
+  }
+
+  _drawIconTile(ctx, col, row, type, iconUrl, colorMap, labelMap, shape) {
+    const entry = iconUrl ? this.iconCache.get(iconUrl) : null;
+    if (entry && entry.loaded) {
+      ctx.drawImage(entry.image, col + 0.06, row + 0.06, 0.88, 0.88);
+      return;
+    }
+    ctx.save();
+    ctx.fillStyle = colorMap[type] || '#888';
+    const cx = col + 0.5, cy = row + 0.5;
+    if (shape === 'circle') {
+      ctx.beginPath(); ctx.arc(cx, cy, 0.36, 0, Math.PI * 2); ctx.fill();
+    } else {
+      ctx.beginPath();
+      ctx.roundRect ? ctx.roundRect(col + 0.1, row + 0.1, 0.8, 0.8, 0.1) : ctx.rect(col + 0.1, row + 0.1, 0.8, 0.8);
+      ctx.fill();
+    }
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '700 0.5px "Segoe UI", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText((labelMap[type] || '?').charAt(0), cx, cy + 0.02);
+    ctx.restore();
+  }
+
+  _drawBarrierGlyph(ctx, col, row, type) {
+    const cx = col + 0.5, cy = row + 0.5;
+    ctx.save();
+    if (type === 'tree') {
+      ctx.fillStyle = '#6b4226'; ctx.fillRect(cx - 0.06, cy, 0.12, 0.42);
+      ctx.fillStyle = '#3f8f3f';
+      ctx.beginPath(); ctx.arc(cx, cy - 0.05, 0.34, 0, Math.PI * 2); ctx.fill();
+    } else if (type === 'rock') {
+      ctx.fillStyle = '#8a8a8a';
+      ctx.beginPath();
+      ctx.moveTo(cx - 0.36, cy + 0.3); ctx.lineTo(cx - 0.28, cy - 0.2); ctx.lineTo(cx, cy - 0.34);
+      ctx.lineTo(cx + 0.3, cy - 0.16); ctx.lineTo(cx + 0.34, cy + 0.3); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = '#5a5a5a'; ctx.lineWidth = 0.03; ctx.stroke();
+    } else if (type === 'pokeflute') {
+      ctx.strokeStyle = '#c9a24a'; ctx.lineWidth = 0.14; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(cx - 0.32, cy + 0.28); ctx.lineTo(cx + 0.32, cy - 0.28); ctx.stroke();
+      ctx.fillStyle = '#7a5aad';
+      ctx.beginPath(); ctx.arc(cx + 0.32, cy - 0.28, 0.1, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  _drawConnections(ctx) {
+    for (const connection of this.board.connections) {
+      const from = { x: connection.fromCol + 0.5, y: connection.fromRow + 0.5 };
+      const to = { x: connection.toCol + 0.5, y: connection.toRow + 0.5 };
+      ctx.save();
+      ctx.setLineDash([0.12, 0.1]);
+      ctx.strokeStyle = 'rgba(20,20,20,0.55)';
+      ctx.lineWidth = CONFIG.CONNECTION_LINE_WIDTH_CM;
+      ctx.beginPath(); ctx.moveTo(from.x, from.y); ctx.lineTo(to.x, to.y); ctx.stroke();
+      ctx.restore();
+      this._drawConnectionMarker(ctx, from.x, from.y, connection.type);
+      this._drawConnectionMarker(ctx, to.x, to.y, connection.type);
+    }
+  }
+
+  _drawConnectionMarker(ctx, x, y, type) {
+    ctx.save();
+    if (type === 'cave') {
+      ctx.fillStyle = '#3f2a1a';
+      ctx.beginPath(); ctx.arc(x, y, CONFIG.CONNECTION_MARKER_RADIUS_CM, Math.PI, 0); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = '#1a1a1a'; ctx.lineWidth = 0.03; ctx.stroke();
+    } else {
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath(); ctx.arc(x, y, CONFIG.CONNECTION_MARKER_RADIUS_CM, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#000000'; ctx.lineWidth = 0.05; ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  _drawLabels(ctx) {
+    for (const label of this.board.labels) {
+      const metrics = LabelMetrics.measure(label.text, label.fontSizeCm);
+      const padding = CONFIG.LABEL_PADDING_CM;
+      ctx.save();
+      ctx.translate(label.x, label.y);
+      if (label.orientation === 'vertical') ctx.rotate(-Math.PI / 2);
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(0, 0, metrics.width + padding * 2, metrics.height + padding * 2);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = `600 ${label.fontSizeCm}px "Segoe UI", sans-serif`;
+      ctx.textBaseline = 'top';
+      ctx.fillText(label.text, padding, padding + metrics.height * 0.06);
+      if (label.id === this.selection.activeLabelId) {
+        ctx.strokeStyle = '#5aa8e0'; ctx.lineWidth = 0.03;
+        ctx.strokeRect(0, 0, metrics.width + padding * 2, metrics.height + padding * 2);
+      }
+      ctx.restore();
+    }
+  }
+
+  _drawSelection(ctx) {
+    const sel = this.selection;
+    if (sel.tileCol != null && this.board.isInBounds(sel.tileCol, sel.tileRow)) {
+      ctx.save();
+      ctx.strokeStyle = '#5aa8e0';
+      ctx.lineWidth = 0.06;
+      ctx.strokeRect(sel.tileCol + 0.02, sel.tileRow + 0.02, 0.96, 0.96);
+      ctx.restore();
+    }
+    if (sel.hoverCol != null && this.board.isInBounds(sel.hoverCol, sel.hoverRow)) {
+      ctx.save();
+      ctx.fillStyle = 'rgba(90,168,224,0.18)';
+      ctx.fillRect(sel.hoverCol, sel.hoverRow, 1, 1);
+      ctx.restore();
+    }
+  }
+
+  _drawToolOverlay(ctx) {
+    const tool = this.toolManager?.getActiveTool();
+    if (tool && typeof tool.renderOverlay === 'function') tool.renderOverlay(ctx, this.selection, this.board);
+  }
+}
+
+/* =========================================================================
+ * Tools
+ * ========================================================================= */
+class Tool {
+  constructor(app) { this.app = app; }
+  get id() { return 'tool'; }
+  get cursor() { return 'crosshair'; }
+  getLayerKey() { return null; }
+  onPointerDown(ctx) {}
+  onPointerMove(ctx) {}
+  onPointerUp(ctx) {}
+  renderOverlay(ctx2d, selection, board) {}
+}
+
+class BrushTool extends Tool {
+  constructor(app) { super(app); this.currentTerrain = 'grass'; this.strokeCommands = []; }
+  get id() { return 'brush'; }
+  getLayerKey() { return 'terrain'; }
+
+  onPointerDown(pctx) { this.strokeCommands = []; this._paint(pctx); }
+  onPointerMove(pctx) { if (pctx.isPointerDown) this._paint(pctx); }
+  onPointerUp() {
+    if (this.strokeCommands.length) this.app.history.record(new BatchCommand(this.strokeCommands));
+    this.strokeCommands = [];
+  }
+
+  _paint(pctx) {
+    const tile = pctx.board.getTile(pctx.col, pctx.row);
+    if (!tile || tile.terrain === this.currentTerrain) return;
+    const cmd = makeSetFieldCommand(tile, 'terrain', this.currentTerrain);
+    cmd.redo();
+    this.strokeCommands.push(cmd);
+    this.app.renderer.requestRender();
+  }
+}
+
+class BuildingTool extends Tool {
+  constructor(app) { super(app); this.currentType = 'arena'; this.iconUrl = ''; }
+  get id() { return 'building'; }
+  getLayerKey() { return 'buildings'; }
+
+  onPointerDown(pctx) {
+    const tile = pctx.board.getTile(pctx.col, pctx.row);
+    if (!tile) return;
+    const value = { type: this.currentType, iconUrl: this.iconUrl || null };
+    this.app.history.execute(makeSetFieldCommand(tile, 'building', value));
+    this.app.renderer.requestRender();
+  }
+}
+
+class EventTool extends Tool {
+  constructor(app) { super(app); this.currentType = 'trainer'; }
+  get id() { return 'event'; }
+  getLayerKey() { return 'events'; }
+
+  onPointerDown(pctx) {
+    const tile = pctx.board.getTile(pctx.col, pctx.row);
+    if (!tile) return;
+    this.app.history.execute(makeSetFieldCommand(tile, 'event', { type: this.currentType }));
+    this.app.renderer.requestRender();
+  }
+}
+
+class BarrierTool extends Tool {
+  constructor(app) { super(app); this.currentType = 'tree'; }
+  get id() { return 'barrier'; }
+  getLayerKey() { return 'barriers'; }
+
+  onPointerDown(pctx) {
+    const tile = pctx.board.getTile(pctx.col, pctx.row);
+    if (!tile) return;
+    this.app.history.execute(makeSetFieldCommand(tile, 'barrier', { type: this.currentType }));
+    this.app.renderer.requestRender();
+  }
+}
+
+class ConnectionTool extends Tool {
+  constructor(app) { super(app); this.currentType = 'route-route'; }
+  get id() { return 'connection'; }
+  getLayerKey() { return 'connections'; }
+
+  onPointerDown(pctx) {
+    if (!pctx.board.isInBounds(pctx.col, pctx.row)) return;
+    const draft = this.app.selection.connectionDraft;
+    if (!draft) {
+      this.app.selection.startConnectionDraft(pctx.col, pctx.row);
+      this.app.renderer.requestRender();
+      return;
+    }
+    if (draft.col === pctx.col && draft.row === pctx.row) {
+      this.app.selection.clearConnectionDraft();
+      this.app.renderer.requestRender();
+      return;
+    }
+    const connection = new Connection(pctx.board.generateId(), draft.col, draft.row, pctx.col, pctx.row, this.currentType);
+    this.app.history.execute(makeAddConnectionCommand(pctx.board, connection));
+    this.app.selection.clearConnectionDraft();
+    this.app.renderer.requestRender();
+  }
+
+  cancelDraft() {
+    if (this.app.selection.connectionDraft) {
+      this.app.selection.clearConnectionDraft();
+      this.app.renderer.requestRender();
+    }
+  }
+
+  renderOverlay(ctx, selection) {
+    if (!selection.connectionDraft) return;
+    const { col, row } = selection.connectionDraft;
+    ctx.save();
+    ctx.strokeStyle = '#5aa8e0';
+    ctx.lineWidth = 0.08;
+    ctx.strokeRect(col + 0.04, row + 0.04, 0.92, 0.92);
+    ctx.restore();
+  }
+}
+
+class BorderTool extends Tool {
+  get id() { return 'border'; }
+  getLayerKey() { return 'terrain'; }
+
+  onPointerDown(pctx) {
+    const tile = pctx.board.getTile(pctx.col, pctx.row);
+    if (!tile) return;
+    const fx = pctx.worldX - pctx.col;
+    const fy = pctx.worldY - pctx.row;
+    const edge = this._nearestEdge(fx, fy);
+    this.app.history.execute(makeSetBorderCommand(tile, edge, !tile.borders[edge]));
+    this.app.renderer.requestRender();
+  }
+
+  _nearestEdge(fx, fy) {
+    const distances = { top: fy, bottom: 1 - fy, left: fx, right: 1 - fx };
+    return Object.entries(distances).sort((a, b) => a[1] - b[1])[0][0];
+  }
+}
+
+class TextTool extends Tool {
+  constructor(app) { super(app); this.orientation = 'horizontal'; this._dragOffset = null; }
+  get id() { return 'text'; }
+  getLayerKey() { return 'labels'; }
+
+  onPointerDown(pctx) {
+    const hit = this._hitTest(pctx.board, pctx.worldX, pctx.worldY);
+    if (hit) {
+      this.app.selection.selectLabel(hit.id);
+      this.app.selection.draggingLabel = true;
+      this._dragOffset = { dx: pctx.worldX - hit.x, dy: pctx.worldY - hit.y };
+      this._dragStart = { x: hit.x, y: hit.y };
+      this.app.renderer.requestRender();
+      return;
+    }
+    const text = window.prompt('Text der Beschriftung:', 'Beschriftung');
+    if (text === null || text.trim() === '') return;
+    const label = pctx.board.addLabel(pctx.worldX, pctx.worldY, text.trim(), this.orientation);
+    this.app.history.record(makeAddLabelCommand(pctx.board, label));
+    this.app.selection.selectLabel(label.id);
+    this.app.renderer.requestRender();
+  }
+
+  onPointerMove(pctx) {
+    if (!this.app.selection.draggingLabel || !pctx.isPointerDown) return;
+    const label = pctx.board.getLabelById(this.app.selection.activeLabelId);
+    if (!label) return;
+    label.x = pctx.worldX - this._dragOffset.dx;
+    label.y = pctx.worldY - this._dragOffset.dy;
+    this.app.renderer.requestRender();
+  }
+
+  onPointerUp(pctx) {
+    if (!this.app.selection.draggingLabel) return;
+    const label = pctx.board.getLabelById(this.app.selection.activeLabelId);
+    this.app.selection.draggingLabel = false;
+    if (label && this._dragStart && (label.x !== this._dragStart.x || label.y !== this._dragStart.y)) {
+      this.app.history.record(makeMoveLabelCommand(label, this._dragStart.x, this._dragStart.y, label.x, label.y));
+    }
+    this._dragStart = null;
+  }
+
+  editSelectedLabel() {
+    const label = this.app.board.getLabelById(this.app.selection.activeLabelId);
+    if (!label) return;
+    const text = window.prompt('Text der Beschriftung:', label.text);
+    if (text === null || text.trim() === '') return;
+    this.app.history.execute(makeSetFieldCommand(label, 'text', text.trim()));
+    this.app.renderer.requestRender();
+  }
+
+  deleteSelectedLabel() {
+    const label = this.app.board.getLabelById(this.app.selection.activeLabelId);
+    if (!label) return;
+    this.app.history.execute(makeRemoveLabelCommand(this.app.board, label));
+    this.app.selection.clearLabelSelection();
+    this.app.renderer.requestRender();
+  }
+
+  _hitTest(board, worldX, worldY) {
+    for (let i = board.labels.length - 1; i >= 0; i--) {
+      const label = board.labels[i];
+      const metrics = LabelMetrics.measure(label.text, label.fontSizeCm);
+      const width = metrics.width + CONFIG.LABEL_PADDING_CM * 2;
+      const height = metrics.height + CONFIG.LABEL_PADDING_CM * 2;
+      const local = this._toLocal(label, worldX, worldY);
+      if (local.x >= 0 && local.x <= width && local.y >= 0 && local.y <= height) return label;
+    }
+    return null;
+  }
+
+  _toLocal(label, worldX, worldY) {
+    const dx = worldX - label.x, dy = worldY - label.y;
+    if (label.orientation === 'vertical') return { x: -dy, y: dx };
+    return { x: dx, y: dy };
+  }
+}
+
+class EraserTool extends Tool {
+  constructor(app) {
+    super(app);
+    this.targetLayer = 'terrain';
+    this.strokeCommands = [];
+  }
+  get id() { return 'eraser'; }
+  getLayerKey() { return this.targetLayer === 'borders' ? 'terrain' : this.targetLayer; }
+
+  onPointerDown(pctx) { this.strokeCommands = []; this._erase(pctx); }
+  onPointerMove(pctx) { if (pctx.isPointerDown) this._erase(pctx); }
+  onPointerUp() {
+    if (this.strokeCommands.length) this.app.history.record(new BatchCommand(this.strokeCommands));
+    this.strokeCommands = [];
+  }
+
+  _erase(pctx) {
+    const { board, col, row, worldX, worldY } = pctx;
+    if (this.targetLayer === 'connections') { this._eraseConnection(board, col, row); return; }
+    if (this.targetLayer === 'labels') { this._eraseLabel(board, worldX, worldY); return; }
+    const tile = board.getTile(col, row);
+    if (!tile) return;
+    if (this.targetLayer === 'borders') {
+      const cleared = { top: false, right: false, bottom: false, left: false };
+      if (CONFIG.BORDER_EDGES.every(edge => tile.borders[edge] === false)) return;
+      const cmd = makeSetFieldCommand(tile, 'borders', cleared);
+      cmd.redo(); this.strokeCommands.push(cmd);
+    } else {
+      const fieldName = CONFIG.LAYER_TO_TILE_FIELD[this.targetLayer];
+      if (tile[fieldName] === null) return;
+      const cmd = makeSetFieldCommand(tile, fieldName, null);
+      cmd.redo(); this.strokeCommands.push(cmd);
+    }
+    this.app.renderer.requestRender();
+  }
+
+  _eraseConnection(board, col, row) {
+    const connection = board.findConnectionAt(col, row);
+    if (!connection) return;
+    this.app.history.execute(makeRemoveConnectionCommand(board, connection));
+    this.app.renderer.requestRender();
+  }
+
+  _eraseLabel(board, worldX, worldY) {
+    const textTool = this.app.toolManager.tools.text;
+    const label = textTool._hitTest(board, worldX, worldY);
+    if (!label) return;
+    this.app.history.execute(makeRemoveLabelCommand(board, label));
+    this.app.renderer.requestRender();
+  }
+}
+
+class EyedropperTool extends Tool {
+  get id() { return 'eyedropper'; }
+  getLayerKey() { return null; }
+
+  onPointerDown(pctx) {
+    const tile = pctx.board.getTile(pctx.col, pctx.row);
+    if (!tile || !tile.terrain) return;
+    this.app.toolManager.tools.brush.currentTerrain = tile.terrain;
+    this.app.toolManager.setActiveTool('brush');
+    this.app.ui.refreshAll();
+  }
+}
+
+class FillTool extends Tool {
+  constructor(app) { super(app); this.currentTerrain = 'grass'; }
+  get id() { return 'fill'; }
+  getLayerKey() { return 'terrain'; }
+
+  onPointerDown(pctx) {
+    const { board, col, row } = pctx;
+    const seedTile = board.getTile(col, row);
+    if (!seedTile) return;
+    const targetTerrain = seedTile.terrain;
+    if (targetTerrain === this.currentTerrain) return;
+
+    const commands = [];
+    const visited = new Set();
+    const stack = [[col, row]];
+    while (stack.length) {
+      const [c, r] = stack.pop();
+      const key = `${c},${r}`;
+      if (visited.has(key) || !board.isInBounds(c, r)) continue;
+      visited.add(key);
+      const tile = board.getTile(c, r);
+      if (tile.terrain !== targetTerrain) continue;
+      commands.push(makeSetFieldCommand(tile, 'terrain', this.currentTerrain));
+      stack.push([c + 1, r], [c - 1, r], [c, r + 1], [c, r - 1]);
+    }
+    if (!commands.length) return;
+    this.app.history.execute(new BatchCommand(commands));
+    this.app.renderer.requestRender();
+  }
+}
+
+/* =========================================================================
+ * ToolManager
+ * ========================================================================= */
+class ToolManager {
+  constructor(app) {
+    this.app = app;
+    this.tools = {
+      brush: new BrushTool(app),
+      building: new BuildingTool(app),
+      event: new EventTool(app),
+      barrier: new BarrierTool(app),
+      connection: new ConnectionTool(app),
+      border: new BorderTool(app),
+      text: new TextTool(app),
+      eraser: new EraserTool(app),
+      eyedropper: new EyedropperTool(app),
+      fill: new FillTool(app)
+    };
+    this.activeToolKey = 'brush';
+    this.isPointerDown = false;
+    this.isSpacePanning = false;
+    this._panLast = null;
+  }
+
+  getActiveTool() { return this.tools[this.activeToolKey]; }
+
+  setActiveTool(key) {
+    if (!this.tools[key]) return;
+    if (this.activeToolKey === 'connection') this.tools.connection.cancelDraft();
+    this.activeToolKey = key;
+    this.app.canvasEl.style.cursor = this.getActiveTool().cursor;
+    this.app.renderer.requestRender();
+  }
+
+  attach(canvasEl) {
+    canvasEl.addEventListener('pointerdown', e => this._onPointerDown(e));
+    window.addEventListener('pointermove', e => this._onPointerMove(e));
+    window.addEventListener('pointerup', e => this._onPointerUp(e));
+    canvasEl.addEventListener('wheel', e => this._onWheel(e), { passive: false });
+    canvasEl.addEventListener('contextmenu', e => e.preventDefault());
+    window.addEventListener('keydown', e => this._onKeyDown(e));
+    window.addEventListener('keyup', e => this._onKeyUp(e));
+  }
+
+  _buildPointerContext(e) {
+    const rect = this.app.canvasEl.getBoundingClientRect();
+    const screenX = e.clientX - rect.left;
+    const screenY = e.clientY - rect.top;
+    const world = this.app.camera.screenToWorld(screenX, screenY);
+    return {
+      col: Math.floor(world.x), row: Math.floor(world.y),
+      worldX: world.x, worldY: world.y, screenX, screenY,
+      board: this.app.board, event: e, isPointerDown: this.isPointerDown
+    };
+  }
+
+  _onPointerDown(e) {
+    if (this.isSpacePanning) { this._panLast = { x: e.clientX, y: e.clientY }; return; }
+    this.isPointerDown = true;
+    const pctx = this._buildPointerContext(e);
+    this.app.selection.setHover(pctx.col, pctx.row);
+    if (this.app.board.isInBounds(pctx.col, pctx.row)) this.app.selection.selectTile(pctx.col, pctx.row);
+    const tool = this.getActiveTool();
+    const layerKey = tool.getLayerKey();
+    if (layerKey && this.app.layerManager.isLocked(layerKey)) {
+      this.app.ui.setStatusMessage(`Ebene "${CONFIG.LAYER_NAMES[layerKey]}" ist gesperrt.`);
+    } else {
+      tool.onPointerDown(pctx);
+    }
+    this.app.ui.refreshInspector();
+    this.app.ui.updateStatusBar();
+    this.app.renderer.requestRender();
+  }
+
+  _onPointerMove(e) {
+    if (this.isSpacePanning && this._panLast) {
+      this.app.camera.pan(e.clientX - this._panLast.x, e.clientY - this._panLast.y);
+      this._panLast = { x: e.clientX, y: e.clientY };
+      this.app.renderer.requestRender();
+      this.app.ui.updateStatusBar();
+      return;
+    }
+    const pctx = this._buildPointerContext(e);
+    this.app.selection.setHover(pctx.col, pctx.row);
+    const tool = this.getActiveTool();
+    const layerKey = tool.getLayerKey();
+    if (!(layerKey && this.app.layerManager.isLocked(layerKey))) tool.onPointerMove(pctx);
+    this.app.ui.updateStatusBar();
+    this.app.renderer.requestRender();
+  }
+
+  _onPointerUp(e) {
+    if (this.isSpacePanning) { this._panLast = null; return; }
+    if (!this.isPointerDown) return;
+    this.isPointerDown = false;
+    const pctx = this._buildPointerContext(e);
+    this.getActiveTool().onPointerUp(pctx);
+    this.app.renderer.requestRender();
+  }
+
+  _onWheel(e) {
+    e.preventDefault();
+    const rect = this.app.canvasEl.getBoundingClientRect();
+    const factor = e.deltaY < 0 ? (1 + CONFIG.ZOOM_STEP) : 1 / (1 + CONFIG.ZOOM_STEP);
+    this.app.camera.zoomAt(e.clientX - rect.left, e.clientY - rect.top, factor);
+    this.app.renderer.requestRender();
+    this.app.ui.updateStatusBar();
+  }
+
+  _onKeyDown(e) {
+    if (this._isTypingTarget(e.target)) return;
+    if (e.code === 'Space' && !this.isSpacePanning) {
+      this.isSpacePanning = true;
+      this.app.canvasEl.style.cursor = 'grab';
+      e.preventDefault();
+      return;
+    }
+    if (e.key === 'Escape') {
+      this.tools.connection.cancelDraft();
+      this.app.selection.clearLabelSelection();
+      this.app.renderer.requestRender();
+      return;
+    }
+    if (e.key === 'Delete' || e.key === 'Backspace') {
+      if (this.activeToolKey === 'text' && this.app.selection.activeLabelId != null) {
+        this.tools.text.deleteSelectedLabel();
+        e.preventDefault();
+      }
+      return;
+    }
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+      e.preventDefault();
+      if (e.shiftKey) this.app.history.redo(); else this.app.history.undo();
+      return;
+    }
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') { e.preventDefault(); this.app.history.redo(); return; }
+  }
+
+  _onKeyUp(e) {
+    if (e.code === 'Space') {
+      this.isSpacePanning = false;
+      this._panLast = null;
+      this.app.canvasEl.style.cursor = this.getActiveTool().cursor;
+    }
+  }
+
+  _isTypingTarget(target) {
+    return target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable);
+  }
+}
+
+/* =========================================================================
+ * ProjectSerializer
+ * ========================================================================= */
+class ProjectSerializer {
+  static serialize(app) {
+    return {
+      version: 1,
+      savedAt: new Date().toISOString(),
+      board: app.board.toJSON(),
+      layers: app.layerManager.toJSON()
+    };
+  }
+
+  static deserialize(app, data) {
+    app.board = Board.fromJSON(data.board);
+    app.layerManager = LayerManager.fromJSON(data.layers);
+    app.selection = new Selection();
+    app.history.reset();
+    app.renderer.board = app.board;
+    app.renderer.layerManager = app.layerManager;
+    app.renderer.selection = app.selection;
+    app.renderer.requestRender();
+    app.ui.refreshAll();
+  }
+}
+
+/* =========================================================================
+ * StorageManager
+ * ========================================================================= */
+class StorageManager {
+  constructor(app) { this.app = app; }
+
+  autosave() {
+    try {
+      const payload = ProjectSerializer.serialize(this.app);
+      localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(payload));
+    } catch (err) {
+      console.warn('Autosave fehlgeschlagen:', err);
+    }
+  }
+
+  hasAutosave() { return localStorage.getItem(CONFIG.STORAGE_KEY) != null; }
+
+  loadAutosave() {
+    const raw = localStorage.getItem(CONFIG.STORAGE_KEY);
+    if (!raw) return false;
+    try {
+      ProjectSerializer.deserialize(this.app, JSON.parse(raw));
+      return true;
+    } catch (err) {
+      console.warn('Autosave konnte nicht geladen werden:', err);
+      return false;
+    }
+  }
+
+  saveProjectAsJson() {
+    const payload = ProjectSerializer.serialize(this.app);
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    downloadBlob(blob, 'pokemon-board-projekt.json');
+  }
+
+  saveProjectAsHtml() {
+    const payload = ProjectSerializer.serialize(this.app);
+    const doc = document.documentElement.cloneNode(true);
+    const script = doc.querySelector('#embedded-project-data');
+    script.textContent = JSON.stringify(payload);
+    const statusMessageEl = doc.querySelector('#status-message');
+    if (statusMessageEl) statusMessageEl.textContent = '';
+    const html = '<!DOCTYPE html>\n' + doc.outerHTML;
+    const blob = new Blob([html], { type: 'text/html' });
+    downloadBlob(blob, 'pokemon-board-projekt.html');
+  }
+
+  async loadProjectFromFile(file) {
+    const text = await readFileAsText(file);
+    let payload;
+    if (file.name.toLowerCase().endsWith('.json')) {
+      payload = JSON.parse(text);
+    } else {
+      const parsed = new DOMParser().parseFromString(text, 'text/html');
+      const script = parsed.querySelector('#embedded-project-data');
+      if (!script || !script.textContent || script.textContent.trim() === 'null') {
+        throw new Error('Keine Projektdaten in dieser HTML-Datei gefunden.');
+      }
+      payload = JSON.parse(script.textContent);
+    }
+    ProjectSerializer.deserialize(this.app, payload);
+  }
+}
+
+/* =========================================================================
+ * Exporter
+ * ========================================================================= */
+class Exporter {
+  constructor(app) { this.app = app; }
+
+  exportJson() { this.app.storage.saveProjectAsJson(); }
+  exportHtml() { this.app.storage.saveProjectAsHtml(); }
+
+  exportPng() {
+    const pxPerCm = CONFIG.EXPORT_DPI / 2.54;
+    const board = this.app.board;
+    const width = Math.round(board.cols * pxPerCm);
+    const height = Math.round(board.rows * pxPerCm);
+    const offscreen = document.createElement('canvas');
+    offscreen.width = width;
+    offscreen.height = height;
+    const ctx = offscreen.getContext('2d');
+    const exportCamera = new Camera();
+    exportCamera.offsetX = 0;
+    exportCamera.offsetY = 0;
+    exportCamera.zoom = pxPerCm / CONFIG.BASE_PIXELS_PER_CM;
+    this.app.renderer.renderExport(ctx, width, height, exportCamera);
+    offscreen.toBlob(blob => {
+      if (blob) downloadBlob(blob, 'pokemon-board.png');
+    }, 'image/png');
+  }
+}
+
+/* =========================================================================
+ * UIController
+ * ========================================================================= */
+class UIController {
+  constructor(app) {
+    this.app = app;
+    this.el = {
+      toolGrid: document.getElementById('tool-grid'),
+      toolOptionsBody: document.getElementById('tool-options-body'),
+      layerList: document.getElementById('layer-list'),
+      inspectorBody: document.getElementById('inspector-body'),
+      statusCell: document.getElementById('status-cell'),
+      statusZoom: document.getElementById('status-zoom'),
+      statusTool: document.getElementById('status-tool'),
+      statusMessage: document.getElementById('status-message'),
+      bgOpacity: document.getElementById('bg-opacity'),
+      fileInputProject: document.getElementById('file-input-project'),
+      fileInputImage: document.getElementById('file-input-image')
+    };
+    this._statusTimer = null;
+    this.TOOL_DEFS = [
+      { key: 'brush', glyph: '🖌️', label: 'Pinsel' },
+      { key: 'building', glyph: '🏛️', label: 'Gebäude' },
+      { key: 'event', glyph: '⚡', label: 'Event' },
+      { key: 'barrier', glyph: '🌳', label: 'Barriere' },
+      { key: 'connection', glyph: '🔗', label: 'Verbindung' },
+      { key: 'border', glyph: '▢', label: 'Rahmen' },
+      { key: 'text', glyph: '🔤', label: 'Text' },
+      { key: 'eraser', glyph: '🧹', label: 'Radierer' },
+      { key: 'eyedropper', glyph: '💧', label: 'Pipette' },
+      { key: 'fill', glyph: '🪣', label: 'Füllen' }
+    ];
+  }
+
+  init() {
+    this._buildToolGrid();
+    this._buildLayerList();
+    this._bindMenu();
+    this._bindGlobalActions();
+    this.refreshAll();
+  }
+
+  refreshAll() {
+    this._updateToolGridActive();
+    this._renderToolOptions();
+    this._buildLayerList();
+    this.refreshInspector();
+    this.updateStatusBar();
+    const bg = this.app.board.background;
+    this.el.bgOpacity.value = bg ? (bg.opacity ?? 1) : 1;
+  }
+
+  _buildToolGrid() {
+    this.el.toolGrid.innerHTML = '';
+    for (const def of this.TOOL_DEFS) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'tool-btn';
+      btn.dataset.tool = def.key;
+      btn.innerHTML = `<span class="glyph">${def.glyph}</span><span>${def.label}</span>`;
+      btn.addEventListener('click', () => {
+        this.app.toolManager.setActiveTool(def.key);
+        this.refreshAll();
+      });
+      this.el.toolGrid.appendChild(btn);
+    }
+  }
+
+  _updateToolGridActive() {
+    for (const btn of this.el.toolGrid.querySelectorAll('.tool-btn')) {
+      btn.classList.toggle('active', btn.dataset.tool === this.app.toolManager.activeToolKey);
+    }
+  }
+
+  _renderToolOptions() {
+    const key = this.app.toolManager.activeToolKey;
+    const tool = this.app.toolManager.getActiveTool();
+    const body = this.el.toolOptionsBody;
+    body.innerHTML = '';
+    const renderers = {
+      brush: () => this._renderTerrainPicker(body, tool, 'currentTerrain'),
+      fill: () => this._renderTerrainPicker(body, tool, 'currentTerrain'),
+      building: () => this._renderBuildingOptions(body, tool),
+      event: () => this._renderTypeRadio(body, tool, CONFIG.EVENT_TYPES, CONFIG.EVENT_LABELS, 'currentType'),
+      barrier: () => this._renderTypeRadio(body, tool, CONFIG.BARRIER_TYPES, CONFIG.BARRIER_LABELS, 'currentType'),
+      connection: () => this._renderTypeRadio(body, tool, CONFIG.CONNECTION_TYPES, CONFIG.CONNECTION_LABELS, 'currentType'),
+      border: () => this._renderHint(body, 'Klicke nahe einer Kachelkante, um den Rahmen dort umzuschalten.'),
+      text: () => this._renderTextOptions(body, tool),
+      eraser: () => this._renderEraserOptions(body, tool),
+      eyedropper: () => this._renderHint(body, 'Klicke auf eine Kachel, um ihr Gelände zu übernehmen.')
+    };
+    (renderers[key] || (() => {}))();
+  }
+
+  _renderHint(body, text) {
+    const p = document.createElement('p');
+    p.className = 'hint-text';
+    p.textContent = text;
+    body.appendChild(p);
+  }
+
+  _renderTerrainPicker(body, tool, field) {
+    const grid = document.createElement('div');
+    grid.className = 'swatch-grid';
+    for (const key of Object.keys(CONFIG.TERRAIN_COLORS)) {
+      const sw = document.createElement('div');
+      sw.className = 'swatch' + (tool[field] === key ? ' active' : '');
+      sw.style.background = CONFIG.TERRAIN_COLORS[key];
+      sw.title = CONFIG.TERRAIN_LABELS[key];
+      sw.addEventListener('click', () => { tool[field] = key; this._renderToolOptions(); });
+      grid.appendChild(sw);
+    }
+    body.appendChild(grid);
+    const label = document.createElement('p');
+    label.className = 'hint-text';
+    label.textContent = CONFIG.TERRAIN_LABELS[tool[field]];
+    body.appendChild(label);
+  }
+
+  _renderTypeRadio(body, tool, types, labels, field) {
+    const wrap = document.createElement('div');
+    wrap.className = 'radio-grid';
+    for (const type of types) {
+      const optLabel = document.createElement('label');
+      optLabel.className = 'radio-opt';
+      const input = document.createElement('input');
+      input.type = 'radio';
+      input.name = `opt-${field}`;
+      input.checked = tool[field] === type;
+      input.addEventListener('change', () => { tool[field] = type; this._renderToolOptions(); });
+      optLabel.appendChild(input);
+      optLabel.appendChild(document.createTextNode(labels[type]));
+      wrap.appendChild(optLabel);
+    }
+    body.appendChild(wrap);
+  }
+
+  _renderBuildingOptions(body, tool) {
+    this._renderTypeRadio(body, tool, CONFIG.BUILDING_TYPES, CONFIG.BUILDING_LABELS, 'currentType');
+    const field = document.createElement('label');
+    field.className = 'field';
+    field.innerHTML = '<span class="field-label">Icon-URL (optional)</span>';
+    const input = document.createElement('input');
+    input.type = 'url';
+    input.placeholder = 'https://…';
+    input.value = tool.iconUrl;
+    input.addEventListener('input', () => { tool.iconUrl = input.value; });
+    field.appendChild(input);
+    body.appendChild(field);
+  }
+
+  _renderTextOptions(body, tool) {
+    this._renderTypeRadio(body, tool, ['horizontal', 'vertical'], { horizontal: 'Horizontal', vertical: 'Vertikal' }, 'orientation');
+    const activeLabel = this.app.board.getLabelById(this.app.selection.activeLabelId);
+    if (activeLabel) {
+      const editBtn = document.createElement('button');
+      editBtn.className = 'btn';
+      editBtn.textContent = 'Text bearbeiten';
+      editBtn.addEventListener('click', () => { tool.editSelectedLabel(); });
+      const deleteBtn = document.createElement('button');
+      deleteBtn.className = 'btn danger';
+      deleteBtn.textContent = 'Beschriftung löschen';
+      deleteBtn.addEventListener('click', () => { tool.deleteSelectedLabel(); this.refreshAll(); });
+      body.appendChild(editBtn);
+      body.appendChild(deleteBtn);
+    } else {
+      this._renderHint(body, 'Klicke auf eine leere Stelle, um eine neue Beschriftung zu erstellen, oder auf eine bestehende, um sie zu verschieben.');
+    }
+  }
+
+  _renderEraserOptions(body, tool) {
+    const labels = {
+      terrain: 'Gelände', buildings: 'Gebäude', events: 'Events', barriers: 'Barrieren',
+      borders: 'Rahmen', connections: 'Verbindungen', labels: 'Beschriftungen'
+    };
+    this._renderTypeRadio(body, tool, CONFIG.ERASER_TARGETS, labels, 'targetLayer');
+  }
+
+  _buildLayerList() {
+    this.el.layerList.innerHTML = '';
+    for (const layer of this.app.layerManager.list()) {
+      const row = document.createElement('div');
+      row.className = 'layer-row';
+      const name = document.createElement('span');
+      name.className = 'layer-name';
+      name.textContent = layer.name;
+      const visibleBtn = document.createElement('button');
+      visibleBtn.textContent = layer.visible ? '👁' : '🚫';
+      visibleBtn.className = layer.visible ? 'on' : '';
+      visibleBtn.title = 'Sichtbarkeit umschalten';
+      visibleBtn.addEventListener('click', () => {
+        this.app.layerManager.toggleVisible(layer.key);
+        this.app.renderer.requestRender();
+        this._buildLayerList();
+      });
+      const lockBtn = document.createElement('button');
+      lockBtn.textContent = layer.locked ? '🔒' : '🔓';
+      lockBtn.className = layer.locked ? 'locked' : '';
+      lockBtn.title = 'Sperren umschalten';
+      lockBtn.addEventListener('click', () => {
+        this.app.layerManager.toggleLocked(layer.key);
+        this._buildLayerList();
+      });
+      row.append(name, visibleBtn, lockBtn);
+      this.el.layerList.appendChild(row);
+    }
+  }
+
+  refreshInspector() {
+    const sel = this.app.selection;
+    const body = this.el.inspectorBody;
+    if (sel.tileCol == null) {
+      body.innerHTML = '<span class="hint-text">Keine Kachel ausgewählt.</span>';
+      return;
+    }
+    const tile = this.app.board.getTile(sel.tileCol, sel.tileRow);
+    if (!tile) { body.innerHTML = '<span class="hint-text">Keine Kachel ausgewählt.</span>'; return; }
+    const borders = CONFIG.BORDER_EDGES.filter(e => tile.borders[e]).join(', ') || '–';
+    body.innerHTML = `
+      <div class="kv"><span>Position</span><b>${tile.col}, ${tile.row}</b></div>
+      <div class="kv"><span>Gelände</span><b>${tile.terrain ? CONFIG.TERRAIN_LABELS[tile.terrain] : '–'}</b></div>
+      <div class="kv"><span>Gebäude</span><b>${tile.building ? CONFIG.BUILDING_LABELS[tile.building.type] : '–'}</b></div>
+      <div class="kv"><span>Event</span><b>${tile.event ? CONFIG.EVENT_LABELS[tile.event.type] : '–'}</b></div>
+      <div class="kv"><span>Barriere</span><b>${tile.barrier ? CONFIG.BARRIER_LABELS[tile.barrier.type] : '–'}</b></div>
+      <div class="kv"><span>Rahmen</span><b>${borders}</b></div>
+    `;
+  }
+
+  updateStatusBar() {
+    const sel = this.app.selection;
+    this.el.statusCell.textContent = sel.hoverCol != null && this.app.board.isInBounds(sel.hoverCol, sel.hoverRow)
+      ? `${sel.hoverCol}, ${sel.hoverRow}` : '–';
+    this.el.statusZoom.textContent = `${Math.round(this.app.camera.zoom * 100)}%`;
+    const def = this.TOOL_DEFS.find(t => t.key === this.app.toolManager.activeToolKey);
+    this.el.statusTool.textContent = def ? def.label : '–';
+  }
+
+  setStatusMessage(message, timeoutMs = 3000) {
+    this.el.statusMessage.textContent = message;
+    clearTimeout(this._statusTimer);
+    if (timeoutMs > 0) this._statusTimer = setTimeout(() => { this.el.statusMessage.textContent = ''; }, timeoutMs);
+  }
+
+  _bindMenu() {
+    const roots = document.querySelectorAll('.menu-root');
+    for (const root of roots) {
+      const btn = root.querySelector('.menu-btn');
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        const wasOpen = root.classList.contains('open');
+        for (const r of roots) r.classList.remove('open');
+        if (!wasOpen) root.classList.add('open');
+      });
+    }
+    document.addEventListener('click', () => { for (const r of roots) r.classList.remove('open'); });
+    document.querySelectorAll('.menu-item[data-action]').forEach(item => {
+      item.addEventListener('click', () => this._handleAction(item.dataset.action));
+    });
+  }
+
+  _bindGlobalActions() {
+    document.querySelectorAll('[data-action]:not(.menu-item)').forEach(el => {
+      el.addEventListener('click', () => this._handleAction(el.dataset.action));
+    });
+    this.el.bgOpacity.addEventListener('input', () => {
+      if (!this.app.board.background) return;
+      this.app.board.background.opacity = parseFloat(this.el.bgOpacity.value);
+      this.app.renderer.requestRender();
+    });
+    this.el.fileInputProject.addEventListener('change', async e => {
+      const file = e.target.files[0];
+      e.target.value = '';
+      if (!file) return;
+      try {
+        await this.app.storage.loadProjectFromFile(file);
+        this.setStatusMessage('Projekt geladen.');
+      } catch (err) {
+        this.setStatusMessage('Fehler beim Laden: ' + err.message);
+      }
+    });
+    this.el.fileInputImage.addEventListener('change', async e => {
+      const file = e.target.files[0];
+      e.target.value = '';
+      if (!file) return;
+      const dataUrl = await readFileAsDataUrl(file);
+      this.app.board.background = { src: dataUrl, opacity: 1 };
+      this.app.iconCache.get(dataUrl);
+      this.el.bgOpacity.value = 1;
+      this.app.renderer.requestRender();
+      this.setStatusMessage('Hintergrundbild geladen.');
+    });
+  }
+
+  _handleAction(action) {
+    const app = this.app;
+    switch (action) {
+      case 'new-project':
+        if (window.confirm('Neues Projekt starten? Ungespeicherte Änderungen gehen verloren.')) {
+          app.board.clear();
+          app.history.reset();
+          app.selection = new Selection();
+          app.renderer.selection = app.selection;
+          app.renderer.requestRender();
+          this.refreshAll();
+        }
+        break;
+      case 'save-json': app.storage.saveProjectAsJson(); this.setStatusMessage('JSON gespeichert.'); break;
+      case 'save-html': app.storage.saveProjectAsHtml(); this.setStatusMessage('HTML gespeichert.'); break;
+      case 'load-project': this.el.fileInputProject.click(); break;
+      case 'load-background': this.el.fileInputImage.click(); break;
+      case 'remove-background':
+        app.board.background = null;
+        app.renderer.requestRender();
+        break;
+      case 'export-png': app.exporter.exportPng(); this.setStatusMessage('PNG exportiert.'); break;
+      case 'export-json': app.exporter.exportJson(); this.setStatusMessage('JSON exportiert.'); break;
+      case 'export-html': app.exporter.exportHtml(); this.setStatusMessage('HTML exportiert.'); break;
+      case 'undo': app.history.undo(); this.refreshAll(); app.renderer.requestRender(); break;
+      case 'redo': app.history.redo(); this.refreshAll(); app.renderer.requestRender(); break;
+      case 'zoom-in': app.camera.zoomAt(app.canvasEl.clientWidth / 2, app.canvasEl.clientHeight / 2, 1.2); app.renderer.requestRender(); this.updateStatusBar(); break;
+      case 'zoom-out': app.camera.zoomAt(app.canvasEl.clientWidth / 2, app.canvasEl.clientHeight / 2, 1 / 1.2); app.renderer.requestRender(); this.updateStatusBar(); break;
+      case 'zoom-reset': app.camera.setZoom(1, app.canvasEl.clientWidth, app.canvasEl.clientHeight); app.renderer.requestRender(); this.updateStatusBar(); break;
+      case 'zoom-fit': app.camera.fitToBoard(app.board, app.canvasEl.clientWidth, app.canvasEl.clientHeight); app.renderer.requestRender(); this.updateStatusBar(); break;
+    }
+  }
+}
+
+/* =========================================================================
+ * App
+ * ========================================================================= */
+class App {
+  constructor() {
+    this.canvasEl = document.getElementById('board-canvas');
+    this.containerEl = document.getElementById('canvas-container');
+    this.board = new Board();
+    this.camera = new Camera();
+    this.layerManager = new LayerManager();
+    this.selection = new Selection();
+    this.history = new HistoryManager(() => this.ui && this.ui.refreshAll());
+    this.iconCache = new IconCache(() => this.renderer.requestRender());
+    this.toolManager = new ToolManager(this);
+    this.renderer = new Renderer(this.canvasEl, this.board, this.camera, this.layerManager, this.selection, this.iconCache, this.toolManager);
+    this.storage = new StorageManager(this);
+    this.exporter = new Exporter(this);
+    this.ui = new UIController(this);
+  }
+
+  init() {
+    this.toolManager.attach(this.canvasEl);
+    this.ui.init();
+    this._observeResize();
+    this._loadEmbeddedOrAutosave();
+    this.canvasEl.style.cursor = this.toolManager.getActiveTool().cursor;
+    this._startAutosave();
+    this._startRenderLoop();
+  }
+
+  _observeResize() {
+    const resize = () => {
+      const rect = this.containerEl.getBoundingClientRect();
+      this.renderer.resizeToContainer(rect.width, rect.height);
+    };
+    new ResizeObserver(resize).observe(this.containerEl);
+    resize();
+  }
+
+  _loadEmbeddedOrAutosave() {
+    const embedded = document.getElementById('embedded-project-data');
+    const raw = embedded ? embedded.textContent.trim() : 'null';
+    if (raw && raw !== 'null') {
+      try {
+        ProjectSerializer.deserialize(this, JSON.parse(raw));
+        this.camera.fitToBoard(this.board, this.canvasEl.clientWidth, this.canvasEl.clientHeight);
+        return;
+      } catch (err) {
+        console.warn('Eingebettete Projektdaten konnten nicht geladen werden:', err);
+      }
+    }
+    if (this.storage.hasAutosave() && this.storage.loadAutosave()) {
+      this.ui.setStatusMessage('Autosave wiederhergestellt.');
+    }
+    this.camera.fitToBoard(this.board, this.canvasEl.clientWidth, this.canvasEl.clientHeight);
+  }
+
+  _startAutosave() {
+    setInterval(() => this.storage.autosave(), CONFIG.AUTOSAVE_INTERVAL_MS);
+    window.addEventListener('beforeunload', () => this.storage.autosave());
+  }
+
+  _startRenderLoop() {
+    const loop = () => {
+      this.renderer.renderIfNeeded();
+      requestAnimationFrame(loop);
+    };
+    requestAnimationFrame(loop);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const app = new App();
+  app.init();
+});
+</script>
+</body>
+</html>
