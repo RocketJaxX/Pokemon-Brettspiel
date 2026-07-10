@@ -149,6 +149,13 @@
     background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 8px;
   }
   .hint-text { color: var(--text-dim); font-size: 11px; line-height: 1.5; }
+  .shortcut-list { display: flex; flex-direction: column; gap: 8px; }
+  .shortcut-row { display: flex; flex-direction: column; gap: 3px; }
+  .shortcut-keys {
+    display: inline-block; align-self: flex-start; background: var(--bg-2); border: 1px solid var(--border);
+    border-radius: 4px; padding: 2px 7px; font-size: 11px; font-family: ui-monospace, Consolas, monospace; color: var(--accent);
+  }
+  .shortcut-desc { color: var(--text-dim); font-size: 11px; }
   .field-row { display: flex; gap: 8px; }
   .field-row > label.field { flex: 1; }
 
@@ -307,8 +314,8 @@ const CONFIG = Object.freeze({
   BORDER_LINE_WIDTH_CM: 0.12,
   CONNECTION_LINE_WIDTH_CM: 0.04,
   CONNECTION_MARKER_RADIUS_CM: 0.32,
-  LABEL_FONT_SIZE_CM: 1.1,
-  LABEL_PADDING_CM: 0.2,
+  LABEL_FONT_SIZE_CM: 0.3,
+  LABEL_PADDING_CM: 0.08,
   ERASER_TARGETS: ['terrain', 'buildings', 'events', 'barriers', 'zones', 'borders', 'connections', 'labels'],
   LAYER_ORDER: ['grid', 'terrain', 'zones', 'buildings', 'events', 'barriers', 'connections', 'labels'],
   LAYER_NAMES: {
@@ -317,14 +324,28 @@ const CONFIG = Object.freeze({
   },
   BORDER_EDGES: ['top', 'right', 'bottom', 'left'],
   HAND_DRAWN_BARRIERS: ['tree', 'rock', 'pokeflute'],
-  CONNECTION_TYPES: ['route-route', 'route-city', 'cave'],
-  CONNECTION_LABELS: { 'route-route': 'Route → Route', 'route-city': 'Route → Stadt', cave: 'Höhle' },
+  CONNECTION_TYPES: ['route', 'cave'],
+  CONNECTION_LABELS: { route: 'Route/Stadt', cave: 'Höhle' },
   DEFAULT_TERRAIN_ALPHA: 0.6,
   ZONE_TYPES: ['route', 'city', 'cave'],
   ZONE_TYPE_LABELS: { route: 'Route', city: 'Stadt', cave: 'Höhle' },
   ZONE_BORDER_COLORS: { route: '#000000', city: '#c0392b', cave: '#6b4226' },
   ZONE_TINT_COLORS: { route: 'rgba(0,0,0,0.10)', city: 'rgba(192,57,43,0.16)', cave: 'rgba(107,66,38,0.20)' },
   ZONE_BORDER_LINE_WIDTH_CM: 0.09,
+  KEYBOARD_SHORTCUTS: [
+    ['Leertaste + Ziehen', 'Ansicht verschieben'],
+    ['Mausrad', 'Zoomen (zur Mausposition)'],
+    ['Umschalt + Mausrad', 'Horizontal verschieben'],
+    ['Strg + Mausrad', 'Vertikal verschieben'],
+    ['+', 'Vergrößern'],
+    ['-', 'Verkleinern'],
+    ['0', 'Zoom auf 100%'],
+    ['F', 'An Board anpassen'],
+    ['Strg+Z', 'Rückgängig'],
+    ['Strg+Umschalt+Z / Strg+Y', 'Wiederholen'],
+    ['Entf / Rücktaste', 'Ausgewählte Beschriftung löschen (Text-Werkzeug)'],
+    ['Esc', 'Verbindung oder Auswahl abbrechen']
+  ],
   /** Seed data for Board.palettes — the built-in defaults every new project starts with. */
   DEFAULT_PALETTES: {
     terrain: [
@@ -1656,7 +1677,7 @@ class BarrierTool extends ObjectPlacementTool {
 }
 
 class ConnectionTool extends Tool {
-  constructor(app) { super(app); this.currentType = 'route-route'; }
+  constructor(app) { super(app); this.currentType = 'route'; }
   get id() { return 'connection'; }
   getLayerKey() { return 'connections'; }
 
@@ -1793,22 +1814,93 @@ class TextTool extends Tool {
   }
 }
 
-class EraserTool extends Tool {
+class EraserTool extends AreaPaintTool {
   constructor(app) {
     super(app);
     this.targetLayer = 'terrain';
-    this.strokeCommands = [];
   }
   get id() { return 'eraser'; }
   getLayerKey() { return this.targetLayer === 'borders' ? 'terrain' : this.targetLayer; }
 
-  onPointerDown(pctx) { this.strokeCommands = []; this._erase(pctx); }
-  onPointerMove(pctx) { if (pctx.isPointerDown) this._erase(pctx); }
-  onPointerUp() {
+  onPointerDown(pctx) {
+    if (this.mode === 'area') { super.onPointerDown(pctx); return; }
+    this.strokeCommands = [];
+    this._erase(pctx);
+  }
+
+  onPointerMove(pctx) {
+    if (this.mode === 'area') { super.onPointerMove(pctx); return; }
+    if (pctx.isPointerDown) this._erase(pctx);
+  }
+
+  onPointerUp(pctx) {
+    if (this.mode === 'area') { super.onPointerUp(pctx); return; }
     if (this.strokeCommands.length) this.app.history.record(new BatchCommand(this.strokeCommands));
     this.strokeCommands = [];
   }
 
+  /** Clears the tile-embedded fields (terrain/borders/zoneId); used by both single-cell drag and area-rectangle erase. */
+  _makeTileCommand(tile) {
+    if (this.targetLayer === 'borders') {
+      if (CONFIG.BORDER_EDGES.every(edge => tile.borders[edge] === false)) return null;
+      return makeSetFieldCommand(tile, 'borders', { top: false, right: false, bottom: false, left: false });
+    }
+    if (this.targetLayer === 'zones') {
+      if (tile.zoneId === null) return null;
+      return makeSetFieldCommand(tile, 'zoneId', null);
+    }
+    if (this.targetLayer === 'terrain') {
+      if (tile.terrain === null) return null;
+      return makeSetFieldCommand(tile, 'terrain', null);
+    }
+    return null; // buildings/events/barriers/connections/labels are not tile fields — handled below
+  }
+
+  /** Overrides the generic per-tile area sweep for entity-based targets (objects/connections/labels). */
+  _applyArea(board) {
+    if (this.targetLayer === 'buildings' || this.targetLayer === 'events' || this.targetLayer === 'barriers') {
+      this._eraseObjectsInArea(board);
+      return;
+    }
+    if (this.targetLayer === 'connections') { this._eraseConnectionsInArea(board); return; }
+    if (this.targetLayer === 'labels') { this._eraseLabelsInArea(board); return; }
+    super._applyArea(board);
+  }
+
+  _getAreaRect(board) {
+    const colStart = clamp(Math.min(this._areaStart.col, this._areaCurrent.col), 0, board.cols - 1);
+    const colEnd = clamp(Math.max(this._areaStart.col, this._areaCurrent.col), 0, board.cols - 1);
+    const rowStart = clamp(Math.min(this._areaStart.row, this._areaCurrent.row), 0, board.rows - 1);
+    const rowEnd = clamp(Math.max(this._areaStart.row, this._areaCurrent.row), 0, board.rows - 1);
+    return { col: colStart, row: rowStart, width: colEnd - colStart + 1, height: rowEnd - rowStart + 1 };
+  }
+
+  _eraseObjectsInArea(board) {
+    const rect = this._getAreaRect(board);
+    const commands = board.objects
+      .filter(o => o.category === this.targetLayer && rectsOverlap(o, rect))
+      .map(o => makeRemoveObjectCommand(board, o));
+    if (commands.length) this.app.history.execute(new BatchCommand(commands));
+  }
+
+  _eraseConnectionsInArea(board) {
+    const rect = this._getAreaRect(board);
+    const inRect = (col, row) => col >= rect.col && col < rect.col + rect.width && row >= rect.row && row < rect.row + rect.height;
+    const commands = board.connections
+      .filter(c => inRect(c.fromCol, c.fromRow) || inRect(c.toCol, c.toRow))
+      .map(c => makeRemoveConnectionCommand(board, c));
+    if (commands.length) this.app.history.execute(new BatchCommand(commands));
+  }
+
+  _eraseLabelsInArea(board) {
+    const rect = this._getAreaRect(board);
+    const commands = board.labels
+      .filter(l => l.x >= rect.col && l.x < rect.col + rect.width && l.y >= rect.row && l.y < rect.row + rect.height)
+      .map(l => makeRemoveLabelCommand(board, l));
+    if (commands.length) this.app.history.execute(new BatchCommand(commands));
+  }
+
+  /** Single-cell (click/drag) erase — unchanged behavior, delegates tile fields to _makeTileCommand. */
   _erase(pctx) {
     const { board, col, row, worldX, worldY } = pctx;
     if (this.targetLayer === 'connections') { this._eraseConnection(board, col, row); return; }
@@ -1819,20 +1911,10 @@ class EraserTool extends Tool {
     }
     const tile = board.getTile(col, row);
     if (!tile) return;
-    if (this.targetLayer === 'borders') {
-      const cleared = { top: false, right: false, bottom: false, left: false };
-      if (CONFIG.BORDER_EDGES.every(edge => tile.borders[edge] === false)) return;
-      const cmd = makeSetFieldCommand(tile, 'borders', cleared);
-      cmd.redo(); this.strokeCommands.push(cmd);
-    } else if (this.targetLayer === 'zones') {
-      if (tile.zoneId === null) return;
-      const cmd = makeSetFieldCommand(tile, 'zoneId', null);
-      cmd.redo(); this.strokeCommands.push(cmd);
-    } else {
-      if (tile.terrain === null) return;
-      const cmd = makeSetFieldCommand(tile, 'terrain', null);
-      cmd.redo(); this.strokeCommands.push(cmd);
-    }
+    const cmd = this._makeTileCommand(tile);
+    if (!cmd) return;
+    cmd.redo();
+    this.strokeCommands.push(cmd);
     this.app.renderer.requestRender();
   }
 
@@ -1859,17 +1941,11 @@ class EraserTool extends Tool {
   }
 }
 
-class EyedropperTool extends Tool {
-  get id() { return 'eyedropper'; }
+/** Purely informational — clicking the canvas only selects the tile (for the inspector); its properties panel lists shortcuts. */
+class ShortcutsTool extends Tool {
+  get id() { return 'shortcuts'; }
+  get cursor() { return 'default'; }
   getLayerKey() { return null; }
-
-  onPointerDown(pctx) {
-    const tile = pctx.board.getTile(pctx.col, pctx.row);
-    if (!tile || !tile.terrain) return;
-    this.app.toolManager.tools.brush.currentTerrain = tile.terrain;
-    this.app.toolManager.setActiveTool('brush');
-    this.app.ui.refreshAll();
-  }
 }
 
 /** Groups tiles into a named route/city/cave zone; also owns dragging of that zone's name+level pill. */
@@ -1971,7 +2047,7 @@ class ToolManager {
       border: new BorderTool(app),
       text: new TextTool(app),
       eraser: new EraserTool(app),
-      eyedropper: new EyedropperTool(app)
+      shortcuts: new ShortcutsTool(app)
     };
     this.activeToolKey = 'brush';
     this.isPointerDown = false;
@@ -2057,9 +2133,18 @@ class ToolManager {
 
   _onWheel(e) {
     e.preventDefault();
-    const rect = this.app.canvasEl.getBoundingClientRect();
-    const factor = e.deltaY < 0 ? (1 + CONFIG.ZOOM_STEP) : 1 / (1 + CONFIG.ZOOM_STEP);
-    this.app.camera.zoomAt(e.clientX - rect.left, e.clientY - rect.top, factor);
+    if (e.ctrlKey || e.metaKey) {
+      // Ctrl/Cmd + wheel: pan vertically without zooming.
+      this.app.camera.pan(0, -e.deltaY);
+    } else if (e.shiftKey) {
+      // Shift + wheel: pan horizontally (some devices report the shifted scroll as deltaX already).
+      const delta = e.deltaX !== 0 ? e.deltaX : e.deltaY;
+      this.app.camera.pan(-delta, 0);
+    } else {
+      const rect = this.app.canvasEl.getBoundingClientRect();
+      const factor = e.deltaY < 0 ? (1 + CONFIG.ZOOM_STEP) : 1 / (1 + CONFIG.ZOOM_STEP);
+      this.app.camera.zoomAt(e.clientX - rect.left, e.clientY - rect.top, factor);
+    }
     this.app.renderer.requestRender();
     this.app.ui.updateStatusBar();
   }
@@ -2091,6 +2176,11 @@ class ToolManager {
       return;
     }
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') { e.preventDefault(); this.app.history.redo(); return; }
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    if (e.key === '+' || e.key === '=') { e.preventDefault(); this.app.ui.handleZoomShortcut('zoom-in'); return; }
+    if (e.key === '-') { e.preventDefault(); this.app.ui.handleZoomShortcut('zoom-out'); return; }
+    if (e.key === '0') { e.preventDefault(); this.app.ui.handleZoomShortcut('zoom-reset'); return; }
+    if (e.key.toLowerCase() === 'f') { e.preventDefault(); this.app.ui.handleZoomShortcut('zoom-fit'); return; }
   }
 
   _onKeyUp(e) {
@@ -2265,7 +2355,7 @@ class UIController {
       { key: 'border', glyph: '▢', label: 'Rahmen' },
       { key: 'text', glyph: '🔤', label: 'Text' },
       { key: 'eraser', glyph: '🧹', label: 'Radierer' },
-      { key: 'eyedropper', glyph: '💧', label: 'Pipette' }
+      { key: 'shortcuts', glyph: '⌨️', label: 'Tastenkürzel' }
     ];
   }
 
@@ -2333,7 +2423,7 @@ class UIController {
       border: () => this._renderHint(body, 'Klicke nahe einer Kachelkante, um den Rahmen dort umzuschalten.'),
       text: () => this._renderTextOptions(body, tool),
       eraser: () => this._renderEraserOptions(body, tool),
-      eyedropper: () => this._renderHint(body, 'Klicke auf eine Kachel, um ihr Gelände zu übernehmen.')
+      shortcuts: () => this._renderShortcutsList(body)
     };
     (renderers[key] || (() => {}))();
   }
@@ -2343,6 +2433,24 @@ class UIController {
     p.className = 'hint-text';
     p.textContent = text;
     body.appendChild(p);
+  }
+
+  _renderShortcutsList(body) {
+    const list = document.createElement('div');
+    list.className = 'shortcut-list';
+    for (const [keys, description] of CONFIG.KEYBOARD_SHORTCUTS) {
+      const row = document.createElement('div');
+      row.className = 'shortcut-row';
+      const kbd = document.createElement('span');
+      kbd.className = 'shortcut-keys';
+      kbd.textContent = keys;
+      const desc = document.createElement('span');
+      desc.className = 'shortcut-desc';
+      desc.textContent = description;
+      row.append(kbd, desc);
+      list.appendChild(row);
+    }
+    body.appendChild(list);
   }
 
   /** Shared swatch grid for both the terrain-color palette and the icon-based palettes, with delete support for custom entries. */
@@ -2571,6 +2679,7 @@ class UIController {
   }
 
   _renderEraserOptions(body, tool) {
+    this._renderModeToggle(body, tool);
     const labels = {
       terrain: 'Gelände', buildings: 'Gebäude', events: 'Events', barriers: 'Barrieren', zones: 'Zonen',
       borders: 'Rahmen', connections: 'Verbindungen', labels: 'Beschriftungen'
@@ -2834,6 +2943,9 @@ class UIController {
       this.setStatusMessage('Hintergrundbild geladen.');
     });
   }
+
+  /** Public entry point for keyboard-driven zoom shortcuts (+/-/0/F), reusing the menu action logic. */
+  handleZoomShortcut(action) { this._handleAction(action); }
 
   _handleAction(action) {
     const app = this.app;
