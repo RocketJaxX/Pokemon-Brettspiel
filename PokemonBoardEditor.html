@@ -2518,8 +2518,50 @@ class UIController {
       sw.style.background = hexToRgba(entry.color, entry.alpha ?? 1);
     });
     const activeEntry = board.getPaletteEntry('terrain', tool[field]);
-    this._renderHint(body, activeEntry ? activeEntry.label : '–');
+    if (activeEntry) {
+      const activeSwatch = body.querySelector('.swatch.active');
+      this._renderTerrainEntryFields(body, activeEntry, activeSwatch);
+    } else {
+      this._renderHint(body, '–');
+    }
     this._renderAddColorForm(body, board, tool, field);
+  }
+
+  /** Live-edits an existing terrain color (built-in or custom). Since tiles store only the palette id,
+   *  every already-placed tile using this color updates automatically — no need to touch tile data. */
+  _renderTerrainEntryFields(body, entry, swatchEl) {
+    const wrap = document.createElement('div');
+    wrap.className = 'add-entry-form';
+    const title = document.createElement('span');
+    title.className = 'field-label';
+    title.textContent = `Farbe „${entry.label}“ bearbeiten`;
+    const nameInput = document.createElement('input');
+    nameInput.type = 'text'; nameInput.value = entry.label;
+    nameInput.addEventListener('change', () => {
+      entry.label = nameInput.value.trim() || entry.label;
+      this._renderToolOptions();
+    });
+    const colorInput = document.createElement('input');
+    colorInput.type = 'color'; colorInput.value = entry.color;
+    colorInput.addEventListener('input', () => {
+      entry.color = colorInput.value;
+      if (swatchEl) swatchEl.style.background = hexToRgba(entry.color, entry.alpha ?? 1);
+      this.app.renderer.requestRender();
+    });
+    const alphaLabel = document.createElement('span');
+    alphaLabel.className = 'hint-text';
+    alphaLabel.textContent = `Deckkraft: ${Math.round((entry.alpha ?? 1) * 100)}%`;
+    const alphaInput = document.createElement('input');
+    alphaInput.type = 'range'; alphaInput.min = '0'; alphaInput.max = '1'; alphaInput.step = '0.05';
+    alphaInput.value = String(entry.alpha ?? 1);
+    alphaInput.addEventListener('input', () => {
+      entry.alpha = parseFloat(alphaInput.value);
+      alphaLabel.textContent = `Deckkraft: ${Math.round(entry.alpha * 100)}%`;
+      if (swatchEl) swatchEl.style.background = hexToRgba(entry.color, entry.alpha);
+      this.app.renderer.requestRender();
+    });
+    wrap.append(title, nameInput, colorInput, alphaLabel, alphaInput);
+    body.appendChild(wrap);
   }
 
   _renderAddColorForm(body, board, tool, field) {
