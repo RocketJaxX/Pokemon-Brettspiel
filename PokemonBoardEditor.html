@@ -309,40 +309,44 @@ const CONFIG = Object.freeze({
   CONNECTION_MARKER_RADIUS_CM: 0.32,
   LABEL_FONT_SIZE_CM: 1.1,
   LABEL_PADDING_CM: 0.2,
-  ERASER_TARGETS: ['terrain', 'buildings', 'events', 'barriers', 'borders', 'connections', 'labels'],
-  LAYER_TO_TILE_FIELD: { terrain: 'terrain', buildings: 'building', events: 'event', barriers: 'barrier' },
-  LAYER_ORDER: ['grid', 'terrain', 'buildings', 'events', 'barriers', 'connections', 'labels'],
+  ERASER_TARGETS: ['terrain', 'buildings', 'events', 'barriers', 'zones', 'borders', 'connections', 'labels'],
+  LAYER_ORDER: ['grid', 'terrain', 'zones', 'buildings', 'events', 'barriers', 'connections', 'labels'],
   LAYER_NAMES: {
-    grid: 'Raster', terrain: 'Gelände', buildings: 'Gebäude', events: 'Events',
+    grid: 'Raster', terrain: 'Gelände', zones: 'Zonen', buildings: 'Gebäude', events: 'Events',
     barriers: 'Barrieren', connections: 'Verbindungen', labels: 'Beschriftungen'
   },
   BORDER_EDGES: ['top', 'right', 'bottom', 'left'],
   HAND_DRAWN_BARRIERS: ['tree', 'rock', 'pokeflute'],
   CONNECTION_TYPES: ['route-route', 'route-city', 'cave'],
   CONNECTION_LABELS: { 'route-route': 'Route → Route', 'route-city': 'Route → Stadt', cave: 'Höhle' },
+  DEFAULT_TERRAIN_ALPHA: 0.6,
+  ZONE_TYPES: ['route', 'city', 'cave'],
+  ZONE_TYPE_LABELS: { route: 'Route', city: 'Stadt', cave: 'Höhle' },
+  ZONE_BORDER_COLORS: { route: '#000000', city: '#c0392b', cave: '#6b4226' },
+  ZONE_TINT_COLORS: { route: 'rgba(0,0,0,0.10)', city: 'rgba(192,57,43,0.16)', cave: 'rgba(107,66,38,0.20)' },
+  ZONE_BORDER_LINE_WIDTH_CM: 0.09,
   /** Seed data for Board.palettes — the built-in defaults every new project starts with. */
   DEFAULT_PALETTES: {
     terrain: [
-      { id: 'grass', label: 'Gras', color: '#8CCF5A', alpha: 1 },
-      { id: 'water', label: 'Wasser', color: '#5AA8E0', alpha: 1 },
-      { id: 'road', label: 'Straße', color: '#E8D6A8', alpha: 1 },
-      { id: 'cave', label: 'Höhle', color: '#9A6B3F', alpha: 1 },
-      { id: 'city', label: 'Stadt', color: '#E0796A', alpha: 1 }
+      { id: 'grass', label: 'Gras', color: '#8CCF5A', alpha: 0.6 },
+      { id: 'water', label: 'Wasser', color: '#5AA8E0', alpha: 0.6 },
+      { id: 'road', label: 'Straße', color: '#E8D6A8', alpha: 0.6 },
+      { id: 'cave', label: 'Höhle', color: '#9A6B3F', alpha: 0.6 },
+      { id: 'city', label: 'Stadt', color: '#E0796A', alpha: 0.6 }
     ],
     buildings: [
-      { id: 'arena', label: 'Arena', color: '#c94f4f', iconUrl: null },
-      { id: 'pokecenter', label: 'PokéCenter', color: '#4fae5c', iconUrl: null },
-      { id: 'supermarket', label: 'PokéSupermarkt', color: '#4f7fc9', iconUrl: null }
+      { id: 'arena', label: 'Arena', color: '#c94f4f', iconUrl: 'https://www.pokewiki.de/images/1/18/Arena_HGSS_2.png', widthCells: 3, heightCells: 2 },
+      { id: 'pokecenter', label: 'PokéCenter', color: '#4fae5c', iconUrl: 'https://www.pokewiki.de/images/9/99/HGSS_Pok%C3%A9Center.png', widthCells: 2, heightCells: 2 },
+      { id: 'supermarket', label: 'PokéSupermarkt', color: '#4f7fc9', iconUrl: 'https://www.pokewiki.de/images/2/25/HGSS_Pok%C3%A9mon_Markt_Kanto-Johto.png', widthCells: 2, heightCells: 2 }
     ],
     events: [
-      { id: 'trainer', label: 'Trainer', color: '#e0a13a', iconUrl: null },
-      { id: 'quest', label: 'Quest', color: '#c060d0', iconUrl: null },
-      { id: 'pokemon', label: 'Pokémon', color: '#3ac0c0', iconUrl: null }
+      { id: 'trainer', label: 'Trainer', color: '#e0a13a', iconUrl: null, widthCells: 1, heightCells: 1 },
+      { id: 'quest', label: 'Quest', color: '#c060d0', iconUrl: null, widthCells: 1, heightCells: 1 }
     ],
     barriers: [
-      { id: 'tree', label: 'Baum', color: '#3f8f3f', iconUrl: null },
-      { id: 'rock', label: 'Felsen', color: '#8a8a8a', iconUrl: null },
-      { id: 'pokeflute', label: 'Pokéflöte', color: '#7a5aad', iconUrl: null }
+      { id: 'tree', label: 'Baum', color: '#3f8f3f', iconUrl: null, widthCells: 1, heightCells: 1 },
+      { id: 'rock', label: 'Felsen', color: '#8a8a8a', iconUrl: null, widthCells: 1, heightCells: 1 },
+      { id: 'pokeflute', label: 'Pokéflöte', color: '#7a5aad', iconUrl: null, widthCells: 1, heightCells: 1 }
     ]
   }
 });
@@ -351,6 +355,12 @@ const CONFIG = Object.freeze({
  * UTILITIES
  * ========================================================================= */
 function clamp(value, min, max) { return Math.min(max, Math.max(min, value)); }
+
+/** Axis-aligned bounding-box overlap test for two {col,row,width,height} rectangles. */
+function rectsOverlap(a, b) {
+  return a.col < b.col + b.width && a.col + a.width > b.col &&
+         a.row < b.row + b.height && a.row + a.height > b.row;
+}
 
 function downloadBlob(blob, filename) {
   const url = URL.createObjectURL(blob);
@@ -432,28 +442,18 @@ function computeLabelBox(label) {
 /* =========================================================================
  * DATA MODEL: Tile
  * ========================================================================= */
-function normalizeTypedField(value) {
-  if (!value) return null;
-  if (value.typeId) return { typeId: value.typeId };
-  if (value.type) return { typeId: value.type }; // legacy schema (pre type-palette) compatibility
-  return null;
-}
-
 class Tile {
   constructor(col, row) {
     this.col = col;
     this.row = row;
     this.terrain = null;
-    this.building = null;   // { typeId }
-    this.event = null;      // { typeId }
-    this.barrier = null;    // { typeId }
+    this.zoneId = null;
     this.borders = { top: false, right: false, bottom: false, left: false };
   }
 
   toJSON() {
     return {
-      col: this.col, row: this.row, terrain: this.terrain,
-      building: this.building, event: this.event, barrier: this.barrier,
+      col: this.col, row: this.row, terrain: this.terrain, zoneId: this.zoneId,
       borders: { ...this.borders }
     };
   }
@@ -461,11 +461,89 @@ class Tile {
   static fromJSON(data) {
     const tile = new Tile(data.col, data.row);
     tile.terrain = data.terrain ?? null;
-    tile.building = normalizeTypedField(data.building);
-    tile.event = normalizeTypedField(data.event);
-    tile.barrier = normalizeTypedField(data.barrier);
+    tile.zoneId = data.zoneId ?? null;
     tile.borders = { top: false, right: false, bottom: false, left: false, ...(data.borders || {}) };
     return tile;
+  }
+}
+
+/* =========================================================================
+ * DATA MODEL: PlacedObject — a building/event/barrier instance spanning
+ * one or more cells. Buildings/events/barriers are no longer embedded on
+ * the Tile itself so they can occupy an arbitrary width x height footprint.
+ * ========================================================================= */
+class PlacedObject {
+  constructor(id, category, typeId, col, row, width, height) {
+    this.id = id;
+    this.category = category; // 'buildings' | 'events' | 'barriers'
+    this.typeId = typeId;
+    this.col = col; this.row = row; // anchor = top-left cell
+    this.width = width; this.height = height;
+  }
+
+  occupiesCell(col, row) {
+    return col >= this.col && col < this.col + this.width && row >= this.row && row < this.row + this.height;
+  }
+
+  toJSON() {
+    return { id: this.id, category: this.category, typeId: this.typeId, col: this.col, row: this.row, width: this.width, height: this.height };
+  }
+
+  static fromJSON(data) {
+    return new PlacedObject(data.id, data.category, data.typeId, data.col, data.row, data.width || 1, data.height || 1);
+  }
+}
+
+/** Legacy (pre-object-model) tile.building/event/barrier shape → { typeId } for migration. */
+function normalizeLegacyTypedField(value) {
+  if (!value) return null;
+  if (value.typeId) return { typeId: value.typeId };
+  if (value.type) return { typeId: value.type };
+  return null;
+}
+
+/** Converts old saved projects (building/event/barrier embedded on tiles) into 1x1 PlacedObjects. */
+function migrateLegacyObjects(board, tilesData) {
+  const objects = [];
+  for (const tileData of tilesData) {
+    if (!board.isInBounds(tileData.col, tileData.row)) continue;
+    for (const [field, category] of [['building', 'buildings'], ['event', 'events'], ['barrier', 'barriers']]) {
+      const legacy = normalizeLegacyTypedField(tileData[field]);
+      if (legacy) objects.push(new PlacedObject(board.generateId(), category, legacy.typeId, tileData.col, tileData.row, 1, 1));
+    }
+  }
+  return objects;
+}
+
+/* =========================================================================
+ * DATA MODEL: Zone — groups tiles into a named route/city/cave area with
+ * an auto-computed border, a tinted fill, and a draggable name+level label.
+ * ========================================================================= */
+class Zone {
+  constructor(id, type, name) {
+    this.id = id;
+    this.type = type; // 'route' | 'city' | 'cave'
+    this.name = name;
+    this.levelMin = null;
+    this.levelMax = null;
+    this.label = { x: 0, y: 0, orientation: 'horizontal' };
+    this.labelPlaced = false;
+  }
+
+  toJSON() {
+    return {
+      id: this.id, type: this.type, name: this.name, levelMin: this.levelMin, levelMax: this.levelMax,
+      label: { ...this.label }, labelPlaced: this.labelPlaced
+    };
+  }
+
+  static fromJSON(data) {
+    const zone = new Zone(data.id, data.type, data.name);
+    zone.levelMin = data.levelMin ?? null;
+    zone.levelMax = data.levelMax ?? null;
+    zone.label = { x: 0, y: 0, orientation: 'horizontal', ...(data.label || {}) };
+    zone.labelPlaced = !!data.labelPlaced;
+    return zone;
   }
 }
 
@@ -525,6 +603,8 @@ class Board {
     this.rows = rows;
     this.cellSizeCm = cellSizeCm;
     this.tiles = [];
+    this.objects = [];
+    this.zones = [];
     this.connections = [];
     this.labels = [];
     this.background = null; // { src, opacity }
@@ -576,10 +656,59 @@ class Board {
     this.rows = newRows;
     this.tiles = newTiles;
     this.connections = this.connections.filter(c => this.isInBounds(c.fromCol, c.fromRow) && this.isInBounds(c.toCol, c.toRow));
+    this.objects = this.objects.filter(o => o.col + o.width <= newCols && o.row + o.height <= newRows);
   }
 
   setCellSize(cellSizeCm) {
     this.cellSizeCm = clamp(cellSizeCm, CONFIG.MIN_CELL_SIZE_CM, CONFIG.MAX_CELL_SIZE_CM);
+  }
+
+  /** True if a category+footprint fits on the board without overlapping an existing object of the same category. */
+  canPlaceObject(category, col, row, width, height) {
+    if (col < 0 || row < 0 || col + width > this.cols || row + height > this.rows) return false;
+    const candidate = { col, row, width, height };
+    return !this.objects.some(obj => obj.category === category && rectsOverlap(obj, candidate));
+  }
+
+  removeObjectById(id) {
+    const index = this.objects.findIndex(o => o.id === id);
+    if (index === -1) return null;
+    return this.objects.splice(index, 1)[0];
+  }
+
+  insertObject(obj, index = this.objects.length) { this.objects.splice(index, 0, obj); }
+
+  findObjectAt(category, col, row) {
+    for (let i = this.objects.length - 1; i >= 0; i--) {
+      const obj = this.objects[i];
+      if (obj.category === category && obj.occupiesCell(col, row)) return obj;
+    }
+    return null;
+  }
+
+  addZone(type, name) {
+    const zone = new Zone(this.generateId(), type, name);
+    this.zones.push(zone);
+    return zone;
+  }
+
+  getZoneById(id) { return this.zones.find(z => z.id === id) || null; }
+
+  removeZoneById(id) {
+    const index = this.zones.findIndex(z => z.id === id);
+    if (index === -1) return null;
+    const [zone] = this.zones.splice(index, 1);
+    for (const tile of this.tiles) { if (tile.zoneId === zone.id) tile.zoneId = null; }
+    return zone;
+  }
+
+  /** Average position of a zone's member tiles, used to auto-place its label the first time it gets tiles. */
+  computeZoneCentroid(zoneId) {
+    let sumCol = 0, sumRow = 0, count = 0;
+    for (const tile of this.tiles) {
+      if (tile.zoneId === zoneId) { sumCol += tile.col + 0.5; sumRow += tile.row + 0.5; count++; }
+    }
+    return count ? { x: sumCol / count, y: sumRow / count } : null;
   }
 
   addConnection(fromCol, fromRow, toCol, toRow, type) {
@@ -627,9 +756,10 @@ class Board {
 
   getPaletteEntry(category, id) { return this.palettes[category]?.find(e => e.id === id) || null; }
 
-  addPaletteEntry(category, { label, color, alpha = 1, iconUrl = null }) {
+  addPaletteEntry(category, { label, color, alpha = 1, iconUrl = null, widthCells = 1, heightCells = 1 }) {
     const entry = { id: `custom-${this.generateId()}`, label, color, iconUrl };
     if (category === 'terrain') entry.alpha = alpha;
+    else { entry.widthCells = widthCells; entry.heightCells = heightCells; }
     this.palettes[category].push(entry);
     return entry;
   }
@@ -650,6 +780,8 @@ class Board {
     return {
       cols: this.cols, rows: this.rows, cellSizeCm: this.cellSizeCm,
       tiles: this.tiles.map(t => t.toJSON()),
+      objects: this.objects.map(o => o.toJSON()),
+      zones: this.zones.map(z => z.toJSON()),
       connections: this.connections.map(c => c.toJSON()),
       labels: this.labels.map(l => l.toJSON()),
       background: this.background,
@@ -660,6 +792,8 @@ class Board {
 
   static fromJSON(data) {
     const board = new Board(data.cols || CONFIG.BOARD_COLS, data.rows || CONFIG.BOARD_ROWS, data.cellSizeCm || CONFIG.DEFAULT_CELL_SIZE_CM);
+    // Restore the id counter before any generateId() calls below (legacy migration needs fresh ids that don't collide).
+    board._nextId = data.nextId || 1;
     if (Array.isArray(data.tiles)) {
       for (const tileData of data.tiles) {
         if (board.isInBounds(tileData.col, tileData.row)) {
@@ -667,11 +801,16 @@ class Board {
         }
       }
     }
+    if (Array.isArray(data.objects)) {
+      board.objects = data.objects.map(PlacedObject.fromJSON);
+    } else if (Array.isArray(data.tiles)) {
+      board.objects = migrateLegacyObjects(board, data.tiles);
+    }
+    board.zones = (data.zones || []).map(Zone.fromJSON);
     board.connections = (data.connections || []).map(Connection.fromJSON);
     board.labels = (data.labels || []).map(Label.fromJSON);
     board.background = data.background || null;
     board.palettes = mergePalettes(data.palettes);
-    board._nextId = data.nextId || 1;
     return board;
   }
 }
@@ -797,6 +936,7 @@ class Selection {
     this.connectionDraft = null; // { col, row }
     this.activeLabelId = null;
     this.draggingLabel = false;
+    this.activeZoneId = null;
   }
 
   setHover(col, row) { this.hoverCol = col; this.hoverRow = row; }
@@ -812,6 +952,10 @@ class Selection {
   selectLabel(id) { this.activeLabelId = id; }
 
   clearLabelSelection() { this.activeLabelId = null; this.draggingLabel = false; }
+
+  selectZone(id) { this.activeZoneId = id; }
+
+  clearZoneSelection() { this.activeZoneId = null; }
 }
 
 /* =========================================================================
@@ -867,6 +1011,28 @@ function makeMoveLabelCommand(label, oldX, oldY, newX, newY) {
   return {
     redo() { label.x = newX; label.y = newY; },
     undo() { label.x = oldX; label.y = oldY; }
+  };
+}
+
+function makeAddObjectCommand(board, obj) {
+  return {
+    redo() { board.insertObject(obj); },
+    undo() { board.removeObjectById(obj.id); }
+  };
+}
+
+function makeRemoveObjectCommand(board, obj) {
+  let index = board.objects.indexOf(obj);
+  return {
+    redo() { index = board.objects.indexOf(obj); board.removeObjectById(obj.id); },
+    undo() { board.insertObject(obj, index); }
+  };
+}
+
+function makeMoveZoneLabelCommand(zone, oldX, oldY, newX, newY) {
+  return {
+    redo() { zone.label.x = newX; zone.label.y = newY; },
+    undo() { zone.label.x = oldX; zone.label.y = oldY; }
   };
 }
 
@@ -1006,12 +1172,15 @@ class Renderer {
     this._drawBackgroundImage(ctx);
     if (this.layerManager.isVisible('grid')) this._drawGrid(ctx);
     if (this.layerManager.isVisible('terrain')) this._drawTerrain(ctx, range);
+    if (this.layerManager.isVisible('zones')) this._drawZoneFill(ctx, range);
     this._drawBorders(ctx, range);
     if (this.layerManager.isVisible('buildings')) this._drawBuildings(ctx, range);
     if (this.layerManager.isVisible('events')) this._drawEvents(ctx, range);
     if (this.layerManager.isVisible('barriers')) this._drawBarriers(ctx, range);
+    if (this.layerManager.isVisible('zones')) this._drawZoneBorders(ctx, range);
     if (this.layerManager.isVisible('connections')) this._drawConnections(ctx);
     if (this.layerManager.isVisible('labels')) this._drawLabels(ctx);
+    if (this.layerManager.isVisible('zones')) this._drawZoneLabels(ctx);
 
     if (!exportMode) {
       this._drawSelection(ctx);
@@ -1085,79 +1254,157 @@ class Renderer {
   }
 
   _drawBuildings(ctx, range) {
-    this.board.forEachTileInRange(range.colStart, range.rowStart, range.colEnd, range.rowEnd, tile => {
-      if (!tile.building) return;
-      const def = this.board.getPaletteEntry('buildings', tile.building.typeId);
-      this._drawIconTile(ctx, tile.col, tile.row, def, 'rect');
-    });
+    for (const obj of this.board.objects) {
+      if (obj.category !== 'buildings' || !this._objectIntersectsRange(obj, range)) continue;
+      this._drawObjectIcon(ctx, obj, this.board.getPaletteEntry('buildings', obj.typeId), 'rect');
+    }
   }
 
   _drawEvents(ctx, range) {
-    this.board.forEachTileInRange(range.colStart, range.rowStart, range.colEnd, range.rowEnd, tile => {
-      if (!tile.event) return;
-      const def = this.board.getPaletteEntry('events', tile.event.typeId);
-      this._drawIconTile(ctx, tile.col, tile.row, def, 'circle');
-    });
+    for (const obj of this.board.objects) {
+      if (obj.category !== 'events' || !this._objectIntersectsRange(obj, range)) continue;
+      this._drawObjectIcon(ctx, obj, this.board.getPaletteEntry('events', obj.typeId), 'circle');
+    }
   }
 
   _drawBarriers(ctx, range) {
-    this.board.forEachTileInRange(range.colStart, range.rowStart, range.colEnd, range.rowEnd, tile => {
-      if (!tile.barrier) return;
-      const def = this.board.getPaletteEntry('barriers', tile.barrier.typeId);
+    for (const obj of this.board.objects) {
+      if (obj.category !== 'barriers' || !this._objectIntersectsRange(obj, range)) continue;
+      const def = this.board.getPaletteEntry('barriers', obj.typeId);
       if (def?.iconUrl) {
         const entry = this.iconCache.get(def.iconUrl);
-        if (entry?.loaded) { ctx.drawImage(entry.image, tile.col + 0.06, tile.row + 0.06, 0.88, 0.88); return; }
+        if (entry?.loaded) {
+          const inset = 0.06;
+          ctx.drawImage(entry.image, obj.col + inset, obj.row + inset, obj.width - inset * 2, obj.height - inset * 2);
+          continue;
+        }
       }
-      if (def && CONFIG.HAND_DRAWN_BARRIERS.includes(def.id)) { this._drawBarrierGlyph(ctx, tile.col, tile.row, def.id); return; }
-      this._drawIconTile(ctx, tile.col, tile.row, def, 'circle');
-    });
+      if (def && CONFIG.HAND_DRAWN_BARRIERS.includes(def.id)) { this._drawBarrierGlyph(ctx, obj, def.id); continue; }
+      this._drawObjectIcon(ctx, obj, def, 'circle');
+    }
   }
 
-  /** Draws a palette entry's icon (if loaded) or a colored fallback shape with its initial letter. */
-  _drawIconTile(ctx, col, row, def, shape) {
+  _objectIntersectsRange(obj, range) {
+    return obj.col < range.colEnd + 1 && obj.col + obj.width > range.colStart &&
+           obj.row < range.rowEnd + 1 && obj.row + obj.height > range.rowStart;
+  }
+
+  /** Draws a palette entry's icon (if loaded) or a colored fallback shape with its initial letter, across the object's full footprint. */
+  _drawObjectIcon(ctx, obj, def, shape) {
     const entry = def?.iconUrl ? this.iconCache.get(def.iconUrl) : null;
+    const inset = 0.06;
     if (entry && entry.loaded) {
-      ctx.drawImage(entry.image, col + 0.06, row + 0.06, 0.88, 0.88);
+      ctx.drawImage(entry.image, obj.col + inset, obj.row + inset, obj.width - inset * 2, obj.height - inset * 2);
       return;
     }
     ctx.save();
     ctx.fillStyle = def?.color || '#888888';
-    const cx = col + 0.5, cy = row + 0.5;
+    const cx = obj.col + obj.width / 2, cy = obj.row + obj.height / 2;
     if (shape === 'circle') {
-      ctx.beginPath(); ctx.arc(cx, cy, 0.36, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(cx, cy, obj.width * 0.42, obj.height * 0.42, 0, 0, Math.PI * 2); ctx.fill();
     } else {
+      const rectInset = Math.min(obj.width, obj.height) * 0.1;
       ctx.beginPath();
-      ctx.roundRect ? ctx.roundRect(col + 0.1, row + 0.1, 0.8, 0.8, 0.1) : ctx.rect(col + 0.1, row + 0.1, 0.8, 0.8);
+      ctx.roundRect
+        ? ctx.roundRect(obj.col + rectInset, obj.row + rectInset, obj.width - rectInset * 2, obj.height - rectInset * 2, 0.1)
+        : ctx.rect(obj.col + inset, obj.row + inset, obj.width - inset * 2, obj.height - inset * 2);
       ctx.fill();
     }
     ctx.fillStyle = '#ffffff';
-    ctx.font = '700 0.5px "Segoe UI", sans-serif';
+    const fontSize = Math.min(obj.width, obj.height) * 0.5;
+    ctx.font = `700 ${fontSize}px "Segoe UI", sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText((def?.label || '?').charAt(0), cx, cy + 0.02);
+    ctx.fillText((def?.label || '?').charAt(0), cx, cy + fontSize * 0.04);
     ctx.restore();
   }
 
-  _drawBarrierGlyph(ctx, col, row, type) {
-    const cx = col + 0.5, cy = row + 0.5;
+  _drawBarrierGlyph(ctx, obj, type) {
+    const cx = obj.col + obj.width / 2, cy = obj.row + obj.height / 2;
+    const scale = Math.min(obj.width, obj.height);
     ctx.save();
     if (type === 'tree') {
-      ctx.fillStyle = '#6b4226'; ctx.fillRect(cx - 0.06, cy, 0.12, 0.42);
+      ctx.fillStyle = '#6b4226'; ctx.fillRect(cx - 0.06 * scale, cy, 0.12 * scale, 0.42 * scale);
       ctx.fillStyle = '#3f8f3f';
-      ctx.beginPath(); ctx.arc(cx, cy - 0.05, 0.34, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(cx, cy - 0.05 * scale, 0.34 * scale, 0, Math.PI * 2); ctx.fill();
     } else if (type === 'rock') {
       ctx.fillStyle = '#8a8a8a';
       ctx.beginPath();
-      ctx.moveTo(cx - 0.36, cy + 0.3); ctx.lineTo(cx - 0.28, cy - 0.2); ctx.lineTo(cx, cy - 0.34);
-      ctx.lineTo(cx + 0.3, cy - 0.16); ctx.lineTo(cx + 0.34, cy + 0.3); ctx.closePath(); ctx.fill();
-      ctx.strokeStyle = '#5a5a5a'; ctx.lineWidth = 0.03; ctx.stroke();
+      ctx.moveTo(cx - 0.36 * scale, cy + 0.3 * scale); ctx.lineTo(cx - 0.28 * scale, cy - 0.2 * scale); ctx.lineTo(cx, cy - 0.34 * scale);
+      ctx.lineTo(cx + 0.3 * scale, cy - 0.16 * scale); ctx.lineTo(cx + 0.34 * scale, cy + 0.3 * scale); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = '#5a5a5a'; ctx.lineWidth = 0.03 * scale; ctx.stroke();
     } else if (type === 'pokeflute') {
-      ctx.strokeStyle = '#c9a24a'; ctx.lineWidth = 0.14; ctx.lineCap = 'round';
-      ctx.beginPath(); ctx.moveTo(cx - 0.32, cy + 0.28); ctx.lineTo(cx + 0.32, cy - 0.28); ctx.stroke();
+      ctx.strokeStyle = '#c9a24a'; ctx.lineWidth = 0.14 * scale; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(cx - 0.32 * scale, cy + 0.28 * scale); ctx.lineTo(cx + 0.32 * scale, cy - 0.28 * scale); ctx.stroke();
       ctx.fillStyle = '#7a5aad';
-      ctx.beginPath(); ctx.arc(cx + 0.32, cy - 0.28, 0.1, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(cx + 0.32 * scale, cy - 0.28 * scale, 0.1 * scale, 0, Math.PI * 2); ctx.fill();
     }
     ctx.restore();
+  }
+
+  _drawZoneFill(ctx, range) {
+    this.board.forEachTileInRange(range.colStart, range.rowStart, range.colEnd, range.rowEnd, tile => {
+      if (!tile.zoneId) return;
+      const zone = this.board.getZoneById(tile.zoneId);
+      if (!zone) return;
+      ctx.fillStyle = CONFIG.ZONE_TINT_COLORS[zone.type] || 'rgba(255,255,255,0.08)';
+      ctx.fillRect(tile.col, tile.row, 1, 1);
+    });
+  }
+
+  _drawZoneBorders(ctx, range) {
+    ctx.save();
+    ctx.lineWidth = CONFIG.ZONE_BORDER_LINE_WIDTH_CM;
+    this.board.forEachTileInRange(range.colStart, range.rowStart, range.colEnd, range.rowEnd, tile => {
+      if (!tile.zoneId) return;
+      const zone = this.board.getZoneById(tile.zoneId);
+      if (!zone) return;
+      const neighborSameZone = (c, r) => this.board.getTile(c, r)?.zoneId === tile.zoneId;
+      const x = tile.col, y = tile.row;
+      ctx.strokeStyle = CONFIG.ZONE_BORDER_COLORS[zone.type] || '#333333';
+      ctx.beginPath();
+      if (!neighborSameZone(x, y - 1)) { ctx.moveTo(x, y); ctx.lineTo(x + 1, y); }
+      if (!neighborSameZone(x + 1, y)) { ctx.moveTo(x + 1, y); ctx.lineTo(x + 1, y + 1); }
+      if (!neighborSameZone(x, y + 1)) { ctx.moveTo(x, y + 1); ctx.lineTo(x + 1, y + 1); }
+      if (!neighborSameZone(x - 1, y)) { ctx.moveTo(x, y); ctx.lineTo(x, y + 1); }
+      ctx.stroke();
+    });
+    ctx.restore();
+  }
+
+  _formatZoneLabelText(zone) {
+    const hasLevels = zone.levelMin != null && zone.levelMax != null;
+    return hasLevels ? `${zone.name} · Lv. ${zone.levelMin}–${zone.levelMax}` : zone.name;
+  }
+
+  _drawZoneLabels(ctx) {
+    for (const zone of this.board.zones) {
+      if (!zone.labelPlaced) continue;
+      const pseudoLabel = { text: this._formatZoneLabelText(zone), fontSizeCm: CONFIG.LABEL_FONT_SIZE_CM, orientation: zone.label.orientation };
+      const box = computeLabelBox(pseudoLabel);
+      ctx.save();
+      ctx.translate(zone.label.x, zone.label.y);
+      if (zone.label.orientation === 'vertical') ctx.rotate(-Math.PI / 2);
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(0, 0, box.width, box.height, box.radius);
+      else ctx.rect(0, 0, box.width, box.height);
+      ctx.fillStyle = CONFIG.ZONE_BORDER_COLORS[zone.type] || '#000000';
+      ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.font = `600 ${pseudoLabel.fontSizeCm}px "Segoe UI", sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(pseudoLabel.text, box.width / 2, box.height / 2 + pseudoLabel.fontSizeCm * 0.03);
+      if (zone.id === this.selection.activeZoneId) {
+        ctx.strokeStyle = '#5aa8e0';
+        ctx.lineWidth = 0.045;
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(0, 0, box.width, box.height, box.radius);
+        else ctx.rect(0, 0, box.width, box.height);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
   }
 
   _drawConnections(ctx) {
@@ -1257,65 +1504,155 @@ class Tool {
   renderOverlay(ctx2d, selection, board) {}
 }
 
-class BrushTool extends Tool {
-  constructor(app) { super(app); this.currentTerrain = 'grass'; this.strokeCommands = []; }
-  get id() { return 'brush'; }
-  getLayerKey() { return 'terrain'; }
+/**
+ * Shared single-tile / rectangle-area painting behavior. Subclasses only implement
+ * _makeTileCommand(tile), which returns an undoable command for that tile or null
+ * if nothing changes (e.g. the tile already has the target value).
+ */
+class AreaPaintTool extends Tool {
+  constructor(app) {
+    super(app);
+    this.mode = 'single'; // 'single' | 'area'
+    this.strokeCommands = [];
+    this._areaStart = null;
+    this._areaCurrent = null;
+  }
 
-  onPointerDown(pctx) { this.strokeCommands = []; this._paint(pctx); }
-  onPointerMove(pctx) { if (pctx.isPointerDown) this._paint(pctx); }
-  onPointerUp() {
+  onPointerDown(pctx) {
+    if (this.mode === 'area') {
+      this._areaStart = { col: pctx.col, row: pctx.row };
+      this._areaCurrent = { col: pctx.col, row: pctx.row };
+      this.app.renderer.requestRender();
+      return;
+    }
+    this.strokeCommands = [];
+    this._paintTile(pctx);
+  }
+
+  onPointerMove(pctx) {
+    if (this.mode === 'area') {
+      if (this._areaStart && pctx.isPointerDown) {
+        this._areaCurrent = { col: pctx.col, row: pctx.row };
+        this.app.renderer.requestRender();
+      }
+      return;
+    }
+    if (pctx.isPointerDown) this._paintTile(pctx);
+  }
+
+  onPointerUp(pctx) {
+    if (this.mode === 'area') {
+      if (this._areaStart && this._areaCurrent) this._applyArea(pctx.board);
+      this._areaStart = null;
+      this._areaCurrent = null;
+      this.app.renderer.requestRender();
+      return;
+    }
     if (this.strokeCommands.length) this.app.history.record(new BatchCommand(this.strokeCommands));
     this.strokeCommands = [];
   }
 
-  _paint(pctx) {
+  _paintTile(pctx) {
     const tile = pctx.board.getTile(pctx.col, pctx.row);
-    if (!tile || tile.terrain === this.currentTerrain) return;
-    const cmd = makeSetFieldCommand(tile, 'terrain', this.currentTerrain);
+    if (!tile) return;
+    const cmd = this._makeTileCommand(tile);
+    if (!cmd) return;
     cmd.redo();
     this.strokeCommands.push(cmd);
     this.app.renderer.requestRender();
   }
+
+  _applyArea(board) {
+    const colStart = clamp(Math.min(this._areaStart.col, this._areaCurrent.col), 0, board.cols - 1);
+    const colEnd = clamp(Math.max(this._areaStart.col, this._areaCurrent.col), 0, board.cols - 1);
+    const rowStart = clamp(Math.min(this._areaStart.row, this._areaCurrent.row), 0, board.rows - 1);
+    const rowEnd = clamp(Math.max(this._areaStart.row, this._areaCurrent.row), 0, board.rows - 1);
+    const commands = [];
+    board.forEachTileInRange(colStart, rowStart, colEnd, rowEnd, tile => {
+      const cmd = this._makeTileCommand(tile);
+      if (cmd) commands.push(cmd);
+    });
+    if (commands.length) this.app.history.execute(new BatchCommand(commands));
+  }
+
+  /** Subclass hook: return an undoable command for this tile, or null for a no-op. */
+  _makeTileCommand(tile) { return null; }
+
+  renderOverlay(ctx) {
+    if (this.mode !== 'area' || !this._areaStart || !this._areaCurrent) return;
+    const colStart = Math.min(this._areaStart.col, this._areaCurrent.col);
+    const colEnd = Math.max(this._areaStart.col, this._areaCurrent.col);
+    const rowStart = Math.min(this._areaStart.row, this._areaCurrent.row);
+    const rowEnd = Math.max(this._areaStart.row, this._areaCurrent.row);
+    ctx.save();
+    ctx.strokeStyle = '#5aa8e0';
+    ctx.lineWidth = 0.08;
+    ctx.setLineDash([0.15, 0.1]);
+    ctx.strokeRect(colStart, rowStart, colEnd - colStart + 1, rowEnd - rowStart + 1);
+    ctx.restore();
+  }
 }
 
-class BuildingTool extends Tool {
-  constructor(app) { super(app); this.currentTypeId = 'arena'; }
+class BrushTool extends AreaPaintTool {
+  constructor(app) { super(app); this.currentTerrain = 'grass'; }
+  get id() { return 'brush'; }
+  getLayerKey() { return 'terrain'; }
+
+  _makeTileCommand(tile) {
+    if (tile.terrain === this.currentTerrain) return null;
+    return makeSetFieldCommand(tile, 'terrain', this.currentTerrain);
+  }
+}
+
+/** Shared multi-cell placement behavior for buildings, events, and barriers. */
+class ObjectPlacementTool extends Tool {
+  constructor(app, category, defaultTypeId) {
+    super(app);
+    this.category = category;
+    this.currentTypeId = defaultTypeId;
+  }
+  getLayerKey() { return this.category; }
+
+  onPointerDown(pctx) {
+    const def = pctx.board.getPaletteEntry(this.category, this.currentTypeId);
+    if (!def) return;
+    const width = def.widthCells || 1, height = def.heightCells || 1;
+    if (!pctx.board.canPlaceObject(this.category, pctx.col, pctx.row, width, height)) {
+      this.app.ui.setStatusMessage('Objekt passt hier nicht (außerhalb des Boards oder überlappt ein bestehendes Objekt).');
+      return;
+    }
+    const obj = new PlacedObject(pctx.board.generateId(), this.category, this.currentTypeId, pctx.col, pctx.row, width, height);
+    this.app.history.execute(makeAddObjectCommand(pctx.board, obj));
+    this.app.renderer.requestRender();
+  }
+
+  renderOverlay(ctx, selection, board) {
+    const def = board.getPaletteEntry(this.category, this.currentTypeId);
+    if (!def || selection.hoverCol == null) return;
+    const width = def.widthCells || 1, height = def.heightCells || 1;
+    const valid = board.canPlaceObject(this.category, selection.hoverCol, selection.hoverRow, width, height);
+    ctx.save();
+    ctx.strokeStyle = valid ? '#5aa8e0' : '#e0796a';
+    ctx.lineWidth = 0.06;
+    ctx.setLineDash([0.1, 0.08]);
+    ctx.strokeRect(selection.hoverCol, selection.hoverRow, width, height);
+    ctx.restore();
+  }
+}
+
+class BuildingTool extends ObjectPlacementTool {
+  constructor(app) { super(app, 'buildings', 'arena'); }
   get id() { return 'building'; }
-  getLayerKey() { return 'buildings'; }
-
-  onPointerDown(pctx) {
-    const tile = pctx.board.getTile(pctx.col, pctx.row);
-    if (!tile) return;
-    this.app.history.execute(makeSetFieldCommand(tile, 'building', { typeId: this.currentTypeId }));
-    this.app.renderer.requestRender();
-  }
 }
 
-class EventTool extends Tool {
-  constructor(app) { super(app); this.currentTypeId = 'trainer'; }
+class EventTool extends ObjectPlacementTool {
+  constructor(app) { super(app, 'events', 'trainer'); }
   get id() { return 'event'; }
-  getLayerKey() { return 'events'; }
-
-  onPointerDown(pctx) {
-    const tile = pctx.board.getTile(pctx.col, pctx.row);
-    if (!tile) return;
-    this.app.history.execute(makeSetFieldCommand(tile, 'event', { typeId: this.currentTypeId }));
-    this.app.renderer.requestRender();
-  }
 }
 
-class BarrierTool extends Tool {
-  constructor(app) { super(app); this.currentTypeId = 'tree'; }
+class BarrierTool extends ObjectPlacementTool {
+  constructor(app) { super(app, 'barriers', 'tree'); }
   get id() { return 'barrier'; }
-  getLayerKey() { return 'barriers'; }
-
-  onPointerDown(pctx) {
-    const tile = pctx.board.getTile(pctx.col, pctx.row);
-    if (!tile) return;
-    this.app.history.execute(makeSetFieldCommand(tile, 'barrier', { typeId: this.currentTypeId }));
-    this.app.renderer.requestRender();
-  }
 }
 
 class ConnectionTool extends Tool {
@@ -1476,6 +1813,10 @@ class EraserTool extends Tool {
     const { board, col, row, worldX, worldY } = pctx;
     if (this.targetLayer === 'connections') { this._eraseConnection(board, col, row); return; }
     if (this.targetLayer === 'labels') { this._eraseLabel(board, worldX, worldY); return; }
+    if (this.targetLayer === 'buildings' || this.targetLayer === 'events' || this.targetLayer === 'barriers') {
+      this._eraseObject(board, this.targetLayer, col, row);
+      return;
+    }
     const tile = board.getTile(col, row);
     if (!tile) return;
     if (this.targetLayer === 'borders') {
@@ -1483,12 +1824,22 @@ class EraserTool extends Tool {
       if (CONFIG.BORDER_EDGES.every(edge => tile.borders[edge] === false)) return;
       const cmd = makeSetFieldCommand(tile, 'borders', cleared);
       cmd.redo(); this.strokeCommands.push(cmd);
+    } else if (this.targetLayer === 'zones') {
+      if (tile.zoneId === null) return;
+      const cmd = makeSetFieldCommand(tile, 'zoneId', null);
+      cmd.redo(); this.strokeCommands.push(cmd);
     } else {
-      const fieldName = CONFIG.LAYER_TO_TILE_FIELD[this.targetLayer];
-      if (tile[fieldName] === null) return;
-      const cmd = makeSetFieldCommand(tile, fieldName, null);
+      if (tile.terrain === null) return;
+      const cmd = makeSetFieldCommand(tile, 'terrain', null);
       cmd.redo(); this.strokeCommands.push(cmd);
     }
+    this.app.renderer.requestRender();
+  }
+
+  _eraseObject(board, category, col, row) {
+    const obj = board.findObjectAt(category, col, row);
+    if (!obj) return;
+    this.app.history.execute(makeRemoveObjectCommand(board, obj));
     this.app.renderer.requestRender();
   }
 
@@ -1521,34 +1872,86 @@ class EyedropperTool extends Tool {
   }
 }
 
-class FillTool extends Tool {
-  constructor(app) { super(app); this.currentTerrain = 'grass'; }
-  get id() { return 'fill'; }
-  getLayerKey() { return 'terrain'; }
+/** Groups tiles into a named route/city/cave zone; also owns dragging of that zone's name+level pill. */
+class ZoneTool extends AreaPaintTool {
+  constructor(app) {
+    super(app);
+    this.currentZoneId = null;
+    this._draggingLabel = false;
+    this._dragOffset = null;
+    this._dragStart = null;
+  }
+  get id() { return 'zone'; }
+  getLayerKey() { return 'zones'; }
 
   onPointerDown(pctx) {
-    const { board, col, row } = pctx;
-    const seedTile = board.getTile(col, row);
-    if (!seedTile) return;
-    const targetTerrain = seedTile.terrain;
-    if (targetTerrain === this.currentTerrain) return;
-
-    const commands = [];
-    const visited = new Set();
-    const stack = [[col, row]];
-    while (stack.length) {
-      const [c, r] = stack.pop();
-      const key = `${c},${r}`;
-      if (visited.has(key) || !board.isInBounds(c, r)) continue;
-      visited.add(key);
-      const tile = board.getTile(c, r);
-      if (tile.terrain !== targetTerrain) continue;
-      commands.push(makeSetFieldCommand(tile, 'terrain', this.currentTerrain));
-      stack.push([c + 1, r], [c - 1, r], [c, r + 1], [c, r - 1]);
+    const hitZone = this._hitTestLabel(pctx.board, pctx.worldX, pctx.worldY);
+    if (hitZone) {
+      this.currentZoneId = hitZone.id;
+      this.app.selection.selectZone(hitZone.id);
+      this._draggingLabel = true;
+      this._dragOffset = { dx: pctx.worldX - hitZone.label.x, dy: pctx.worldY - hitZone.label.y };
+      this._dragStart = { x: hitZone.label.x, y: hitZone.label.y };
+      this.app.renderer.requestRender();
+      return;
     }
-    if (!commands.length) return;
-    this.app.history.execute(new BatchCommand(commands));
+    super.onPointerDown(pctx);
+  }
+
+  onPointerMove(pctx) {
+    if (this._draggingLabel && pctx.isPointerDown) {
+      const zone = this.app.board.getZoneById(this.currentZoneId);
+      if (zone) {
+        zone.label.x = pctx.worldX - this._dragOffset.dx;
+        zone.label.y = pctx.worldY - this._dragOffset.dy;
+        this.app.renderer.requestRender();
+      }
+      return;
+    }
+    super.onPointerMove(pctx);
+  }
+
+  onPointerUp(pctx) {
+    if (this._draggingLabel) {
+      this._draggingLabel = false;
+      const zone = this.app.board.getZoneById(this.currentZoneId);
+      if (zone && this._dragStart && (zone.label.x !== this._dragStart.x || zone.label.y !== this._dragStart.y)) {
+        this.app.history.record(makeMoveZoneLabelCommand(zone, this._dragStart.x, this._dragStart.y, zone.label.x, zone.label.y));
+      }
+      this._dragStart = null;
+      return;
+    }
+    super.onPointerUp(pctx);
+    this._autoPlaceLabelIfNeeded(pctx.board);
+  }
+
+  _makeTileCommand(tile) {
+    if (!this.currentZoneId || tile.zoneId === this.currentZoneId) return null;
+    return makeSetFieldCommand(tile, 'zoneId', this.currentZoneId);
+  }
+
+  _autoPlaceLabelIfNeeded(board) {
+    const zone = board.getZoneById(this.currentZoneId);
+    if (!zone || zone.labelPlaced) return;
+    const centroid = board.computeZoneCentroid(zone.id);
+    if (!centroid) return;
+    zone.label.x = centroid.x;
+    zone.label.y = centroid.y;
+    zone.labelPlaced = true;
     this.app.renderer.requestRender();
+  }
+
+  _hitTestLabel(board, worldX, worldY) {
+    for (let i = board.zones.length - 1; i >= 0; i--) {
+      const zone = board.zones[i];
+      if (!zone.labelPlaced) continue;
+      const pseudoLabel = { text: this.app.renderer._formatZoneLabelText(zone), fontSizeCm: CONFIG.LABEL_FONT_SIZE_CM, orientation: zone.label.orientation };
+      const box = computeLabelBox(pseudoLabel);
+      const dx = worldX - zone.label.x, dy = worldY - zone.label.y;
+      const local = zone.label.orientation === 'vertical' ? { x: -dy, y: dx } : { x: dx, y: dy };
+      if (local.x >= 0 && local.x <= box.width && local.y >= 0 && local.y <= box.height) return zone;
+    }
+    return null;
   }
 }
 
@@ -1563,12 +1966,12 @@ class ToolManager {
       building: new BuildingTool(app),
       event: new EventTool(app),
       barrier: new BarrierTool(app),
+      zone: new ZoneTool(app),
       connection: new ConnectionTool(app),
       border: new BorderTool(app),
       text: new TextTool(app),
       eraser: new EraserTool(app),
-      eyedropper: new EyedropperTool(app),
-      fill: new FillTool(app)
+      eyedropper: new EyedropperTool(app)
     };
     this.activeToolKey = 'brush';
     this.isPointerDown = false;
@@ -1845,23 +2248,24 @@ class UIController {
       fileInputImage: document.getElementById('file-input-image')
     };
     this._statusTimer = null;
-    this._newColorDraft = { label: '', color: '#8CCF5A', alpha: 1 };
+    this._newColorDraft = { label: '', color: '#8CCF5A', alpha: CONFIG.DEFAULT_TERRAIN_ALPHA };
     this._newTypeDrafts = {
-      buildings: { label: '', color: '#c94f4f', iconUrl: '' },
-      events: { label: '', color: '#e0a13a', iconUrl: '' },
-      barriers: { label: '', color: '#8a8a8a', iconUrl: '' }
+      buildings: { label: '', color: '#c94f4f', iconUrl: '', width: 1, height: 1 },
+      events: { label: '', color: '#e0a13a', iconUrl: '', width: 1, height: 1 },
+      barriers: { label: '', color: '#8a8a8a', iconUrl: '', width: 1, height: 1 }
     };
+    this._newZoneDraft = { type: 'route', name: '', levelMin: '', levelMax: '' };
     this.TOOL_DEFS = [
       { key: 'brush', glyph: '🖌️', label: 'Pinsel' },
       { key: 'building', glyph: '🏛️', label: 'Gebäude' },
       { key: 'event', glyph: '⚡', label: 'Event' },
       { key: 'barrier', glyph: '🌳', label: 'Barriere' },
+      { key: 'zone', glyph: '🗺️', label: 'Zone' },
       { key: 'connection', glyph: '🔗', label: 'Verbindung' },
       { key: 'border', glyph: '▢', label: 'Rahmen' },
       { key: 'text', glyph: '🔤', label: 'Text' },
       { key: 'eraser', glyph: '🧹', label: 'Radierer' },
-      { key: 'eyedropper', glyph: '💧', label: 'Pipette' },
-      { key: 'fill', glyph: '🪣', label: 'Füllen' }
+      { key: 'eyedropper', glyph: '💧', label: 'Pipette' }
     ];
   }
 
@@ -1921,10 +2325,10 @@ class UIController {
     body.innerHTML = '';
     const renderers = {
       brush: () => this._renderTerrainOptions(body, tool, 'currentTerrain'),
-      fill: () => this._renderTerrainOptions(body, tool, 'currentTerrain'),
-      building: () => this._renderIconPaletteOptions(body, tool, 'buildings', 'currentTypeId'),
-      event: () => this._renderIconPaletteOptions(body, tool, 'events', 'currentTypeId'),
-      barrier: () => this._renderIconPaletteOptions(body, tool, 'barriers', 'currentTypeId'),
+      building: () => this._renderObjectPaletteOptions(body, tool, 'buildings', 'currentTypeId'),
+      event: () => this._renderObjectPaletteOptions(body, tool, 'events', 'currentTypeId'),
+      barrier: () => this._renderObjectPaletteOptions(body, tool, 'barriers', 'currentTypeId'),
+      zone: () => this._renderZoneOptions(body, tool),
       connection: () => this._renderTypeRadio(body, tool, CONFIG.CONNECTION_TYPES, CONFIG.CONNECTION_LABELS, 'currentType'),
       border: () => this._renderHint(body, 'Klicke nahe einer Kachelkante, um den Rahmen dort umzuschalten.'),
       text: () => this._renderTextOptions(body, tool),
@@ -1971,8 +2375,37 @@ class UIController {
     body.appendChild(grid);
   }
 
+  /** Generic radio group driven by an explicit getter/setter instead of a fixed tool field — reused for tool options and per-entity fields alike. */
+  _renderRadioGroup(container, name, options, labels, currentValue, onChange) {
+    const wrap = document.createElement('div');
+    wrap.className = 'radio-grid';
+    for (const value of options) {
+      const optLabel = document.createElement('label');
+      optLabel.className = 'radio-opt';
+      const input = document.createElement('input');
+      input.type = 'radio';
+      input.name = name;
+      input.checked = currentValue === value;
+      input.addEventListener('change', () => onChange(value));
+      optLabel.appendChild(input);
+      optLabel.appendChild(document.createTextNode(labels[value]));
+      wrap.appendChild(optLabel);
+    }
+    container.appendChild(wrap);
+  }
+
+  _renderTypeRadio(body, tool, types, labels, field) {
+    this._renderRadioGroup(body, `opt-${field}`, types, labels, tool[field], value => { tool[field] = value; this._renderToolOptions(); });
+  }
+
+  _renderModeToggle(body, tool) {
+    this._renderRadioGroup(body, 'opt-paint-mode', ['single', 'area'], { single: 'Einzelauswahl', area: 'Fläche' }, tool.mode,
+      value => { tool.mode = value; this._renderToolOptions(); });
+  }
+
   _renderTerrainOptions(body, tool, field) {
     const board = this.app.board;
+    this._renderModeToggle(body, tool);
     this._renderPaletteGrid(body, board, 'terrain', tool, field, (sw, entry) => {
       sw.style.background = hexToRgba(entry.color, entry.alpha ?? 1);
     });
@@ -2009,7 +2442,7 @@ class UIController {
     addBtn.addEventListener('click', () => {
       const entry = board.addPaletteEntry('terrain', { label: draft.label.trim() || 'Farbe', color: draft.color, alpha: draft.alpha });
       tool[field] = entry.id;
-      this._newColorDraft = { label: '', color: draft.color, alpha: 1 };
+      this._newColorDraft = { label: '', color: draft.color, alpha: CONFIG.DEFAULT_TERRAIN_ALPHA };
       this.app.renderer.requestRender();
       this._renderToolOptions();
     });
@@ -2017,7 +2450,7 @@ class UIController {
     body.appendChild(wrap);
   }
 
-  _renderIconPaletteOptions(body, tool, category, field) {
+  _renderObjectPaletteOptions(body, tool, category, field) {
     const board = this.app.board;
     this._renderPaletteGrid(body, board, category, tool, field, (sw, entry) => {
       sw.classList.add('icon-swatch');
@@ -2031,11 +2464,11 @@ class UIController {
       }
     });
     const activeEntry = board.getPaletteEntry(category, tool[field]);
-    if (activeEntry) this._renderIconAssignField(body, board, category, activeEntry);
+    if (activeEntry) this._renderObjectEntryFields(body, board, category, activeEntry);
     this._renderAddTypeForm(body, board, category, tool, field);
   }
 
-  _renderIconAssignField(body, board, category, entry) {
+  _renderObjectEntryFields(body, board, category, entry) {
     const field = document.createElement('label');
     field.className = 'field';
     const labelSpan = document.createElement('span');
@@ -2050,6 +2483,31 @@ class UIController {
     });
     field.append(labelSpan, input);
     body.appendChild(field);
+
+    const dimRow = document.createElement('div');
+    dimRow.className = 'field-row';
+    const widthField = document.createElement('label');
+    widthField.className = 'field';
+    widthField.innerHTML = '<span class="field-label">Breite (Kacheln)</span>';
+    const widthInput = document.createElement('input');
+    widthInput.type = 'number'; widthInput.min = '1'; widthInput.step = '1'; widthInput.value = entry.widthCells || 1;
+    widthInput.addEventListener('change', () => {
+      entry.widthCells = Math.max(1, Math.round(parseFloat(widthInput.value)) || 1);
+      this.app.renderer.requestRender();
+    });
+    widthField.appendChild(widthInput);
+    const heightField = document.createElement('label');
+    heightField.className = 'field';
+    heightField.innerHTML = '<span class="field-label">Höhe (Kacheln)</span>';
+    const heightInput = document.createElement('input');
+    heightInput.type = 'number'; heightInput.min = '1'; heightInput.step = '1'; heightInput.value = entry.heightCells || 1;
+    heightInput.addEventListener('change', () => {
+      entry.heightCells = Math.max(1, Math.round(parseFloat(heightInput.value)) || 1);
+      this.app.renderer.requestRender();
+    });
+    heightField.appendChild(heightInput);
+    dimRow.append(widthField, heightField);
+    body.appendChild(dimRow);
   }
 
   _renderAddTypeForm(body, board, category, tool, field) {
@@ -2067,34 +2525,29 @@ class UIController {
     const urlInput = document.createElement('input');
     urlInput.type = 'url'; urlInput.placeholder = 'Bild-URL (optional)'; urlInput.value = draft.iconUrl;
     urlInput.addEventListener('input', () => { draft.iconUrl = urlInput.value; });
+    const dimRow = document.createElement('div');
+    dimRow.className = 'field-row';
+    const widthInput = document.createElement('input');
+    widthInput.type = 'number'; widthInput.min = '1'; widthInput.step = '1'; widthInput.placeholder = 'Breite'; widthInput.value = draft.width;
+    widthInput.addEventListener('input', () => { draft.width = widthInput.value; });
+    const heightInput = document.createElement('input');
+    heightInput.type = 'number'; heightInput.min = '1'; heightInput.step = '1'; heightInput.placeholder = 'Höhe'; heightInput.value = draft.height;
+    heightInput.addEventListener('input', () => { draft.height = heightInput.value; });
+    dimRow.append(widthInput, heightInput);
     const addBtn = document.createElement('button');
     addBtn.type = 'button'; addBtn.className = 'btn'; addBtn.textContent = 'Typ hinzufügen';
     addBtn.addEventListener('click', () => {
-      const entry = board.addPaletteEntry(category, { label: draft.label.trim() || 'Typ', color: draft.color, iconUrl: draft.iconUrl.trim() || null });
+      const entry = board.addPaletteEntry(category, {
+        label: draft.label.trim() || 'Typ', color: draft.color, iconUrl: draft.iconUrl.trim() || null,
+        widthCells: Math.max(1, Math.round(parseFloat(draft.width)) || 1),
+        heightCells: Math.max(1, Math.round(parseFloat(draft.height)) || 1)
+      });
       tool[field] = entry.id;
-      this._newTypeDrafts[category] = { label: '', color: draft.color, iconUrl: '' };
+      this._newTypeDrafts[category] = { label: '', color: draft.color, iconUrl: '', width: 1, height: 1 };
       this.app.renderer.requestRender();
       this._renderToolOptions();
     });
-    wrap.append(title, nameInput, colorInput, urlInput, addBtn);
-    body.appendChild(wrap);
-  }
-
-  _renderTypeRadio(body, tool, types, labels, field) {
-    const wrap = document.createElement('div');
-    wrap.className = 'radio-grid';
-    for (const type of types) {
-      const optLabel = document.createElement('label');
-      optLabel.className = 'radio-opt';
-      const input = document.createElement('input');
-      input.type = 'radio';
-      input.name = `opt-${field}`;
-      input.checked = tool[field] === type;
-      input.addEventListener('change', () => { tool[field] = type; this._renderToolOptions(); });
-      optLabel.appendChild(input);
-      optLabel.appendChild(document.createTextNode(labels[type]));
-      wrap.appendChild(optLabel);
-    }
+    wrap.append(title, nameInput, colorInput, urlInput, dimRow, addBtn);
     body.appendChild(wrap);
   }
 
@@ -2119,10 +2572,132 @@ class UIController {
 
   _renderEraserOptions(body, tool) {
     const labels = {
-      terrain: 'Gelände', buildings: 'Gebäude', events: 'Events', barriers: 'Barrieren',
+      terrain: 'Gelände', buildings: 'Gebäude', events: 'Events', barriers: 'Barrieren', zones: 'Zonen',
       borders: 'Rahmen', connections: 'Verbindungen', labels: 'Beschriftungen'
     };
     this._renderTypeRadio(body, tool, CONFIG.ERASER_TARGETS, labels, 'targetLayer');
+  }
+
+  _renderZoneOptions(body, tool) {
+    const board = this.app.board;
+    this._renderModeToggle(body, tool);
+
+    if (board.zones.length) {
+      this._renderHint(body, 'Zone zum Bemalen auswählen:');
+      const zoneLabels = {};
+      for (const zone of board.zones) zoneLabels[zone.id] = `${CONFIG.ZONE_TYPE_LABELS[zone.type]}: ${zone.name}`;
+      this._renderRadioGroup(body, 'opt-current-zone', board.zones.map(z => z.id), zoneLabels, tool.currentZoneId, value => {
+        tool.currentZoneId = value;
+        this.app.selection.selectZone(value);
+        this._renderToolOptions();
+      });
+    } else {
+      this._renderHint(body, 'Noch keine Zone vorhanden. Lege unten eine neue an.');
+    }
+
+    const activeZone = board.getZoneById(tool.currentZoneId);
+    if (activeZone) this._renderZoneEditor(body, board, tool, activeZone);
+    this._renderCreateZoneForm(body, board, tool);
+  }
+
+  _renderZoneEditor(body, board, tool, zone) {
+    const wrap = document.createElement('div');
+    wrap.className = 'add-entry-form';
+    const title = document.createElement('span');
+    title.className = 'field-label'; title.textContent = 'Zone bearbeiten';
+    const nameField = document.createElement('label');
+    nameField.className = 'field';
+    nameField.innerHTML = '<span class="field-label">Name</span>';
+    const nameInput = document.createElement('input');
+    nameInput.type = 'text'; nameInput.value = zone.name;
+    nameInput.addEventListener('change', () => {
+      zone.name = nameInput.value.trim() || zone.name;
+      this.app.renderer.requestRender();
+    });
+    nameField.appendChild(nameInput);
+
+    const levelRow = document.createElement('div');
+    levelRow.className = 'field-row';
+    const minField = document.createElement('label');
+    minField.className = 'field';
+    minField.innerHTML = '<span class="field-label">Level von</span>';
+    const minInput = document.createElement('input');
+    minInput.type = 'number'; minInput.value = zone.levelMin ?? '';
+    minInput.addEventListener('change', () => {
+      zone.levelMin = minInput.value === '' ? null : parseInt(minInput.value, 10);
+      this.app.renderer.requestRender();
+    });
+    minField.appendChild(minInput);
+    const maxField = document.createElement('label');
+    maxField.className = 'field';
+    maxField.innerHTML = '<span class="field-label">Level bis</span>';
+    const maxInput = document.createElement('input');
+    maxInput.type = 'number'; maxInput.value = zone.levelMax ?? '';
+    maxInput.addEventListener('change', () => {
+      zone.levelMax = maxInput.value === '' ? null : parseInt(maxInput.value, 10);
+      this.app.renderer.requestRender();
+    });
+    maxField.appendChild(maxInput);
+    levelRow.append(minField, maxField);
+
+    wrap.append(title, nameField, levelRow);
+
+    if (zone.labelPlaced) {
+      this._renderRadioGroup(wrap, `opt-zone-orientation-${zone.id}`, ['horizontal', 'vertical'],
+        { horizontal: 'Horizontal', vertical: 'Vertikal' }, zone.label.orientation,
+        value => { zone.label.orientation = value; this.app.renderer.requestRender(); this._renderToolOptions(); });
+    } else {
+      this._renderHint(wrap, 'Bemale eine Kachel, um das Namensfenster automatisch zu platzieren.');
+    }
+
+    const delBtn = document.createElement('button');
+    delBtn.type = 'button'; delBtn.className = 'btn danger'; delBtn.textContent = 'Zone löschen';
+    delBtn.addEventListener('click', () => {
+      if (!window.confirm(`Zone "${zone.name}" wirklich löschen? Alle Kachel-Zuordnungen gehen verloren.`)) return;
+      board.removeZoneById(zone.id);
+      tool.currentZoneId = null;
+      this.app.selection.clearZoneSelection();
+      this.app.renderer.requestRender();
+      this._renderToolOptions();
+    });
+    wrap.appendChild(delBtn);
+    body.appendChild(wrap);
+  }
+
+  _renderCreateZoneForm(body, board, tool) {
+    const draft = this._newZoneDraft;
+    const wrap = document.createElement('div');
+    wrap.className = 'add-entry-form';
+    const title = document.createElement('span');
+    title.className = 'field-label'; title.textContent = 'Neue Zone erstellen';
+    wrap.appendChild(title);
+    this._renderRadioGroup(wrap, 'opt-new-zone-type', CONFIG.ZONE_TYPES, CONFIG.ZONE_TYPE_LABELS, draft.type,
+      value => { draft.type = value; this._renderToolOptions(); });
+    const nameInput = document.createElement('input');
+    nameInput.type = 'text'; nameInput.placeholder = 'Name'; nameInput.value = draft.name;
+    nameInput.addEventListener('input', () => { draft.name = nameInput.value; });
+    const levelRow = document.createElement('div');
+    levelRow.className = 'field-row';
+    const minInput = document.createElement('input');
+    minInput.type = 'number'; minInput.placeholder = 'Level von'; minInput.value = draft.levelMin;
+    minInput.addEventListener('input', () => { draft.levelMin = minInput.value; });
+    const maxInput = document.createElement('input');
+    maxInput.type = 'number'; maxInput.placeholder = 'Level bis'; maxInput.value = draft.levelMax;
+    maxInput.addEventListener('input', () => { draft.levelMax = maxInput.value; });
+    levelRow.append(minInput, maxInput);
+    const addBtn = document.createElement('button');
+    addBtn.type = 'button'; addBtn.className = 'btn'; addBtn.textContent = 'Zone erstellen';
+    addBtn.addEventListener('click', () => {
+      const zone = board.addZone(draft.type, draft.name.trim() || CONFIG.ZONE_TYPE_LABELS[draft.type]);
+      zone.levelMin = draft.levelMin === '' ? null : parseInt(draft.levelMin, 10);
+      zone.levelMax = draft.levelMax === '' ? null : parseInt(draft.levelMax, 10);
+      tool.currentZoneId = zone.id;
+      this.app.selection.selectZone(zone.id);
+      this._newZoneDraft = { type: draft.type, name: '', levelMin: '', levelMax: '' };
+      this._renderToolOptions();
+    });
+    wrap.append(nameInput, levelRow, addBtn);
+    body.appendChild(wrap);
   }
 
   _buildLayerList() {
@@ -2167,17 +2742,30 @@ class UIController {
     if (!tile) { body.innerHTML = '<span class="hint-text">Keine Kachel ausgewählt.</span>'; return; }
     const borders = CONFIG.BORDER_EDGES.filter(e => tile.borders[e]).join(', ') || '–';
     const terrainLabel = tile.terrain ? (board.getPaletteEntry('terrain', tile.terrain)?.label ?? tile.terrain) : '–';
-    const buildingLabel = tile.building ? (board.getPaletteEntry('buildings', tile.building.typeId)?.label ?? tile.building.typeId) : '–';
-    const eventLabel = tile.event ? (board.getPaletteEntry('events', tile.event.typeId)?.label ?? tile.event.typeId) : '–';
-    const barrierLabel = tile.barrier ? (board.getPaletteEntry('barriers', tile.barrier.typeId)?.label ?? tile.barrier.typeId) : '–';
+    const buildingObj = board.findObjectAt('buildings', tile.col, tile.row);
+    const eventObj = board.findObjectAt('events', tile.col, tile.row);
+    const barrierObj = board.findObjectAt('barriers', tile.col, tile.row);
+    const buildingLabel = this._describeObject(board, buildingObj);
+    const eventLabel = this._describeObject(board, eventObj);
+    const barrierLabel = this._describeObject(board, barrierObj);
+    const zone = tile.zoneId ? board.getZoneById(tile.zoneId) : null;
+    const zoneLabel = zone ? `${zone.name} (${CONFIG.ZONE_TYPE_LABELS[zone.type]})` : '–';
     body.innerHTML = `
       <div class="kv"><span>Position</span><b>${tile.col}, ${tile.row}</b></div>
       <div class="kv"><span>Gelände</span><b>${terrainLabel}</b></div>
+      <div class="kv"><span>Zone</span><b>${zoneLabel}</b></div>
       <div class="kv"><span>Gebäude</span><b>${buildingLabel}</b></div>
       <div class="kv"><span>Event</span><b>${eventLabel}</b></div>
       <div class="kv"><span>Barriere</span><b>${barrierLabel}</b></div>
       <div class="kv"><span>Rahmen</span><b>${borders}</b></div>
     `;
+  }
+
+  _describeObject(board, obj) {
+    if (!obj) return '–';
+    const def = board.getPaletteEntry(obj.category, obj.typeId);
+    const label = def?.label ?? obj.typeId;
+    return `${label} (${obj.width}×${obj.height})`;
   }
 
   updateStatusBar() {
