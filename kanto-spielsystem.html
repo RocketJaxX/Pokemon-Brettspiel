@@ -1,0 +1,1175 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pokémon-Brettspiel Kanto – Spielsystem (Single Source of Truth)</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#33291f; --paper:#fffdf6; --paper2:#e8e2d6; --line:#d8cfbc;
+  --gold:#c8940f; --gold2:#e3b52a; --rot:#d6452f; --blau:#2f7fc4; --gruen:#59b04a;
+  --panel:#fffdf6;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+body{font-family:'Nunito',sans-serif; color:var(--ink); background:var(--paper2);}
+h1,h2,h3,.brand,.fr{font-family:'Fredoka',sans-serif;}
+button{font-family:'Fredoka',sans-serif; cursor:pointer; border:none; border-radius:8px;}
+select, input[type=number]{font-family:'Nunito',sans-serif; font-weight:700;}
+
+/* ===== Nav ===== */
+nav.topnav{position:sticky; top:0; z-index:100; background:var(--ink); color:#fff;
+  display:flex; align-items:center; gap:4px; padding:0 10px; box-shadow:0 2px 10px rgba(0,0,0,.25);
+  flex-wrap:wrap;}
+nav.topnav .brand{font-weight:700; font-size:16px; padding:10px 14px 10px 4px; color:var(--gold2); white-space:nowrap;}
+nav.topnav button.tab{background:transparent; color:#e8e2d6; font-size:14px; font-weight:600;
+  padding:12px 16px; border-radius:0; position:relative;}
+nav.topnav button.tab:hover{background:rgba(255,255,255,.08);}
+nav.topnav button.tab.active{color:#fff; background:rgba(255,255,255,.12);}
+nav.topnav button.tab.active::after{content:''; position:absolute; left:10px; right:10px; bottom:0; height:3px;
+  background:var(--gold2); border-radius:2px 2px 0 0;}
+nav.topnav .spacer{flex:1;}
+nav.topnav .savehint{font-size:11px; color:#b0a68f; font-weight:700; padding:0 10px; white-space:nowrap;}
+
+.page{display:none; padding:14px;}
+.page.active{display:block;}
+
+@media print{
+  nav.topnav{display:none;}
+  .page{padding:0;}
+  body{background:#fff;}
+}
+
+/* ===== Home: Pokémon-Tabelle ===== */
+.home-toolbar{margin-bottom:10px;}
+.home-toolbar h1{font-size:20px; margin-bottom:2px;}
+.home-toolbar .hint{font-size:12.5px; color:#5c5344; font-weight:700; max-width:900px;}
+.hometable-wrap{overflow:auto; max-height:calc(100vh - 140px); border:1px solid var(--line);
+  border-radius:8px; background:#fff;}
+table.hometable{border-collapse:separate; border-spacing:0; font-size:11.5px; white-space:nowrap;}
+table.hometable th, table.hometable td{border:1px solid var(--line); padding:2px 3px; text-align:center; background:#fff;}
+table.hometable thead th{position:sticky; background:var(--ink); color:#fff; font-family:'Fredoka',sans-serif;
+  font-weight:600; z-index:20;}
+table.hometable thead tr:first-child th{top:0; height:26px;}
+table.hometable thead tr:first-child th.fixedhead{height:100px;}
+table.hometable thead tr:last-child th{top:26px; height:74px; padding:2px 1px;}
+table.hometable th.regionhead{font-size:10.5px; letter-spacing:.3px; background:#4a3f2f;}
+table.hometable th.areahead{background:#544636; width:24px; max-width:24px;}
+.areahead-in{writing-mode:vertical-rl; transform:rotate(180deg); font-size:9.5px; font-weight:700;
+  white-space:nowrap; margin:0 auto; letter-spacing:.2px;}
+table.hometable td.sticky, table.hometable th.sticky{position:sticky; z-index:6;}
+table.hometable th.fixedhead{z-index:25;}
+table.hometable td.nameCell{text-align:left; font-weight:800; font-family:'Fredoka',sans-serif; font-size:11px;}
+table.hometable .rowimg{width:32px; height:32px; object-fit:contain; display:block; margin:0 auto;}
+table.hometable td.areacell{background:#faf8f2;}
+table.hometable select.sterne-sel{font-size:11px; color:var(--gold); font-weight:900; border:1px solid var(--line);
+  border-radius:4px; padding:1px; width:100%;}
+.typchip{display:inline-flex; align-items:center; gap:3px; font-size:9.5px; font-weight:800; color:#fff;
+  padding:1px 5px; border-radius:20px; text-shadow:0 1px 1px rgba(0,0,0,.35); white-space:nowrap;}
+.typchip img{width:11px; height:11px;}
+.typchip.empty{background:#ccc; color:#777; text-shadow:none;}
+.ksym{font-weight:900; font-size:15px;}
+.ksym.kA{color:#33291f;} .ksym.kB{color:#2f7fc4;} .ksym.kC{color:#c8940f;} .ksym.kNone{color:#bbb;}
+.questbadge{background:var(--rot); color:#fff; font-size:8px; font-weight:800; padding:0 3px; border-radius:4px;}
+table.hometable input[type=checkbox]{width:14px; height:14px; cursor:pointer;}
+
+
+/* ===== Spielleiter-Karte ===== */
+.gm-toolbar h1{font-size:20px; margin-bottom:2px;}
+.gm-toolbar .hint{font-size:12.5px; color:#5c5344; font-weight:700; max-width:900px; margin-bottom:8px;}
+.gm-toolbar button{background:var(--rot); color:#fff; padding:8px 16px; font-size:13px;}
+.gmbox{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:10px 14px; margin-bottom:14px;}
+.gmbox h2{font-size:14px; margin-bottom:6px;}
+.gm-grid-top{display:grid; grid-template-columns:1fr 1fr; gap:14px; align-items:start;}
+@media (max-width:1100px){ .gm-grid-top{grid-template-columns:1fr;} }
+
+.matrix-wrap{overflow-x:auto;}
+table.typematrix{border-collapse:collapse; font-size:8.5px;}
+table.typematrix th, table.typematrix td{border:1px solid var(--line); width:22px; height:22px; text-align:center; background:#f6f1e4;}
+table.typematrix .corner{font-size:7px; color:#8a7f6d; width:70px; background:transparent; border:none;}
+table.typematrix .vert{writing-mode:vertical-rl; transform:rotate(180deg); color:#fff; font-weight:800; font-size:7px;
+  padding:2px 0; border-radius:2px; white-space:nowrap;}
+table.typematrix .rowlab{color:#fff; font-weight:800; font-size:7.5px; padding:0 4px; border-radius:2px; text-align:left; white-space:nowrap;}
+.c{display:inline-flex; align-items:center; justify-content:center; width:14px; height:14px; border-radius:50%;
+  color:#fff; font-weight:900; font-size:11px; line-height:1;}
+.c.plus{background:var(--gruen);} .c.minus{background:var(--rot);} .c.none{background:#111;}
+.legend{display:flex; gap:12px; flex-wrap:wrap; font-size:11px; font-weight:800; margin:8px 0;}
+.ruleul{margin-left:16px; font-size:11.5px; line-height:1.5;}
+.cheatgrid{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
+.cheatbox{background:#f6f1e4; border:1px solid var(--line); border-radius:8px; padding:6px 9px; font-size:11px; line-height:1.4;}
+.cheatbox b{font-family:'Fredoka',sans-serif; font-size:11.5px;}
+.cheatbox ul{margin-left:14px;}
+table.mini{border-collapse:collapse; margin-top:3px; font-size:11px;}
+table.mini td{border:1px solid var(--line); padding:1px 6px; font-weight:800; background:#fff;}
+.tiny{font-size:9.5px; color:#5c5344; font-weight:700; margin-top:3px;}
+
+.section-title{font-size:16px; margin:14px 0 8px; border-bottom:2px solid var(--gold2); display:inline-block; padding-bottom:2px;}
+.questgrid{display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:8px; margin-bottom:10px;}
+.questrow{display:flex; align-items:center; gap:8px; background:var(--panel); border:1px solid var(--line);
+  border-radius:8px; padding:6px 8px; font-size:11px;}
+.questrow img{width:34px; height:34px; object-fit:contain;}
+.questrow .pid{color:#8a7f6d; font-weight:700;}
+.questrow .qtxt{color:#5c5344; font-weight:700;}
+
+.region-title{font-size:14px; margin:10px 0 6px; color:#5c5344;}
+.areacard-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:8px; margin-bottom:6px;}
+.areacard{background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:6px 8px; font-size:11px;}
+.areacard-head{font-family:'Fredoka',sans-serif; font-weight:700; font-size:12px; margin-bottom:3px;
+  color:var(--ink); border-bottom:1px solid var(--line); padding-bottom:2px;}
+.arow{display:flex; align-items:center; gap:6px; padding:1.5px 0;}
+.arow.niete{color:#8a7f6d; font-weight:800;}
+.arow.empty{color:#b0a68f; font-style:italic;}
+.arow-rng{font-family:'Fredoka',sans-serif; background:var(--ink); color:#fff; border-radius:4px; font-size:9.5px;
+  padding:0 4px; min-width:30px; text-align:center;}
+.arow-name{flex:1;}
+.arow-star{color:var(--gold); font-size:9px;}
+
+
+/* ===== Kartenset ===== */
+.cards-toolbar{display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-bottom:12px;}
+.cards-toolbar h1{font-size:20px;}
+.cards-toolbar label{font-weight:800; display:flex; align-items:center; gap:5px; cursor:pointer; font-size:13px;}
+.cards-toolbar button{background:var(--rot); color:#fff; padding:8px 16px; font-size:13px;}
+.cards-toolbar .hint{font-size:11px; color:#8a7f6d; font-weight:700; width:100%;}
+
+#page-cards .sheet{width:210mm; height:297mm; margin:0 auto 14px; background:var(--paper); position:relative;
+  box-shadow:0 2px 12px rgba(0,0,0,.15);}
+#page-cards .sheetlab{position:absolute; bottom:2mm; left:0; right:0; text-align:center; font-size:7pt;
+  color:#b0a68f; font-weight:800;}
+#page-cards .grid{position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+  display:grid; grid-template-columns:repeat(3,63.5mm); grid-template-rows:repeat(3,88mm); gap:2mm;}
+
+#page-cards .card{width:63.5mm; height:88mm; position:relative; border-radius:2.4mm; overflow:hidden; background:var(--bg1);}
+#page-cards .card.dual{background:linear-gradient(135deg, var(--bg1) 0%, var(--bg1) 42%, var(--bg2) 58%, var(--bg2) 100%);}
+#page-cards .card{outline:0.3mm dashed #9a8f78; outline-offset:0.4mm;}
+#page-cards.nocut .card{outline:none;}
+#page-cards .frame{position:absolute; inset:1.6mm; border:0.45mm solid #111; border-radius:1.6mm; pointer-events:none; z-index:5;}
+#page-cards .in{position:absolute; inset:1.6mm; padding:1.6mm 2.2mm; display:flex; flex-direction:column; gap:1mm;}
+#page-cards .head{display:flex; align-items:center; gap:1.4mm; min-height:6mm;}
+#page-cards .pname{font-family:'Fredoka',sans-serif; font-size:12.5px; color:#fff; line-height:1;
+  text-shadow:0 1px 2px rgba(0,0,0,.45); flex:1; white-space:nowrap; overflow:hidden;}
+#page-cards .pnr{font-family:'Fredoka',sans-serif; font-size:10px; color:#fff; text-shadow:0 1px 2px rgba(0,0,0,.45);}
+#page-cards .tico{width:6mm; height:6mm; flex:none; display:inline-flex; align-items:center; justify-content:center;
+  background:radial-gradient(circle closest-side, var(--tc) 0%, var(--tc) 58%, transparent 100%);}
+#page-cards .tico img{width:66%; height:66%; object-fit:contain;}
+#page-cards .atrack{display:grid; grid-template-columns:repeat(5,1fr); gap:0.6mm;}
+#page-cards .acell{border:0.3mm solid #111; border-radius:0.8mm; background:#fff; text-align:center; padding:0.3mm 0 0.2mm;}
+#page-cards .acell .alv{font-size:5.2px; font-weight:900; color:#8a7f6d; display:block; line-height:1; margin-bottom:-0.2mm;}
+#page-cards .acell .aval{font-family:'Fredoka',sans-serif; font-size:10.5px; color:#111; line-height:1;}
+#page-cards .foot{margin-top:auto; display:flex; align-items:flex-end; min-height:5mm;}
+#page-cards .starchip, #page-cards .klasse{display:flex; align-items:center; gap:1.2mm;
+  background:rgba(255,255,255,.88); border:0.3mm solid #111; border-radius:1.4mm; padding:0.5mm 1.6mm;}
+#page-cards .starchip .stars{font-size:10.5px; color:var(--gold); letter-spacing:0.35mm; line-height:1;}
+#page-cards .klasse{margin-left:auto;}
+#page-cards .klasse .sym{font-size:10.5px; color:#111; line-height:1;}
+#page-cards .klasse .lab{font-size:6px; font-weight:900; color:#111; letter-spacing:.2px;}
+#page-cards .chip{background:rgba(255,255,255,.90); border-radius:1.6mm; padding:0.9mm 1.6mm;}
+#page-cards .artbox{background:#fff; border:0.4mm solid #111; border-radius:1.6mm; height:23mm; flex:none;
+  display:flex; align-items:center; justify-content:center;}
+#page-cards .artbox img{max-width:92%; max-height:92%; object-fit:contain;}
+#page-cards .fangtitle{display:flex; align-items:center; font-family:'Fredoka',sans-serif; font-size:7.5px;
+  letter-spacing:.4px; color:#111; margin-bottom:0.8mm;}
+#page-cards .dice{margin-left:auto; background:var(--ink); color:#fff; border-radius:1mm; padding:0.2mm 1.4mm; font-size:6.5px; font-weight:800;}
+#page-cards .fort{display:flex; align-items:center; gap:1.2mm; padding:0.45mm 0; font-size:8px; font-weight:800;}
+#page-cards .fort + .fort{border-top:0.25mm solid var(--line);}
+#page-cards .fort .ter{font-size:8px; width:4mm; text-align:center;}
+#page-cards .fort .on{flex:1; line-height:1.1;}
+#page-cards .rng{font-family:'Fredoka',sans-serif; font-size:8.5px; background:var(--ink); color:#fff;
+  border-radius:1mm; padding:0.1mm 1.6mm; white-space:nowrap;}
+#page-cards .fextra{font-size:6.4px; font-weight:800; color:#5c5344; margin-top:0.8mm; line-height:1.25;
+  border-top:0.25mm solid var(--line); padding-top:0.7mm;}
+#page-cards .notwild{text-align:center; padding:3mm 1mm; font-weight:900;}
+#page-cards .notwild .nw1{font-family:'Fredoka',sans-serif; font-size:9.5px; color:#111;}
+#page-cards .notwild .nw2{font-size:8px; margin-top:1mm; color:#5c5344;}
+#page-cards .fang{display:flex; align-items:center; gap:2mm; background:rgba(255,255,255,.90); border-radius:1.6mm; padding:1mm 1.6mm; flex:none;}
+#page-cards .fang .fl{display:flex; flex-direction:column; align-items:center; gap:0.7mm;}
+#page-cards .fang .fl .flab{font-family:'Fredoka',sans-serif; font-size:7.5px; letter-spacing:.4px; color:#111;}
+#page-cards .fgrid{flex:1; display:grid; grid-template-columns:8.5mm repeat(3,1fr); align-items:center;
+  row-gap:0.4mm; column-gap:0.8mm; justify-items:center;}
+#page-cards .fkp{font-size:6px; font-weight:900; color:#111; justify-self:start; white-space:nowrap;}
+#page-cards .fgrid .rng{font-size:7.5px; padding:0 1.3mm;}
+#page-cards .ball{width:4.8mm; height:4.8mm;}
+#page-cards .bhead{display:flex; align-items:center; gap:1.6mm; min-height:9.5mm;}
+#page-cards .pcircle{width:9mm; height:9mm; border-radius:50%; border:0.45mm solid #111; flex:none;
+  background:var(--bg1); display:flex; align-items:center; justify-content:center; overflow:hidden;}
+#page-cards .card.dual .pcircle{background:linear-gradient(135deg, var(--bg1) 0%, var(--bg1) 42%, var(--bg2) 58%, var(--bg2) 100%);}
+#page-cards .pcircle img{width:82%; height:82%; object-fit:contain;}
+#page-cards .bhead .pname{font-size:12px;}
+#page-cards .statlab{font-family:'Fredoka',sans-serif; font-size:7.5px; letter-spacing:.3px; color:#111;
+  display:flex; align-items:baseline; gap:1.4mm; margin-bottom:0.4mm;}
+#page-cards .statlab .big{font-size:12px;}
+#page-cards .statlab .note{font-size:5.8px; font-weight:800; color:#5c5344; margin-left:auto;}
+#page-cards .siege, #page-cards .kpgrid{display:grid; grid-template-columns:repeat(12, 1fr); gap:0.45mm; width:40mm;}
+#page-cards .bx{width:2.9mm; height:2.9mm; border:0.3mm solid #111; border-radius:0.5mm; background:#fff;
+  display:flex; align-items:center; justify-content:center; font-size:4.6px; font-weight:900; color:#8a7f6d;}
+#page-cards .bx.bonus{border-style:dashed; background:#f2ecdd; color:#111;}
+#page-cards .bx.thresh{border-width:0.55mm; color:#111; font-size:5px;}
+#page-cards .grow{display:flex; align-items:center; gap:1.5mm; font-size:7.6px; font-weight:900; padding:0.3mm 0; line-height:1.2;}
+#page-cards .grow + .grow{border-top:0.25mm solid var(--line);}
+#page-cards .grow .gico{font-size:9px; width:5.4mm; text-align:center; flex:none;}
+#page-cards .evoimg{width:5.4mm; height:5.4mm; flex:none; object-fit:contain;}
+
+@media print{
+  #page-cards .sheet{margin:0; box-shadow:none; page-break-after:always;}
+  #page-cards .sheet:last-child{page-break-after:auto;}
+  @page{size:A4 portrait; margin:0;}
+}
+
+
+/* ===== Pokeshop ===== */
+.shop-toolbar{display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-bottom:10px;}
+.shop-toolbar h1{font-size:20px;}
+.shop-toolbar label{font-weight:800; display:flex; align-items:center; gap:5px; cursor:pointer; font-size:13px;}
+.shop-toolbar button{background:var(--rot); color:#fff; padding:8px 16px; font-size:13px;}
+.shop-toolbar .hint{font-size:11px; color:#8a7f6d; font-weight:700; width:100%;}
+.shop-config{display:flex; gap:12px; flex-wrap:wrap; margin-bottom:14px;}
+.cfgbox{background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:8px 12px;
+  display:flex; flex-direction:column; gap:5px; font-size:12px;}
+.cfgbox b{font-family:'Fredoka',sans-serif; font-size:13px; margin-bottom:2px;}
+.shopnum{display:flex; align-items:center; justify-content:space-between; gap:10px; font-weight:700;}
+.shopnum input{width:56px; padding:3px 6px; border:1px solid var(--line); border-radius:6px; text-align:center;}
+
+#page-shop .sheet.shopsheet{width:210mm; min-height:auto; margin:0 auto 16px; padding:11mm 10mm 12mm;
+  background:#fff; box-shadow:0 3px 14px rgba(0,0,0,.16); border-radius:3px;}
+#page-shop .sheet-head{font-family:'Fredoka',sans-serif; font-weight:700; font-size:15pt; margin-bottom:1mm;
+  display:flex; align-items:baseline; gap:8px;}
+#page-shop .sheet-head small{font-family:'Nunito'; font-weight:700; font-size:9.5pt; color:#8a7f6d;}
+#page-shop .sheet-sub{font-size:9pt; color:#8a7f6d; font-weight:700; margin-bottom:5mm;}
+#page-shop .shopgrid{display:flex; flex-wrap:wrap; gap:5mm; align-content:flex-start;}
+#page-shop .group-label{width:100%; font-family:'Fredoka'; font-weight:600; font-size:10.5pt;
+  margin:3mm 0 1mm; display:flex; align-items:center; gap:6px;}
+#page-shop .group-label .count{font-family:'Nunito'; font-weight:800; font-size:8.5pt; color:#fff;
+  background:#8a7f6d; padding:1px 7px; border-radius:20px;}
+#page-shop .chip.ballchip, #page-shop .chip.coinchip{width:30mm; height:30mm; border-radius:50%; position:relative;
+  display:flex; align-items:center; justify-content:center; outline:0.3mm dashed #c7bda9; outline-offset:1.1mm;}
+#page-shop.nocut .chip{outline:none;}
+#page-shop .chip svg{width:100%; height:100%; display:block;}
+#page-shop .chip .tag{position:absolute; bottom:2.2mm; left:50%; transform:translateX(-50%);
+  font-family:'Fredoka'; font-weight:700; font-size:6.4pt; color:#fff; white-space:nowrap;
+  background:rgba(30,22,14,.55); padding:0 4px; border-radius:8px;}
+#page-shop .chip .idx{position:absolute; top:1.6mm; right:1.6mm; font-family:'Fredoka'; font-weight:700;
+  font-size:6pt; color:#fff; background:rgba(30,22,14,.6); padding:0 4px; border-radius:8px;}
+#page-shop .chip.coinchip{width:26mm; height:26mm;}
+#page-shop .icard{width:58mm; height:40mm; border-radius:3.5mm; background:var(--panel);
+  border:0.5mm solid #d8cdb6; outline:0.3mm dashed #c7bda9; outline-offset:1.1mm;
+  padding:3mm 3.5mm; display:flex; flex-direction:column; overflow:hidden; position:relative;}
+#page-shop.nocut .icard{outline:none;}
+#page-shop .icard .stripe{position:absolute; left:0; top:0; bottom:0; width:2.6mm;}
+#page-shop .icard .ic-top{display:flex; align-items:center; gap:2.5mm; margin-left:2mm;}
+#page-shop .icard .ic-ico{width:11mm; height:11mm; flex:0 0 auto;}
+#page-shop .icard .ic-name{font-family:'Fredoka'; font-weight:700; font-size:12.5pt; line-height:1;}
+#page-shop .icard .ic-eff{font-size:8.6pt; font-weight:700; color:#5c5344; margin:2.4mm 0 0 2mm; line-height:1.15;}
+#page-shop .icard .ic-price{position:absolute; right:3mm; bottom:2.6mm; font-family:'Fredoka'; font-weight:700;
+  font-size:10.5pt; color:#fff; background:var(--gold2); padding:0.6mm 3mm; border-radius:20px; box-shadow:0 1px 0 #b98a15;}
+
+#page-shop .ecard{width:60mm; height:88mm; border-radius:4mm; overflow:hidden; position:relative;
+  outline:0.3mm dashed #7a86b0; outline-offset:1.1mm; color:#f4f2ff; display:flex; flex-direction:column;
+  background:radial-gradient(120% 90% at 30% 8%, #4a3f7a 0%, #2b2450 55%, #201b3d 100%); border:0.5mm solid #171334;}
+#page-shop.nocut .ecard{outline:none;}
+#page-shop .ecard .watermark{position:absolute; right:-6mm; bottom:-10mm; font-family:'Fredoka'; font-weight:700;
+  font-size:78pt; color:rgba(255,255,255,.07); line-height:1; z-index:0;}
+#page-shop .ecard > *{position:relative; z-index:1;}
+#page-shop .ecard .e-head{padding:4mm 4mm 0;}
+#page-shop .ecard .e-eyebrow{font-family:'Fredoka'; font-weight:600; font-size:7.5pt; letter-spacing:2.5px;
+  text-transform:uppercase; color:#c9c2f5;}
+#page-shop .ecard .e-title{font-family:'Fredoka'; font-weight:700; font-size:14pt; line-height:1.05; margin-top:1mm;}
+#page-shop .ecard .e-body{padding:3mm 4mm; font-size:9pt; font-weight:700; line-height:1.28; color:#eceaff; flex:1;}
+#page-shop .ecard .e-foot{margin-top:auto; padding:2.5mm 4mm; display:flex; align-items:center; justify-content:space-between;
+  background:rgba(0,0,0,.22); font-size:7pt; font-weight:800; color:#c9c2f5;}
+#page-shop .ecard.blank{opacity:.9; cursor:pointer; align-items:center; justify-content:center; text-align:center;
+  background:repeating-linear-gradient(135deg, #2b2450, #2b2450 10px, #241f42 10px, #241f42 20px);}
+#page-shop .ecard.blank:hover{outline-color:#fff;}
+#page-shop .addplus{font-family:'Fredoka'; font-size:34pt; color:#fff; opacity:.7;}
+#page-shop .addlabel{font-family:'Fredoka'; font-size:9pt; color:#c9c2f5; margin-top:2mm;}
+#page-shop .e-del{position:absolute; top:1.5mm; right:1.5mm; z-index:3; width:5mm; height:5mm; border-radius:50%;
+  background:rgba(0,0,0,.5); color:#fff; font-size:10px; line-height:1; border:none; cursor:pointer;}
+
+@media print{
+  #page-shop .noprint{display:none !important;}
+  #page-shop .sheet.shopsheet{box-shadow:none; margin:0; border-radius:0; page-break-after:always;}
+  #page-shop .sheet.shopsheet:last-child{page-break-after:auto;}
+  @page{size:A4 portrait; margin:0;}
+}
+
+</style>
+</head>
+<body>
+<nav class="topnav">
+  <span class="brand">🎮 Kanto-Spielsystem</span>
+  <button class="tab" data-page="home">📋 Pokémon-Tabelle</button>
+  <button class="tab" data-page="gm">🧭 Spielleiter</button>
+  <button class="tab" data-page="cards">🃏 Kartenset</button>
+  <button class="tab" data-page="shop">🎁 Pokeshop</button>
+  <span class="spacer"></span>
+  <span class="savehint" id="saveHint">Änderungen werden automatisch lokal gespeichert</span>
+  <button class="tab" onclick="resetAllData()" style="color:#f3c;">↺ Zurücksetzen</button>
+</nav>
+<main id="app">
+  <section class="page" id="page-home"></section>
+  <section class="page" id="page-gm"></section>
+  <section class="page" id="page-cards"></section>
+  <section class="page" id="page-shop"></section>
+</main>
+<script>
+
+const TYP = { Normal:'#A8A878', Feuer:'#F08030', Wasser:'#6890F0', Pflanze:'#78C850',
+  Elektro:'#E8B800', Gift:'#A040A0', Flug:'#A890F0', Psycho:'#F85888', Gestein:'#B8A038',
+  Boden:'#D4A845', Käfer:'#A8B820', Kampf:'#C03028', Eis:'#98D8D8', Geist:'#705898',
+  Drache:'#7038F8', Unlicht:'#705848', Stahl:'#B8B8D0', Fee:'#EE99AC' };
+const TICON = { Normal:'8/85/Typ-Icon_Normal', Kampf:'3/3c/Typ-Icon_Kampf', Flug:'0/00/Typ-Icon_Flug',
+  Gift:'b/b5/Typ-Icon_Gift', Boden:'c/cc/Typ-Icon_Boden', Gestein:'0/0a/Typ-Icon_Gestein',
+  Käfer:'f/fd/Typ-Icon_K%C3%A4fer', Geist:'c/c0/Typ-Icon_Geist', Stahl:'2/2b/Typ-Icon_Stahl',
+  Feuer:'f/f0/Typ-Icon_Feuer', Wasser:'b/b6/Typ-Icon_Wasser', Pflanze:'8/82/Typ-Icon_Pflanze',
+  Elektro:'a/a9/Typ-Icon_Elektro', Psycho:'1/12/Typ-Icon_Psycho', Eis:'d/d8/Typ-Icon_Eis',
+  Drache:'6/6f/Typ-Icon_Drache', Unlicht:'5/58/Typ-Icon_Unlicht', Fee:'6/6c/Typ-Icon_Fee' };
+const TIMG = t => `https://www.pokewiki.de/images/${TICON[t]}_%28Symbol%29_PLA.png`;
+const KLASSE = { A:{sym:'●', lab:'GEWÖHNLICH'}, B:{sym:'◆', lab:'UNGEWÖHNLICH'}, C:{sym:'★', lab:'SELTEN'} };
+const SCHWELLE = {1:3, 2:4, 3:5, 4:6, 5:7};
+const HASH = {"1": "d3", "2": "c7", "3": "1a", "4": "09", "5": "08", "6": "de", "7": "7f", "8": "80", "9": "22", "10": "a1", "11": "ee", "12": "5c", "13": "ee", "14": "ee", "15": "08", "16": "da", "17": "78", "18": "18", "19": "7a", "20": "f3", "21": "6c", "22": "7a", "23": "5e", "24": "a0", "25": "9e", "26": "da", "27": "1b", "28": "17", "29": "62", "30": "76", "31": "bc", "32": "7a", "33": "7c", "34": "d4", "35": "bb", "36": "68", "37": "c6", "38": "20", "39": "ee", "40": "fa", "41": "1f", "42": "60", "43": "cb", "44": "e9", "45": "8d", "46": "d4", "47": "34", "48": "5f", "49": "b4", "50": "88", "51": "6e", "52": "cf", "53": "db", "54": "3a", "55": "29", "56": "77", "57": "dc", "58": "0b", "59": "e2", "60": "f7", "61": "c1", "62": "63", "63": "06", "64": "b0", "65": "fd", "66": "00", "67": "cf", "68": "d0", "69": "d8", "70": "21", "71": "1a", "72": "62", "73": "a3", "74": "71", "75": "cd", "76": "8b", "77": "05", "78": "d7", "79": "81", "80": "b2", "81": "d9", "82": "18", "83": "0e", "84": "16", "85": "0e", "86": "ff", "87": "86", "88": "fc", "89": "0f", "90": "fa", "91": "99", "92": "ee", "93": "ad", "94": "46", "95": "98", "96": "ab", "97": "fc", "98": "50", "99": "62", "100": "01", "101": "65", "102": "1e", "103": "79", "104": "ca", "105": "67", "106": "34", "107": "b9", "108": "d1", "109": "31", "110": "0a", "111": "9f", "112": "91", "113": "a2", "114": "f4", "115": "ab", "116": "2a", "117": "9a", "118": "73", "119": "e5", "120": "ab", "121": "6b", "122": "37", "123": "0d", "124": "1b", "125": "2a", "126": "a4", "127": "67", "128": "9d", "129": "45", "130": "98", "131": "05", "132": "68", "133": "ad", "134": "59", "135": "e1", "136": "25", "137": "75", "138": "3e", "139": "a8", "140": "23", "141": "94", "142": "9d", "143": "68", "144": "8d", "145": "f3", "146": "39", "147": "00", "148": "6c", "149": "94", "150": "7e", "151": "14"};const IMG = n => `https://www.pokewiki.de/images/${HASH[n][0]}/${HASH[n]}/Hauptartwork_${String(n).padStart(3,'0')}.png`;
+const MONS_RAW = [{"nr": 1, "name": "Bisasam", "typen": ["Pflanze", "Gift"], "sterne": 3, "klasse": "C", "kp": 18, "ang": 3, "faeh": [["🗡", "Zerschneider ab Lv 2"]], "evo": [[2, "Bisaknosp", 4], [3, "Bisaflor", 8]], "fang": [{"o": "Vertania-Wald", "t": "🌿", "w": "20"}], "quest": false}, {"nr": 2, "name": "Bisaknosp", "typen": ["Pflanze", "Gift"], "sterne": 4, "klasse": "C", "kp": 20, "ang": 4, "faeh": [["🗡", "Zerschneider ab Lv 2"]], "evo": [[3, "Bisaflor", 8]], "fang": [], "quest": false}, {"nr": 3, "name": "Bisaflor", "typen": ["Pflanze", "Gift"], "sterne": 5, "klasse": "C", "kp": 22, "ang": 5, "faeh": [["🗡", "Zerschneider ab Lv 2"]], "evo": [], "fang": [], "quest": false}, {"nr": 4, "name": "Glumanda", "typen": ["Feuer"], "sterne": 3, "klasse": "C", "kp": 14, "ang": 5, "faeh": [], "evo": [[5, "Glutexo", 4], [6, "Glurak", 8]], "fang": [{"o": "Felstunnel", "t": "🪨", "w": "19"}], "quest": false}, {"nr": 5, "name": "Glutexo", "typen": ["Feuer"], "sterne": 4, "klasse": "C", "kp": 16, "ang": 6, "faeh": [], "evo": [[6, "Glurak", 8]], "fang": [], "quest": false}, {"nr": 6, "name": "Glurak", "typen": ["Feuer", "Flug"], "sterne": 5, "klasse": "C", "kp": 18, "ang": 7, "faeh": [["🪽", "Fliegen ab Lv 5"]], "evo": [], "fang": [], "quest": false}, {"nr": 7, "name": "Schiggy", "typen": ["Wasser"], "sterne": 3, "klasse": "C", "kp": 18, "ang": 3, "faeh": [["🌊", "Surfen ab Lv 3"]], "evo": [[8, "Schillok", 4], [9, "Turtok", 8]], "fang": [{"o": "Route 25", "t": "🌿", "w": "19–20"}], "quest": false}, {"nr": 8, "name": "Schillok", "typen": ["Wasser"], "sterne": 4, "klasse": "C", "kp": 20, "ang": 4, "faeh": [["🌊", "Surfen ab Lv 3"]], "evo": [[9, "Turtok", 8]], "fang": [], "quest": false}, {"nr": 9, "name": "Turtok", "typen": ["Wasser"], "sterne": 5, "klasse": "C", "kp": 22, "ang": 5, "faeh": [["🌊", "Surfen ab Lv 3"]], "evo": [], "fang": [], "quest": false}, {"nr": 10, "name": "Raupy", "typen": ["Käfer"], "sterne": 1, "klasse": "A", "kp": 10, "ang": 1, "faeh": [], "evo": [[11, "Safcon", 4], [12, "Smettbo", 8]], "fang": [{"o": "Route 2", "t": "🌿", "w": "13–15"}, {"o": "Vertania-Wald", "t": "🌿", "w": "7–10"}, {"o": "Route 24", "t": "🌿", "w": "7–11"}], "quest": false}, {"nr": 11, "name": "Safcon", "typen": ["Käfer"], "sterne": 2, "klasse": "A", "kp": 12, "ang": 2, "faeh": [], "evo": [[12, "Smettbo", 8]], "fang": [{"o": "Vertania-Wald", "t": "🌿", "w": "15–16"}, {"o": "Route 24", "t": "🌿", "w": "17–18"}], "quest": false}, {"nr": 12, "name": "Smettbo", "typen": ["Käfer", "Flug"], "sterne": 3, "klasse": "A", "kp": 14, "ang": 3, "faeh": [["🪽", "Fliegen ab Lv 5"]], "evo": [], "fang": [], "quest": false}, {"nr": 13, "name": "Hornliu", "typen": ["Käfer"], "sterne": 1, "klasse": "A", "kp": 10, "ang": 1, "faeh": [], "evo": [[14, "Kokuna", 4], [15, "Bibor", 8]], "fang": [{"o": "Route 2", "t": "🌿", "w": "16–18"}, {"o": "Vertania-Wald", "t": "🌿", "w": "11–14"}, {"o": "Route 25", "t": "🌿", "w": "6–9"}], "quest": false}, {"nr": 14, "name": "Kokuna", "typen": ["Käfer", "Gift"], "sterne": 2, "klasse": "A", "kp": 12, "ang": 2, "faeh": [], "evo": [[15, "Bibor", 8]], "fang": [{"o": "Vertania-Wald", "t": "🌿", "w": "17–18"}, {"o": "Route 25", "t": "🌿", "w": "14–18"}], "quest": false}, {"nr": 15, "name": "Bibor", "typen": ["Käfer", "Gift"], "sterne": 3, "klasse": "A", "kp": 14, "ang": 3, "faeh": [], "evo": [], "fang": [], "quest": false}, {"nr": 16, "name": "Taubsi", "typen": ["Normal", "Flug"], "sterne": 1, "klasse": "A", "kp": 10, "ang": 1, "faeh": [["🪽", "Fliegen ab Lv 5"]], "evo": [[17, "Tauboga", 4], [18, "Tauboss", 8]], "fang": [{"o": "Route 1", "t": "🌿", "w": "5–9"}, {"o": "Route 2", "t": "🌿", "w": "7–9"}, {"o": "Route 5", "t": "🌿", "w": "5–9"}, {"o": "Route 6", "t": "🌿", "w": "5–9"}, {"o": "Route 7", "t": "🌿", "w": "5–12"}], "quest": false}, {"nr": 17, "name": "Tauboga", "typen": ["Normal", "Flug"], "sterne": 2, "klasse": "A", "kp": 12, "ang": 2, "faeh": [["🪽", "Fliegen ab Lv 5"]], "evo": [[18, "Tauboss", 8]], "fang": [{"o": "Route 14", "t": "🌿", "w": "18–20"}, {"o": "Route 15", "t": "🌿", "w": "18–20"}], "quest": false}, {"nr": 18, "name": "Tauboss", "typen": ["Normal", "Flug"], "sterne": 3, "klasse": "A", "kp": 14, "ang": 3, "faeh": [["🪽", "Fliegen ab Lv 5"]], "evo": [], "fang": [], "quest": false}, {"nr": 19, "name": "Rattfratz", "typen": ["Normal"], "sterne": 1, "klasse": "A", "kp": 10, "ang": 1, "faeh": [], "evo": [[20, "Rattikarl", 6]], "fang": [{"o": "Route 1", "t": "🌿", "w": "10–14"}, {"o": "Route 2", "t": "🌿", "w": "10–12"}, {"o": "Route 4", "t": "🌿", "w": "5–14"}, {"o": "Route 8", "t": "🌿", "w": "5–12"}, {"o": "Route 16", "t": "🌿", "w": "6–13"}, {"o": "Route 11", "t": "🌿", "w": "5–14"}], "quest": false}, {"nr": 20, "name": "Rattikarl", "typen": ["Normal"], "sterne": 2, "klasse": "A", "kp": 12, "ang": 2, "faeh": [], "evo": [], "fang": [{"o": "Route 18", "t": "🌿", "w": "6–10"}], "quest": false}, {"nr": 21, "name": "Habitak", "typen": ["Normal", "Flug"], "sterne": 1, "klasse": "A", "kp": 10, "ang": 1, "faeh": [["🪽", "Fliegen ab Lv 5"]], "evo": [[22, "Ibitak", 6]], "fang": [{"o": "Route 22", "t": "🌿", "w": "7–16"}, {"o": "Route 3", "t": "🌿", "w": "6–13"}, {"o": "Route 9", "t": "🌿", "w": "5–14"}, {"o": "Route 10", "t": "🌿", "w": "5–14"}], "quest": false}, {"nr": 22, "name": "Ibitak", "typen": ["Normal", "Flug"], "sterne": 2, "klasse": "A", "kp": 12, "ang": 2, "faeh": [["🪽", "Fliegen ab Lv 5"]], "evo": [], "fang": [{"o": "Route 18", "t": "🌿", "w": "11–15"}], "quest": false}, {"nr": 23, "name": "Rettan", "typen": ["Gift"], "sterne": 2, "klasse": "B", "kp": 12, "ang": 3, "faeh": [], "evo": [[24, "Arbok", 6]], "fang": [{"o": "Route 22", "t": "🌿", "w": "19"}, {"o": "Route 23", "t": "🌿", "w": "5–14"}], "quest": false}, {"nr": 24, "name": "Arbok", "typen": ["Gift"], "sterne": 3, "klasse": "B", "kp": 14, "ang": 4, "faeh": [], "evo": [], "fang": [{"o": "Route 23", "t": "🌿", "w": "15–16"}], "quest": false}, {"nr": 25, "name": "Pikachu", "typen": ["Elektro"], "sterne": 3, "klasse": "C", "kp": 14, "ang": 5, "faeh": [], "evo": [[26, "Raichu", 6]], "fang": [{"o": "Vertania-Wald", "t": "🌿", "w": "19"}], "quest": false}, {"nr": 26, "name": "Raichu", "typen": ["Elektro"], "sterne": 4, "klasse": "C", "kp": 16, "ang": 6, "faeh": [], "evo": [], "fang": [], "quest": false}, {"nr": 27, "name": "Sandan", "typen": ["Boden"], "sterne": 2, "klasse": "B", "kp": 14, "ang": 2, "faeh": [["🪨", "Zertrümmerer ab Lv 4"]], "evo": [[28, "Sandamer", 6]], "fang": [{"o": "Route 4", "t": "🌿", "w": "15–20"}, {"o": "Route 9", "t": "🌿", "w": "15–20"}], "quest": false}, {"nr": 28, "name": "Sandamer", "typen": ["Boden"], "sterne": 3, "klasse": "B", "kp": 16, "ang": 3, "faeh": [["🪨", "Zertrümmerer ab Lv 4"]], "evo": [], "fang": [{"o": "Route 23", "t": "🌿", "w": "17–18"}], "quest": false}, {"nr": 29, "name": "Nidoran♀", "typen": ["Gift"], "sterne": 2, "klasse": "B", "kp": 14, "ang": 2, "faeh": [], "evo": [[30, "Nidorina", 4], [31, "Nidoqueen", 8]], "fang": [{"o": "Route 1", "t": "🌿", "w": "15–17"}, {"o": "Route 22", "t": "🌿", "w": "17"}, {"o": "Safari Nord", "t": "🌿", "w": "5–8"}], "quest": false}, {"nr": 30, "name": "Nidorina", "typen": ["Gift"], "sterne": 3, "klasse": "B", "kp": 16, "ang": 3, "faeh": [], "evo": [[31, "Nidoqueen", 8]], "fang": [{"o": "Safari Nord", "t": "🌿", "w": "13–14"}], "quest": false}, {"nr": 31, "name": "Nidoqueen", "typen": ["Gift", "Boden"], "sterne": 4, "klasse": "B", "kp": 18, "ang": 4, "faeh": [["🪨", "Zertrümmerer ab Lv 4"]], "evo": [], "fang": [], "quest": false}, {"nr": 32, "name": "Nidoran♂", "typen": ["Gift"], "sterne": 2, "klasse": "B", "kp": 12, "ang": 3, "faeh": [], "evo": [[33, "Nidorino", 4], [34, "Nidoking", 8]], "fang": [{"o": "Route 1", "t": "🌿", "w": "18–20"}, {"o": "Route 22", "t": "🌿", "w": "18"}, {"o": "Safari Nord", "t": "🌿", "w": "9–12"}], "quest": false}, {"nr": 33, "name": "Nidorino", "typen": ["Gift"], "sterne": 3, "klasse": "B", "kp": 14, "ang": 4, "faeh": [], "evo": [[34, "Nidoking", 8]], "fang": [{"o": "Safari Nord", "t": "🌿", "w": "15–16"}], "quest": false}, {"nr": 34, "name": "Nidoking", "typen": ["Gift", "Boden"], "sterne": 4, "klasse": "B", "kp": 16, "ang": 5, "faeh": [["🪨", "Zertrümmerer ab Lv 4"]], "evo": [], "fang": [], "quest": false}, {"nr": 35, "name": "Piepi", "typen": ["Fee"], "sterne": 3, "klasse": "C", "kp": 18, "ang": 3, "faeh": [], "evo": [[36, "Pixi", 6]], "fang": [{"o": "Mondberg", "t": "🪨", "w": "18–19"}], "quest": false}, {"nr": 36, "name": "Pixi", "typen": ["Fee"], "sterne": 4, "klasse": "C", "kp": 20, "ang": 4, "faeh": [], "evo": [], "fang": [], "quest": false}, {"nr": 37, "name": "Vulpix", "typen": ["Feuer"], "sterne": 2, "klasse": "B", "kp": 12, "ang": 3, "faeh": [], "evo": [[38, "Vulnona", 6]], "fang": [{"o": "Route 7", "t": "🌿", "w": "13–15"}, {"o": "Route 8", "t": "🌿", "w": "13–15"}], "quest": false}, {"nr": 38, "name": "Vulnona", "typen": ["Feuer"], "sterne": 3, "klasse": "B", "kp": 14, "ang": 4, "faeh": [], "evo": [], "fang": [{"o": "Route 23", "t": "🌿", "w": "19–20"}], "quest": false}, {"nr": 39, "name": "Pummeluff", "typen": ["Normal", "Fee"], "sterne": 3, "klasse": "C", "kp": 18, "ang": 3, "faeh": [], "evo": [[40, "Knuddeluff", 6]], "fang": [{"o": "Route 3", "t": "🌿", "w": "19–20"}], "quest": false}, {"nr": 40, "name": "Knuddeluff", "typen": ["Normal", "Fee"], "sterne": 4, "klasse": "C", "kp": 20, "ang": 4, "faeh": [], "evo": [], "fang": [], "quest": false}, {"nr": 41, "name": "Zubat", "typen": ["Gift", "Flug"], "sterne": 1, "klasse": "A", "kp": 10, "ang": 1, "faeh": [["🪽", "Fliegen ab Lv 5"]], "evo": [[42, "Golbat", 6]], "fang": [{"o": "Mondberg", "t": "🪨", "w": "5–11"}, {"o": "Felstunnel", "t": "🪨", "w": "6–13"}, {"o": "Seeschauminseln", "t": "🪨", "w": "5–12"}, {"o": "Siegesstraße", "t": "🪨", "w": "7–14"}], "quest": false}, {"nr": 42, "name": "Golbat", "typen": ["Gift", "Flug"], "sterne": 2, "klasse": "A", "kp": 12, "ang": 2, "faeh": [["🪽", "Fliegen ab Lv 5"]], "evo": [], "fang": [{"o": "Azuria-Höhle", "t": "🪨", "w": "6–10"}, {"o": "Seeschauminseln", "t": "🪨", "w": "16–18"}], "quest": false}, {"nr": 43, "name": "Myrapla", "typen": ["Pflanze", "Gift"], "sterne": 1, "klasse": "A", "kp": 10, "ang": 1, "faeh": [["🗡", "Zerschneider ab Lv 2"]], "evo": [[44, "Duflor", 4], [45, "Giflor", 8]], "fang": [{"o": "Route 24", "t": "🌿", "w": "12–16"}, {"o": "Route 25", "t": "🌿", "w": "10–13"}, {"o": "Route 5", "t": "🌿", "w": "10–14"}, {"o": "Route 6", "t": "🌿", "w": "10–14"}, {"o": "Route 15", "t": "🌿", "w": "5–14"}, {"o": "Route 21", "t": "🌿", "w": "6–18"}], "quest": false}, {"nr": 44, "name": "Duflor", "typen": ["Pflanze", "Gift"], "sterne": 2, "klasse": "A", "kp": 12, "ang": 2, "faeh": [["🗡", "Zerschneider ab Lv 2"]], "evo": [[45, "Giflor", 8]], "fang": [{"o": "Route 12", "t": "🌿", "w": "14–18"}, {"o": "Route 13", "t": "🌿", "w": "14–18"}], "quest": false}, {"nr": 45, "name": "Giflor", "typen": ["Pflanze", "Gift"], "sterne": 3, "klasse": "A", "kp": 14, "ang": 3, "faeh": [["🗡", "Zerschneider ab Lv 2"]], "evo": [], "fang": [], "quest": false}, {"nr": 46, "name": "Paras", "typen": ["Käfer", "Pflanze"], "sterne": 1, "klasse": "A", "kp": 10, "ang": 1, "faeh": [["🗡", "Zerschneider ab Lv 2"]], "evo": [[47, "Parasek", 6]], "fang": [{"o": "Mondberg", "t": "🪨", "w": "12–14"}, {"o": "Safari Süd", "t": "🌿", "w": "9–12"}], "quest": false}, {"nr": 47, "name": "Parasek", "typen": ["Käfer", "Pflanze"], "sterne": 2, "klasse": "A", "kp": 12, "ang": 2, "faeh": [["🗡", "Zerschneider ab Lv 2"]], "evo": [], "fang": [{"o": "Safari Süd", "t": "🌿", "w": "13–14"}], "quest": false}, {"nr": 48, "name": "Bluzuk", "typen": ["Käfer", "Gift"], "sterne": 1, "klasse": "A", "kp": 10, "ang": 1, "faeh": [], "evo": [[49, "Omot", 6]], "fang": [{"o": "Route 14", "t": "🌿", "w": "15–17"}, {"o": "Route 15", "t": "🌿", "w": "15–17"}], "quest": false}, {"nr": 49, "name": "Omot", "typen": ["Käfer", "Gift"], "sterne": 2, "klasse": "A", "kp": 12, "ang": 2, "faeh": [], "evo": [], "fang": [{"o": "Safari Süd", "t": "🌿", "w": "15–16"}], "quest": false}, {"nr": 50, "name": "Digda", "typen": ["Boden"], "sterne": 1, "klasse": "A", "kp": 10, "ang": 1, "faeh": [["🪨", "Zertrümmerer ab Lv 4"]], "evo": [[51, "Digdri", 6]], "fang": [{"o": "Digda-Höhle", "t": "🪨", "w": "6–20"}], "quest": false}, {"nr": 51, "name": "Digdri", "typen": ["Boden"], "sterne": 2, "klasse": "A", "kp": 12, "ang": 2, "faeh": [["🪨", "Zertrümmerer ab Lv 4"]], "evo": [], "fang": [], "quest": false}, {"nr": 52, "name": "Mauzi", "typen": ["Normal"], "sterne": 2, "klasse": "B", "kp": 12, "ang": 3, "faeh": [], "evo": [[53, "Snobilikat", 6]], "fang": [{"o": "Route 5", "t": "🌿", "w": "15–18"}, {"o": "Route 6", "t": "🌿", "w": "15–20"}], "quest": false}, {"nr": 53, "name": "Snobilikat", "typen": ["Normal"], "sterne": 3, "klasse": "B", "kp": 14, "ang": 4, "faeh": [], "evo": [], "fang": [{"o": "Route 18", "t": "🌿", "w": "16–20"}], "quest": false}, {"nr": 54, "name": "Enton", "typen": ["Wasser"], "sterne": 2, "klasse": "B", "kp": 14, "ang": 2, "faeh": [["🌊", "Surfen ab Lv 3"]], "evo": [[55, "Entoron", 6]], "fang": [{"o": "Route 6", "t": "💧", "w": "15–20"}, {"o": "Safari", "t": "💧", "w": "5–14"}], "quest": false}, {"nr": 55, "name": "Entoron", "typen": ["Wasser"], "sterne": 3, "klasse": "B", "kp": 16, "ang": 3, "faeh": [["🌊", "Surfen ab Lv 3"]], "evo": [], "fang": [{"o": "Safari", "t": "💧", "w": "15–17"}], "quest": false}, {"nr": 56, "name": "Menki", "typen": ["Kampf"], "sterne": 2, "klasse": "B", "kp": 12, "ang": 3, "faeh": [], "evo": [[57, "Rasaff", 6]], "fang": [{"o": "Route 22", "t": "🌿", "w": "20"}, {"o": "Route 3", "t": "🌿", "w": "14–18"}], "quest": false}, {"nr": 57, "name": "Rasaff", "typen": ["Kampf"], "sterne": 3, "klasse": "B", "kp": 14, "ang": 4, "faeh": [], "evo": [], "fang": [], "quest": false}, {"nr": 58, "name": "Fukano", "typen": ["Feuer"], "sterne": 3, "klasse": "C", "kp": 14, "ang": 5, "faeh": [], "evo": [[59, "Arkani", 6]], "fang": [{"o": "Route 7", "t": "🌿", "w": "16–18"}, {"o": "Route 8", "t": "🌿", "w": "16–18"}], "quest": false}, {"nr": 59, "name": "Arkani", "typen": ["Feuer"], "sterne": 4, "klasse": "C", "kp": 16, "ang": 6, "faeh": [], "evo": [], "fang": [], "quest": false}, {"nr": 60, "name": "Quapsel", "typen": ["Wasser"], "sterne": 1, "klasse": "A", "kp": 10, "ang": 1, "faeh": [["🌊", "Surfen ab Lv 3"]], "evo": [[61, "Quaputzi", 4], [62, "Quappo", 8]], "fang": [{"o": "Route 23", "t": "💧", "w": "6–15"}, {"o": "Route 6", "t": "💧", "w": "5–9"}], "quest": false}, {"nr": 61, "name": "Quaputzi", "typen": ["Wasser"], "sterne": 2, "klasse": "A", "kp": 12, "ang": 2, "faeh": [["🌊", "Surfen ab Lv 3"]], "evo": [[62, "Quappo", 8]], "fang": [{"o": "Route 23", "t": "💧", "w": "16–17"}, {"o": "Azuria-Höhle", "t": "💧", "w": "10–14"}], "quest": false}, {"nr": 62, "name": "Quappo", "typen": ["Wasser"], "sterne": 3, "klasse": "A", "kp": 14, "ang": 3, "faeh": [["🌊", "Surfen ab Lv 3"]], "evo": [], "fang": [], "quest": false}, {"nr": 63, "name": "Abra", "typen": ["Psycho"], "sterne": 2, "klasse": "C", "kp": 12, "ang": 4, "faeh": [], "evo": [[64, "Kadabra", 4], [65, "Simsala", 8]], "fang": [{"o": "Route 24", "t": "🌿", "w": "19–20"}], "quest": false}, {"nr": 64, "name": "Kadabra", "typen": ["Psycho"], "sterne": 3, "klasse": "C", "kp": 14, "ang": 5, "faeh": [], "evo": [[65, "Simsala", 8]], "fang": [], "quest": false}, {"nr": 65, "name": "Simsala", "typen": ["Psycho"], "sterne": 4, "klasse": "C", "kp": 16, "ang": 6, "faeh": [], "evo": [], "fang": [], "quest": false}, {"nr": 66, "name": "Machollo", "typen": ["Kampf"], "sterne": 2, "klasse": "B", "kp": 12, "ang": 3, "faeh": [], "evo": [[67, "Maschock", 4], [68, "Machomei", 8]], "fang": [{"o": "Felstunnel", "t": "🪨", "w": "16–17"}, {"o": "Siegesstraße", "t": "🪨", "w": "15–16"}], "quest": false}, {"nr": 67, "name": "Maschock", "typen": ["Kampf"], "sterne": 3, "klasse": "B", "kp": 14, "ang": 4, "faeh": [], "evo": [[68, "Machomei", 8]], "fang": [{"o": "Siegesstraße", "t": "🪨", "w": "20"}], "quest": false}, {"nr": 68, "name": "Machomei", "typen": ["Kampf"], "sterne": 4, "klasse": "B", "kp": 16, "ang": 5, "faeh": [], "evo": [], "fang": [], "quest": false}, {"nr": 69, "name": "Knofensa", "typen": ["Pflanze", "Gift"], "sterne": 1, "klasse": "A", "kp": 10, "ang": 1, "faeh": [["🗡", "Zerschneider ab Lv 2"]], "evo": [[70, "Ultrigaria", 4], [71, "Sarzenia", 8]], "fang": [{"o": "Route 12", "t": "🌿", "w": "6–13"}, {"o": "Route 13", "t": "🌿", "w": "6–13"}, {"o": "Route 14", "t": "🌿", "w": "5–14"}], "quest": false}, {"nr": 70, "name": "Ultrigaria", "typen": ["Pflanze", "Gift"], "sterne": 2, "klasse": "A", "kp": 12, "ang": 2, "faeh": [["🗡", "Zerschneider ab Lv 2"]], "evo": [[71, "Sarzenia", 8]], "fang": [], "quest": false}, {"nr": 71, "name": "Sarzenia", "typen": ["Pflanze", "Gift"], "sterne": 3, "klasse": "A", "kp": 14, "ang": 3, "faeh": [["🗡", "Zerschneider ab Lv 2"]], "evo": [], "fang": [], "quest": false}, {"nr": 72, "name": "Tentacha", "typen": ["Wasser", "Gift"], "sterne": 2, "klasse": "B", "kp": 12, "ang": 3, "faeh": [["🌊", "Surfen ab Lv 3"]], "evo": [[73, "Tentoxa", 6]], "fang": [{"o": "Route 19", "t": "💧", "w": "5–9"}, {"o": "Route 20", "t": "💧", "w": "5–9"}, {"o": "Route 21", "t": "💧", "w": "5–9"}], "quest": false}, {"nr": 73, "name": "Tentoxa", "typen": ["Wasser", "Gift"], "sterne": 3, "klasse": "B", "kp": 14, "ang": 4, "faeh": [["🌊", "Surfen ab Lv 3"]], "evo": [], "fang": [{"o": "Route 20", "t": "💧", "w": "15–17"}], "quest": false}, {"nr": 74, "name": "Kleinstein", "typen": ["Gestein", "Boden"], "sterne": 2, "klasse": "A", "kp": 12, "ang": 2, "faeh": [["🪨", "Zertrümmerer ab Lv 4"]], "evo": [[75, "Georok", 4], [76, "Geowaz", 8]], "fang": [{"o": "Mondberg", "t": "🪨", "w": "15–17"}, {"o": "Route 10", "t": "🌿", "w": "15–20"}, {"o": "Felstunnel", "t": "🪨", "w": "14–15"}], "quest": false}, {"nr": 75, "name": "Georok", "typen": ["Gestein", "Boden"], "sterne": 3, "klasse": "A", "kp": 14, "ang": 3, "faeh": [["🪨", "Zertrümmerer ab Lv 4"]], "evo": [[76, "Geowaz", 8]], "fang": [{"o": "Azuria-Höhle", "t": "🪨", "w": "11–15"}, {"o": "Siegesstraße", "t": "🪨", "w": "19"}], "quest": false}, {"nr": 76, "name": "Geowaz", "typen": ["Gestein", "Boden"], "sterne": 4, "klasse": "A", "kp": 16, "ang": 4, "faeh": [["🪨", "Zertrümmerer ab Lv 4"]], "evo": [], "fang": [], "quest": false}, {"nr": 77, "name": "Ponita", "typen": ["Feuer"], "sterne": 2, "klasse": "B", "kp": 12, "ang": 3, "faeh": [], "evo": [[78, "Gallopa", 6]], "fang": [{"o": "Route 16", "t": "🌿", "w": "14–19"}, {"o": "Route 17", "t": "🌿", "w": "6–10"}], "quest": false}, {"nr": 78, "name": "Gallopa", "typen": ["Feuer"], "sterne": 3, "klasse": "B", "kp": 14, "ang": 4, "faeh": [], "evo": [], "fang": [], "quest": false}, {"nr": 79, "name": "Flegmon", "typen": ["Wasser", "Psycho"], "sterne": 2, "klasse": "B", "kp": 14, "ang": 2, "faeh": [["🌊", "Surfen ab Lv 3"]], "evo": [[80, "Lahmus", 6]], "fang": [{"o": "Route 10", "t": "💧", "w": "15–20"}, {"o": "Seeschauminseln", "t": "💧", "w": "16"}], "quest": false}, {"nr": 80, "name": "Lahmus", "typen": ["Wasser", "Psycho"], "sterne": 3, "klasse": "B", "kp": 16, "ang": 3, "faeh": [["🌊", "Surfen ab Lv 3"]], "evo": [], "fang": [{"o": "Seeschauminseln", "t": "💧", "w": "19–20"}], "quest": false}, {"nr": 81, "name": "Magnetilo", "typen": ["Elektro", "Stahl"], "sterne": 2, "klasse": "B", "kp": 12, "ang": 3, "faeh": [], "evo": [[82, "Magneton", 6]], "fang": [{"o": "Kraftwerk", "t": "🪨", "w": "10–13"}], "quest": false}, {"nr": 82, "name": "Magneton", "typen": ["Elektro", "Stahl"], "sterne": 3, "klasse": "B", "kp": 14, "ang": 4, "faeh": [], "evo": [], "fang": [], "quest": false}, {"nr": 83, "name": "Porenta", "typen": ["Normal", "Flug"], "sterne": 3, "klasse": "C", "kp": 14, "ang": 5, "faeh": [["🪽", "Fliegen ab Lv 5"]], "evo": [], "fang": [{"o": "Route 12", "t": "🌿", "w": "19–20"}], "quest": false}, {"nr": 84, "name": "Dodu", "typen": ["Normal", "Flug"], "sterne": 1, "klasse": "A", "kp": 10, "ang": 1, "faeh": [["🪽", "Fliegen ab Lv 5"]], "evo": [[85, "Dodri", 6]], "fang": [{"o": "Route 17", "t": "🌿", "w": "11–15"}, {"o": "Safari Süd", "t": "🌿", "w": "5–8"}], "quest": false}, {"nr": 85, "name": "Dodri", "typen": ["Normal", "Flug"], "sterne": 2, "klasse": "A", "kp": 12, "ang": 2, "faeh": [["🪽", "Fliegen ab Lv 5"]], "evo": [], "fang": [{"o": "Route 17", "t": "🌿", "w": "16–20"}], "quest": false}, {"nr": 86, "name": "Jurob", "typen": ["Wasser", "Eis"], "sterne": 2, "klasse": "B", "kp": 14, "ang": 2, "faeh": [["🌊", "Surfen ab Lv 3"]], "evo": [[87, "Jugong", 6]], "fang": [{"o": "Seeschauminseln", "t": "🪨", "w": "13–15"}], "quest": false}, {"nr": 87, "name": "Jugong", "typen": ["Wasser", "Eis"], "sterne": 3, "klasse": "B", "kp": 16, "ang": 3, "faeh": [["🌊", "Surfen ab Lv 3"]], "evo": [], "fang": [], "quest": false}, {"nr": 88, "name": "Sleima", "typen": ["Gift"], "sterne": 3, "klasse": "C", "kp": 18, "ang": 3, "faeh": [], "evo": [[89, "Sleimok", 6]], "fang": [{"o": "Kraftwerk", "t": "🪨", "w": "14–17"}], "quest": false}, {"nr": 89, "name": "Sleimok", "typen": ["Gift"], "sterne": 4, "klasse": "C", "kp": 20, "ang": 4, "faeh": [], "evo": [], "fang": [], "quest": false}, {"nr": 90, "name": "Muschas", "typen": ["Wasser"], "sterne": 2, "klasse": "B", "kp": 14, "ang": 2, "faeh": [["🌊", "Surfen ab Lv 3"]], "evo": [[91, "Austos", 6]], "fang": [{"o": "Route 19", "t": "💧", "w": "15–17"}, {"o": "Seeschauminseln", "t": "💧", "w": "15"}], "quest": false}, {"nr": 91, "name": "Austos", "typen": ["Wasser", "Eis"], "sterne": 3, "klasse": "B", "kp": 16, "ang": 3, "faeh": [["🌊", "Surfen ab Lv 3"]], "evo": [], "fang": [], "quest": false}, {"nr": 92, "name": "Nebulak", "typen": ["Geist", "Gift"], "sterne": 2, "klasse": "C", "kp": 12, "ang": 4, "faeh": [], "evo": [[93, "Alpollo", 4], [94, "Gengar", 8]], "fang": [{"o": "Pokémon-Turm", "t": "🪨", "w": "6–10"}], "quest": false}, {"nr": 93, "name": "Alpollo", "typen": ["Geist", "Gift"], "sterne": 3, "klasse": "C", "kp": 14, "ang": 5, "faeh": [], "evo": [[94, "Gengar", 8]], "fang": [], "quest": false}, {"nr": 94, "name": "Gengar", "typen": ["Geist", "Gift"], "sterne": 4, "klasse": "C", "kp": 16, "ang": 6, "faeh": [], "evo": [], "fang": [], "quest": false}, {"nr": 95, "name": "Onix", "typen": ["Gestein", "Boden"], "sterne": 3, "klasse": "C", "kp": 18, "ang": 3, "faeh": [["🪨", "Zertrümmerer ab Lv 4"]], "evo": [], "fang": [{"o": "Felstunnel", "t": "🪨", "w": "18"}], "quest": false}, {"nr": 96, "name": "Traumato", "typen": ["Psycho"], "sterne": 2, "klasse": "B", "kp": 12, "ang": 3, "faeh": [], "evo": [[97, "Hypno", 6]], "fang": [{"o": "Route 11", "t": "🌿", "w": "15–20"}], "quest": false}, {"nr": 97, "name": "Hypno", "typen": ["Psycho"], "sterne": 3, "klasse": "B", "kp": 14, "ang": 4, "faeh": [], "evo": [], "fang": [], "quest": false}, {"nr": 98, "name": "Krabby", "typen": ["Wasser"], "sterne": 1, "klasse": "A", "kp": 10, "ang": 1, "faeh": [["🌊", "Surfen ab Lv 3"]], "evo": [[99, "Kingler", 6]], "fang": [{"o": "Route 10", "t": "💧", "w": "10–14"}, {"o": "Route 12/13", "t": "💧", "w": "14–20"}], "quest": false}, {"nr": 99, "name": "Kingler", "typen": ["Wasser"], "sterne": 2, "klasse": "A", "kp": 12, "ang": 2, "faeh": [["🌊", "Surfen ab Lv 3"]], "evo": [], "fang": [{"o": "Azuria-Höhle", "t": "💧", "w": "15–19"}, {"o": "Seeschauminseln", "t": "💧", "w": "18"}], "quest": false}, {"nr": 100, "name": "Voltobal", "typen": ["Elektro"], "sterne": 2, "klasse": "B", "kp": 12, "ang": 3, "faeh": [], "evo": [[101, "Lektrobal", 6]], "fang": [{"o": "Kraftwerk", "t": "🪨", "w": "6–9"}], "quest": false}, {"nr": 101, "name": "Lektrobal", "typen": ["Elektro"], "sterne": 3, "klasse": "B", "kp": 14, "ang": 4, "faeh": [], "evo": [], "fang": [], "quest": false}, {"nr": 102, "name": "Owei", "typen": ["Pflanze", "Psycho"], "sterne": 2, "klasse": "B", "kp": 14, "ang": 2, "faeh": [["🗡", "Zerschneider ab Lv 2"]], "evo": [[103, "Kokowei", 6]], "fang": [{"o": "Safari Nord", "t": "🌿", "w": "17–18"}], "quest": false}, {"nr": 103, "name": "Kokowei", "typen": ["Pflanze", "Psycho"], "sterne": 3, "klasse": "B", "kp": 16, "ang": 3, "faeh": [["🗡", "Zerschneider ab Lv 2"]], "evo": [], "fang": [], "quest": false}, {"nr": 104, "name": "Tragosso", "typen": ["Boden"], "sterne": 2, "klasse": "B", "kp": 14, "ang": 2, "faeh": [["🪨", "Zertrümmerer ab Lv 4"]], "evo": [[105, "Knogga", 6]], "fang": [{"o": "Pokémon-Turm", "t": "🪨", "w": "16–20"}], "quest": false}, {"nr": 105, "name": "Knogga", "typen": ["Boden"], "sterne": 3, "klasse": "B", "kp": 16, "ang": 3, "faeh": [["🪨", "Zertrümmerer ab Lv 4"]], "evo": [], "fang": [], "quest": false}, {"nr": 106, "name": "Kicklee", "typen": ["Kampf"], "sterne": 3, "klasse": "C", "kp": 14, "ang": 5, "faeh": [], "evo": [], "fang": [{"o": "Route 7", "t": "🌿", "w": "19–20"}], "quest": false}, {"nr": 107, "name": "Nockchan", "typen": ["Kampf"], "sterne": 3, "klasse": "C", "kp": 14, "ang": 5, "faeh": [], "evo": [], "fang": [{"o": "Route 8", "t": "🌿", "w": "19–20"}], "quest": false}, {"nr": 108, "name": "Schlurp", "typen": ["Normal"], "sterne": 3, "klasse": "C", "kp": 18, "ang": 3, "faeh": [], "evo": [], "fang": [{"o": "Route 16", "t": "🌿", "w": "20"}], "quest": false}, {"nr": 109, "name": "Smogon", "typen": ["Gift"], "sterne": 3, "klasse": "C", "kp": 14, "ang": 5, "faeh": [], "evo": [[110, "Smogmog", 6]], "fang": [{"o": "Pokémon-Turm", "t": "🪨", "w": "11–15"}], "quest": false}, {"nr": 110, "name": "Smogmog", "typen": ["Gift"], "sterne": 4, "klasse": "C", "kp": 16, "ang": 6, "faeh": [], "evo": [], "fang": [], "quest": false}, {"nr": 111, "name": "Rihorn", "typen": ["Boden", "Gestein"], "sterne": 2, "klasse": "B", "kp": 14, "ang": 2, "faeh": [["🪨", "Zertrümmerer ab Lv 4"]], "evo": [[112, "Rizeros", 6]], "fang": [{"o": "Siegesstraße", "t": "🪨", "w": "17–18"}], "quest": false}, {"nr": 112, "name": "Rizeros", "typen": ["Boden", "Gestein"], "sterne": 3, "klasse": "B", "kp": 16, "ang": 3, "faeh": [["🪨", "Zertrümmerer ab Lv 4"]], "evo": [], "fang": [], "quest": false}, {"nr": 113, "name": "Chaneira", "typen": ["Normal"], "sterne": 3, "klasse": "C", "kp": 18, "ang": 3, "faeh": [], "evo": [], "fang": [{"o": "Safari Nord", "t": "🌿", "w": "19"}], "quest": false}, {"nr": 114, "name": "Tangela", "typen": ["Pflanze"], "sterne": 2, "klasse": "B", "kp": 14, "ang": 2, "faeh": [["🗡", "Zerschneider ab Lv 2"]], "evo": [], "fang": [{"o": "Route 21", "t": "🌿", "w": "19–20"}], "quest": false}, {"nr": 115, "name": "Kangama", "typen": ["Normal"], "sterne": 3, "klasse": "C", "kp": 18, "ang": 3, "faeh": [], "evo": [], "fang": [{"o": "Safari Nord", "t": "🌿", "w": "20"}], "quest": false}, {"nr": 116, "name": "Seeper", "typen": ["Wasser"], "sterne": 2, "klasse": "B", "kp": 12, "ang": 3, "faeh": [["🌊", "Surfen ab Lv 3"]], "evo": [[117, "Seemon", 6]], "fang": [{"o": "Route 20", "t": "💧", "w": "10–14"}, {"o": "Seeschauminseln", "t": "💧", "w": "7–14"}], "quest": false}, {"nr": 117, "name": "Seemon", "typen": ["Wasser"], "sterne": 3, "klasse": "B", "kp": 14, "ang": 4, "faeh": [["🌊", "Surfen ab Lv 3"]], "evo": [], "fang": [{"o": "Seeschauminseln", "t": "💧", "w": "17"}], "quest": false}, {"nr": 118, "name": "Goldini", "typen": ["Wasser"], "sterne": 1, "klasse": "A", "kp": 10, "ang": 1, "faeh": [["🌊", "Surfen ab Lv 3"]], "evo": [[119, "Golking", 6]], "fang": [{"o": "Route 4", "t": "💧", "w": "7–13"}, {"o": "Route 24", "t": "💧", "w": "7–13"}, {"o": "Route 25", "t": "💧", "w": "7–13"}, {"o": "Route 6", "t": "💧", "w": "10–14"}, {"o": "Route 10", "t": "💧", "w": "5–9"}], "quest": false}, {"nr": 119, "name": "Golking", "typen": ["Wasser"], "sterne": 2, "klasse": "A", "kp": 12, "ang": 2, "faeh": [["🌊", "Surfen ab Lv 3"]], "evo": [], "fang": [{"o": "Route 23", "t": "💧", "w": "18–19"}, {"o": "Azuria-Höhle", "t": "💧", "w": "5–9"}], "quest": false}, {"nr": 120, "name": "Sterndu", "typen": ["Wasser"], "sterne": 2, "klasse": "B", "kp": 12, "ang": 3, "faeh": [["🌊", "Surfen ab Lv 3"]], "evo": [[121, "Starmie", 6]], "fang": [{"o": "Route 19", "t": "💧", "w": "18–20"}, {"o": "Route 20", "t": "💧", "w": "18–20"}, {"o": "Route 21", "t": "💧", "w": "15–20"}], "quest": false}, {"nr": 121, "name": "Starmie", "typen": ["Wasser", "Psycho"], "sterne": 3, "klasse": "B", "kp": 14, "ang": 4, "faeh": [["🌊", "Surfen ab Lv 3"]], "evo": [], "fang": [], "quest": false}, {"nr": 122, "name": "Pantimos", "typen": ["Psycho", "Fee"], "sterne": 3, "klasse": "C", "kp": 14, "ang": 5, "faeh": [], "evo": [], "fang": [{"o": "Route 2", "t": "🌿", "w": "19–20"}], "quest": false}, {"nr": 123, "name": "Sichlor", "typen": ["Käfer", "Flug"], "sterne": 3, "klasse": "C", "kp": 14, "ang": 5, "faeh": [["🪽", "Fliegen ab Lv 5"]], "evo": [], "fang": [{"o": "Safari Süd", "t": "🌿", "w": "19"}], "quest": false}, {"nr": 124, "name": "Rossana", "typen": ["Wasser", "Eis"], "sterne": 3, "klasse": "C", "kp": 18, "ang": 3, "faeh": [["🌊", "Surfen ab Lv 3"]], "evo": [], "fang": [{"o": "Seeschauminseln", "t": "🪨", "w": "19–20"}], "quest": false}, {"nr": 125, "name": "Elektek", "typen": ["Elektro"], "sterne": 3, "klasse": "C", "kp": 14, "ang": 5, "faeh": [], "evo": [], "fang": [{"o": "Kraftwerk", "t": "🪨", "w": "18–20"}], "quest": false}, {"nr": 126, "name": "Magmar", "typen": ["Feuer"], "sterne": 3, "klasse": "C", "kp": 14, "ang": 5, "faeh": [], "evo": [], "fang": [{"o": "Felstunnel", "t": "🪨", "w": "20"}], "quest": false}, {"nr": 127, "name": "Pinsir", "typen": ["Käfer"], "sterne": 3, "klasse": "C", "kp": 14, "ang": 5, "faeh": [], "evo": [], "fang": [{"o": "Safari Süd", "t": "🌿", "w": "20"}], "quest": false}, {"nr": 128, "name": "Tauros", "typen": ["Normal"], "sterne": 3, "klasse": "C", "kp": 18, "ang": 3, "faeh": [], "evo": [], "fang": [{"o": "Safari Süd", "t": "🌿", "w": "17–18"}], "quest": false}, {"nr": 129, "name": "Karpador", "typen": ["Wasser"], "sterne": 1, "klasse": "A", "kp": 10, "ang": 1, "faeh": [["🌊", "Surfen ab Lv 3"]], "evo": [[130, "Garados", 6]], "fang": [{"o": "Route 4", "t": "💧", "w": "14–20"}, {"o": "Route 24", "t": "💧", "w": "14–20"}, {"o": "Route 25", "t": "💧", "w": "14–20"}, {"o": "Route 12/13", "t": "💧", "w": "7–13"}, {"o": "Route 19", "t": "💧", "w": "10–14"}, {"o": "Route 21", "t": "💧", "w": "10–14"}], "quest": false}, {"nr": 130, "name": "Garados", "typen": ["Wasser", "Flug"], "sterne": 4, "klasse": "A", "kp": 16, "ang": 4, "faeh": [["🌊", "Surfen ab Lv 3"], ["🪽", "Fliegen ab Lv 5"]], "evo": [], "fang": [{"o": "Azuria-Höhle", "t": "💧", "w": "20"}], "quest": false}, {"nr": 131, "name": "Lapras", "typen": ["Wasser", "Eis"], "sterne": 3, "klasse": "C", "kp": 18, "ang": 3, "faeh": [["🌊", "Surfen ab Lv 3"]], "evo": [], "fang": [{"o": "Route 23", "t": "💧", "w": "20"}], "quest": false}, {"nr": 132, "name": "Ditto", "typen": ["Normal"], "sterne": 2, "klasse": "B", "kp": 12, "ang": 3, "faeh": [], "evo": [], "fang": [{"o": "Azuria-Höhle", "t": "🪨", "w": "16–20"}, {"o": "Route 13", "t": "🌿", "w": "19–20"}], "quest": false}, {"nr": 133, "name": "Evoli", "typen": ["Normal"], "sterne": 3, "klasse": "C", "kp": 18, "ang": 3, "faeh": [], "evo": [[134, "Aquana", 6]], "fang": [{"o": "Route 5", "t": "🌿", "w": "19–20"}], "quest": false}, {"nr": 134, "name": "Aquana", "typen": ["Wasser"], "sterne": 4, "klasse": "C", "kp": 20, "ang": 4, "faeh": [["🌊", "Surfen ab Lv 3"]], "evo": [], "fang": [], "quest": false}, {"nr": 135, "name": "Blitza", "typen": ["Elektro"], "sterne": 4, "klasse": "C", "kp": 16, "ang": 6, "faeh": [], "evo": [], "fang": [], "quest": false}, {"nr": 136, "name": "Flamara", "typen": ["Feuer"], "sterne": 4, "klasse": "C", "kp": 16, "ang": 6, "faeh": [], "evo": [], "fang": [], "quest": false}, {"nr": 137, "name": "Porygon", "typen": ["Normal"], "sterne": 3, "klasse": "C", "kp": 14, "ang": 5, "faeh": [], "evo": [], "fang": [{"o": "Spielhalle Prismania", "t": "🎯", "w": "15 ₽"}], "quest": true}, {"nr": 138, "name": "Amonitas", "typen": ["Gestein", "Wasser"], "sterne": 3, "klasse": "C", "kp": 18, "ang": 3, "faeh": [["🌊", "Surfen ab Lv 3"], ["🪨", "Zertrümmerer ab Lv 4"]], "evo": [[139, "Amoroso", 6]], "fang": [{"o": "Fossil Mondberg → Museum", "t": "🦴", "w": "Quest"}], "quest": true}, {"nr": 139, "name": "Amoroso", "typen": ["Gestein", "Wasser"], "sterne": 4, "klasse": "C", "kp": 20, "ang": 4, "faeh": [["🌊", "Surfen ab Lv 3"], ["🪨", "Zertrümmerer ab Lv 4"]], "evo": [], "fang": [], "quest": false}, {"nr": 140, "name": "Kabuto", "typen": ["Gestein", "Wasser"], "sterne": 3, "klasse": "C", "kp": 14, "ang": 5, "faeh": [["🌊", "Surfen ab Lv 3"], ["🪨", "Zertrümmerer ab Lv 4"]], "evo": [[141, "Kabutops", 6]], "fang": [{"o": "Fossil Mondberg → Museum", "t": "🦴", "w": "Quest"}], "quest": true}, {"nr": 141, "name": "Kabutops", "typen": ["Gestein", "Wasser"], "sterne": 4, "klasse": "C", "kp": 16, "ang": 6, "faeh": [["🌊", "Surfen ab Lv 3"], ["🪨", "Zertrümmerer ab Lv 4"]], "evo": [], "fang": [], "quest": false}, {"nr": 142, "name": "Aerodactyl", "typen": ["Gestein", "Flug"], "sterne": 4, "klasse": "C", "kp": 16, "ang": 6, "faeh": [["🪨", "Zertrümmerer ab Lv 4"], ["🪽", "Fliegen ab Lv 5"]], "evo": [], "fang": [{"o": "Mondberg", "t": "🪨", "w": "20"}], "quest": false}, {"nr": 143, "name": "Relaxo", "typen": ["Normal"], "sterne": 3, "klasse": "C", "kp": 18, "ang": 3, "faeh": [], "evo": [], "fang": [{"o": "Pokéflöte (Route 11/16)", "t": "🎵", "w": "Quest"}], "quest": true}, {"nr": 144, "name": "Arktos", "typen": ["Eis", "Flug"], "sterne": 5, "klasse": "C", "kp": 22, "ang": 5, "faeh": [["🪽", "Fliegen ab Lv 5"]], "evo": [], "fang": [{"o": "Seeschauminseln", "t": "❄️", "w": "5 Orden"}], "quest": true}, {"nr": 145, "name": "Zapdos", "typen": ["Elektro", "Flug"], "sterne": 5, "klasse": "C", "kp": 18, "ang": 7, "faeh": [["🪽", "Fliegen ab Lv 5"]], "evo": [], "fang": [{"o": "Kraftwerk", "t": "⚡", "w": "5 Orden"}], "quest": true}, {"nr": 146, "name": "Lavados", "typen": ["Feuer", "Flug"], "sterne": 5, "klasse": "C", "kp": 18, "ang": 7, "faeh": [["🪽", "Fliegen ab Lv 5"]], "evo": [], "fang": [{"o": "Siegesstraße", "t": "🔥", "w": "8 Orden"}], "quest": true}, {"nr": 147, "name": "Dratini", "typen": ["Drache"], "sterne": 3, "klasse": "C", "kp": 14, "ang": 5, "faeh": [], "evo": [[148, "Dragonir", 4], [149, "Dragoran", 8]], "fang": [{"o": "Safari", "t": "💧", "w": "18–20"}], "quest": false}, {"nr": 148, "name": "Dragonir", "typen": ["Drache"], "sterne": 4, "klasse": "C", "kp": 16, "ang": 6, "faeh": [], "evo": [[149, "Dragoran", 8]], "fang": [], "quest": false}, {"nr": 149, "name": "Dragoran", "typen": ["Drache", "Flug"], "sterne": 5, "klasse": "C", "kp": 18, "ang": 7, "faeh": [["🪽", "Fliegen ab Lv 5"]], "evo": [], "fang": [], "quest": false}, {"nr": 150, "name": "Mewtu", "typen": ["Psycho"], "sterne": 5, "klasse": "C", "kp": 18, "ang": 7, "faeh": [], "evo": [], "fang": [{"o": "Azuria-Höhle", "t": "🔮", "w": "Top 4"}], "quest": true}, {"nr": 151, "name": "Mew", "typen": ["Psycho"], "sterne": 5, "klasse": "C", "kp": 18, "ang": 7, "faeh": [], "evo": [], "fang": [{"o": "Geheim-Event", "t": "✨", "w": "Pokédex ≥100"}], "quest": true}];const TYPE_MATRIX = {"Normal":{"Gestein":"−","Geist":"X","Stahl":"−"},"Feuer":{"Feuer":"−","Wasser":"−","Pflanze":"+","Eis":"+","Käfer":"+","Gestein":"−","Drache":"−","Stahl":"+"},"Wasser":{"Feuer":"+","Wasser":"−","Pflanze":"−","Boden":"+","Gestein":"+","Drache":"−"},"Pflanze":{"Feuer":"−","Wasser":"+","Pflanze":"−","Gift":"−","Boden":"+","Flug":"−","Käfer":"−","Gestein":"+","Drache":"−","Stahl":"−"},"Elektro":{"Wasser":"+","Pflanze":"−","Elektro":"−","Boden":"X","Flug":"+","Drache":"−"},"Eis":{"Feuer":"−","Wasser":"−","Pflanze":"+","Eis":"−","Boden":"+","Flug":"+","Drache":"+","Stahl":"−"},"Kampf":{"Normal":"+","Eis":"+","Gift":"−","Flug":"−","Psycho":"−","Käfer":"−","Gestein":"+","Geist":"X","Unlicht":"+","Stahl":"+","Fee":"−"},"Gift":{"Pflanze":"+","Gift":"−","Boden":"−","Gestein":"−","Geist":"−","Stahl":"X","Fee":"+"},"Boden":{"Feuer":"+","Pflanze":"−","Elektro":"+","Gift":"+","Flug":"X","Käfer":"−","Gestein":"+","Stahl":"+"},"Flug":{"Pflanze":"+","Elektro":"−","Kampf":"+","Käfer":"+","Gestein":"−","Stahl":"−"},"Psycho":{"Kampf":"+","Gift":"+","Psycho":"−","Unlicht":"X","Stahl":"−"},"Käfer":{"Feuer":"−","Pflanze":"+","Kampf":"−","Gift":"−","Flug":"−","Psycho":"+","Geist":"−","Unlicht":"+","Stahl":"−","Fee":"−"},"Gestein":{"Feuer":"+","Eis":"+","Kampf":"−","Boden":"−","Flug":"+","Käfer":"+","Stahl":"−"},"Geist":{"Normal":"X","Psycho":"+","Geist":"+","Unlicht":"−"},"Drache":{"Drache":"+","Stahl":"−","Fee":"X"},"Unlicht":{"Kampf":"−","Psycho":"+","Geist":"+","Unlicht":"−","Fee":"−"},"Stahl":{"Feuer":"−","Wasser":"−","Elektro":"−","Eis":"+","Gestein":"+","Stahl":"−","Fee":"+"},"Fee":{"Feuer":"−","Kampf":"+","Gift":"−","Drache":"+","Unlicht":"+","Stahl":"−"}};const AREA_ORDER = [
+ ['Route 1','🌿','Süden & Start'],['Route 2','🌿','Süden & Start'],['Vertania-Wald','🌿','Süden & Start'],
+ ['Route 22','🌿','Süden & Start'],['Route 23','🌿','Süden & Start'],['Route 23','💧','Süden & Start'],
+ ['Route 3','🌿','Süden & Start'],['Mondberg','🪨','Süden & Start'],
+ ['Route 4','🌿','Norden'],['Route 4','💧','Norden'],['Route 24','🌿','Norden'],['Route 24','💧','Norden'],
+ ['Route 25','💧','Norden'],['Route 25','🌿','Norden'],['Azuria-Höhle','🪨','Norden'],['Azuria-Höhle','💧','Norden'],
+ ['Route 5','🌿','Mitte & Westen'],['Route 6','🌿','Mitte & Westen'],['Route 6','💧','Mitte & Westen'],
+ ['Route 7','🌿','Mitte & Westen'],['Route 8','🌿','Mitte & Westen'],['Route 16','🌿','Mitte & Westen'],
+ ['Route 17','🌿','Mitte & Westen'],['Route 18','🌿','Mitte & Westen'],
+ ['Route 9','🌿','Osten'],['Route 10','🌿','Osten'],['Route 10','💧','Osten'],['Felstunnel','🪨','Osten'],
+ ['Kraftwerk','🪨','Osten'],['Pokémon-Turm','🪨','Osten'],['Route 11','🌿','Osten'],['Route 12','🌿','Osten'],
+ ['Route 12/13','💧','Osten'],['Route 13','🌿','Osten'],['Route 14','🌿','Osten'],['Route 15','🌿','Osten'],
+ ['Route 19','💧','Süd-Wasser, Safari & Endgame'],['Route 20','💧','Süd-Wasser, Safari & Endgame'],
+ ['Route 21','🌿','Süd-Wasser, Safari & Endgame'],['Route 21','💧','Süd-Wasser, Safari & Endgame'],
+ ['Safari Nord','🌿','Süd-Wasser, Safari & Endgame'],['Safari Süd','🌿','Süd-Wasser, Safari & Endgame'],
+ ['Safari','💧','Süd-Wasser, Safari & Endgame'],['Seeschauminseln','🪨','Süd-Wasser, Safari & Endgame'],
+ ['Seeschauminseln','💧','Süd-Wasser, Safari & Endgame'],['Digda-Höhle','🪨','Süd-Wasser, Safari & Endgame'],
+ ['Siegesstraße','🪨','Süd-Wasser, Safari & Endgame'],
+].map(([ort,terr,region],i)=>({key:ort+'|'+terr, ort, terr, region, idx:i}));
+
+/* ===================== State build ===================== */
+const QUEST_MARKERS = ['Quest','₽','Orden','Top','Pokédex'];
+function isQuestFang(w){ return QUEST_MARKERS.some(m=>w.includes(m)); }
+
+function buildState(){
+  const mons = {};
+  MONS_RAW.forEach(raw=>{
+    const abil = {schneid:false, zert:false, surf:false, fly:false};
+    raw.faeh.forEach(([icon])=>{
+      if(icon==='🗡') abil.schneid=true;
+      else if(icon==='🪨') abil.zert=true;
+      else if(icon==='🌊') abil.surf=true;
+      else if(icon==='🪽') abil.fly=true;
+    });
+    const orte = new Set();
+    let questInfo = null;
+    raw.fang.forEach(f=>{
+      if(isQuestFang(f.w)) questInfo = f;
+      else orte.add(f.o+'|'+f.t);
+    });
+    const baseKp = 2*raw.sterne+8, baseAng = raw.sterne;
+    const exKp = raw.kp-baseKp, exAng = raw.ang-baseAng;
+    let sigTarget = null;
+    if(exKp>0) sigTarget='kp'; else if(exAng>0) sigTarget='ang';
+    mons[raw.nr] = {
+      nr:raw.nr, name:raw.name, typen:raw.typen.slice(),
+      sterne:raw.sterne, quest:raw.quest, questInfo, sigTarget,
+      abil, orte, evo:raw.evo, parentNr:null,
+    };
+  });
+  Object.values(mons).forEach(m=>{
+    m.evo.forEach(([childNr])=>{ if(mons[childNr]) mons[childNr].parentNr = m.nr; });
+  });
+  return { mons, areas: AREA_ORDER };
+}
+
+function rootOf(state, nr){
+  let cur = state.mons[nr], guard=0;
+  while(cur.parentNr && guard<10){ cur = state.mons[cur.parentNr]; guard++; }
+  return cur.nr;
+}
+
+function ownFundorteCount(m){ return m.orte.size; }
+
+function klasseOf(state, nr){
+  const m = state.mons[nr];
+  if(m.quest) return 'C';
+  const n = rootOf(state, nr);
+  const rm = state.mons[n];
+  if(rm.quest) return 'C';
+  const c = ownFundorteCount(rm);
+  if(c>=3) return 'A';
+  if(c===2) return 'B';
+  if(c===1) return 'C';
+  return null; // family currently has zero checked locations anywhere
+}
+
+function sigBonus(klasse, target){
+  if(!target||!klasse) return 0;
+  const table = { kp:{A:0,B:2,C:4}, ang:{A:0,B:1,C:2} };
+  return table[target][klasse]||0;
+}
+
+function computeKP(state, nr, level){
+  const m = state.mons[nr];
+  const kl = klasseOf(state, nr);
+  const base = 2*m.sterne+8;
+  const sig = m.sigTarget==='kp' ? sigBonus(kl,'kp') : 0;
+  const lvlBonus = Math.max(0, level-1);
+  return base + sig + lvlBonus;
+}
+function computeANG(state, nr, level){
+  const m = state.mons[nr];
+  const kl = klasseOf(state, nr);
+  const base = m.sterne;
+  const sig = m.sigTarget==='ang' ? sigBonus(kl,'ang') : 0;
+  const lvlBonus = Math.floor(Math.max(0,level-1)/2);
+  return base + sig + lvlBonus;
+}
+
+/* ===================== Area dice distribution ===================== */
+function computeAreaDistribution(monsInArea){
+  if(monsInArea.length===0) return {niete:[1,20], entries:[]};
+  const classes={};
+  monsInArea.forEach(m=>{ (classes[m.sterne] = classes[m.sterne]||[]).push(m); });
+  const present = Object.keys(classes).map(Number).sort((a,b)=>a-b);
+  const maxc = Math.max(...present);
+  const baseTable = {1:{1:15},2:{1:10,2:5},3:{1:8,2:5,3:2},4:{1:8,2:4,3:2,4:1}};
+  const base = baseTable[Math.min(maxc,4)];
+  const w = {1:base[1]||0,2:base[2]||0,3:base[3]||0,4:base[4]||0};
+  if(maxc>4){ w[4] += 1; } // safety net, shouldn't occur (wild cap is 4 stars)
+  const lowest = present[0];
+  for(let c=1;c<=maxc;c++){
+    if(!present.includes(c) && c!==lowest){ w[lowest]+=(w[c]||0); w[c]=0; }
+  }
+  const n={}; present.forEach(c=>n[c]=classes[c].length);
+  const per={}; present.forEach(c=> per[c]=Math.max(1,Math.round((w[c]||1)/n[c])) );
+  const total=()=>present.reduce((s,c)=>s+per[c]*n[c],0);
+  let guard=0;
+  while(20-total()<4 && guard<50){
+    const cand=present.filter(c=>per[c]>1);
+    if(!cand.length) break;
+    let best=cand[0];
+    cand.forEach(c=>{ if(n[c]>n[best]) best=c; });
+    per[best]--; guard++;
+  }
+  guard=0;
+  while(20-total()>6 && guard<50){
+    let best=present[0];
+    present.forEach(c=>{ if(n[c]<n[best]) best=c; });
+    per[best]++; guard++;
+  }
+  const niete = 20-total();
+  let cursor = niete+1;
+  const entries=[];
+  present.forEach(c=>{
+    classes[c].slice().sort((a,b)=>a.nr-b.nr).forEach(m=>{
+      const from=cursor, to=cursor+per[c]-1;
+      entries.push({nr:m.nr,name:m.name,sterne:c,range:[from,to]});
+      cursor=to+1;
+    });
+  });
+  return {niete:[1,niete], entries};
+}
+
+
+/* ===================== Persistence & mutation ===================== */
+const LS_KEY = 'kanto-spielsystem-v1';
+
+function defaultShop(){
+  return { poke:24, super:8, hyper:8, master:4, coin1:20, coin2:10, coin5:10, trank:6, supertrank:4, beleber:4 };
+}
+function defaultEvents(){
+  return [
+    {title:'Freundlicher Wanderer', body:'Ein Wanderer schenkt dir einen <b>Superball</b>.', foot:'GESCHENK'},
+    {title:'Team Rocket!', body:'Kämpfe gegen den Rüpel – oder zahle <b>2 ₽</b>, um vorbeizukommen.', foot:'GEFAHR'},
+    {title:'Beeren gefunden', body:'Du findest wilde Beeren. Ein Pokémon deiner Wahl heilt <b>5 KP</b>.', foot:'FUND'},
+    {title:'Glückstag', body:'Dein nächster Fangwurf gelingt mit <b>+1</b>.', foot:'GLÜCK'},
+  ];
+}
+
+let state = null;
+
+function initGlobalState(){
+  state = buildState();
+  state.shop = defaultShop();
+  state.events = defaultEvents();
+  const saved = loadPersisted();
+  if(saved) applyPersisted(saved);
+}
+
+function loadPersisted(){
+  try{ const raw = localStorage.getItem(LS_KEY); return raw ? JSON.parse(raw) : null; }
+  catch(e){ console.warn('Konnte gespeicherten Stand nicht laden', e); return null; }
+}
+
+function applyPersisted(saved){
+  if(saved.sterne){
+    Object.keys(saved.sterne).forEach(nr=>{ if(state.mons[nr]) state.mons[nr].sterne = saved.sterne[nr]; });
+  }
+  if(saved.abil){
+    Object.keys(saved.abil).forEach(nr=>{ if(state.mons[nr]) Object.assign(state.mons[nr].abil, saved.abil[nr]); });
+  }
+  if(saved.orte){
+    Object.keys(saved.orte).forEach(nr=>{ if(state.mons[nr]) state.mons[nr].orte = new Set(saved.orte[nr]); });
+  }
+  if(saved.shop) Object.assign(state.shop, saved.shop);
+  if(saved.events) state.events = saved.events;
+}
+
+let persistTimer = null;
+function persist(){
+  clearTimeout(persistTimer);
+  persistTimer = setTimeout(()=>{
+    const out = { sterne:{}, abil:{}, orte:{}, shop: state.shop, events: state.events };
+    Object.values(state.mons).forEach(m=>{
+      out.sterne[m.nr] = m.sterne;
+      out.abil[m.nr] = m.abil;
+      out.orte[m.nr] = Array.from(m.orte);
+    });
+    try{ localStorage.setItem(LS_KEY, JSON.stringify(out)); }catch(e){ console.warn('Speichern fehlgeschlagen', e); }
+    const hint = document.getElementById('saveHint');
+    if(hint){ hint.textContent = 'Gespeichert · ' + new Date().toLocaleTimeString('de-DE'); }
+  }, 250);
+}
+
+function resetAllData(){
+  if(!confirm('Wirklich alle Änderungen (Sterne, Fundorte, Fähigkeiten, Pokeshop, Events) zurücksetzen?')) return;
+  localStorage.removeItem(LS_KEY);
+  location.reload();
+}
+
+function getFamilyNrs(rootNr){
+  const out = [rootNr];
+  const walk = (nr)=>{
+    const m = state.mons[nr];
+    if(!m) return;
+    m.evo.forEach(([childNr])=>{ if(state.mons[childNr]){ out.push(childNr); walk(childNr); } });
+  };
+  walk(rootNr);
+  return out;
+}
+
+function setSterne(nr, val){
+  state.mons[nr].sterne = val;
+  persist();
+}
+function toggleAbil(nr, key){
+  state.mons[nr].abil[key] = !state.mons[nr].abil[key];
+  persist();
+}
+function toggleOrt(nr, areaKey){
+  const m = state.mons[nr];
+  if(m.orte.has(areaKey)) m.orte.delete(areaKey); else m.orte.add(areaKey);
+  persist();
+  const root = rootOf(state, nr);
+  getFamilyNrs(root).forEach(fn=>{
+    const cell = document.querySelector(`.seltenheit-cell[data-nr="${fn}"]`);
+    if(cell) cell.innerHTML = seltenheitHTML(fn);
+  });
+}
+
+function seltenheitHTML(nr){
+  const kl = klasseOf(state, nr);
+  const m = state.mons[nr];
+  const count = ownFundorteCount(state.mons[rootOf(state,nr)]);
+  if(m.quest) return `<span class="ksym kC" title="Quest-Pokémon">★</span>`;
+  if(!kl) return `<span class="ksym kNone" title="kein Fundort zugeordnet">–</span>`;
+  const sym = KLASSE[kl].sym;
+  return `<span class="ksym k${kl}" title="${KLASSE[kl].lab} · ${count} Fundort(e)">${sym}</span>`;
+}
+
+
+/* ===================== Home page: Pokémon-Tabelle ===================== */
+const FIXED_COLS = [
+  {key:'nr', label:'Nr', width:32},
+  {key:'bild', label:'Bild', width:42},
+  {key:'name', label:'Name', width:118},
+  {key:'sterne', label:'Sterne', width:92},
+  {key:'seltenheit', label:'Selt.', width:44},
+  {key:'typ1', label:'Typ 1', width:74},
+  {key:'typ2', label:'Typ 2', width:74},
+  {key:'schneid', label:'🗡', width:24},
+  {key:'zert', label:'🪨', width:24},
+  {key:'surf', label:'🌊', width:24},
+];
+function fixedColLeft(i){ let l=0; for(let k=0;k<i;k++) l+=FIXED_COLS[k].width; return l; }
+
+function typChip(t){
+  if(!t) return '<span class="typchip empty">–</span>';
+  return `<span class="typchip" style="background:${TYP[t]}"><img src="${TIMG(t)}" alt="" onerror="this.style.display='none'">${t}</span>`;
+}
+
+function renderHome(){
+  const host = document.getElementById('page-home');
+  const regions = [];
+  state.areas.forEach(a=>{
+    let r = regions.find(r=>r.region===a.region);
+    if(!r){ r={region:a.region, areas:[]}; regions.push(r); }
+    r.areas.push(a);
+  });
+
+  let theadRow1 = '<tr>';
+  FIXED_COLS.forEach((c,i)=>{
+    theadRow1 += `<th class="sticky fixedhead" rowspan="2" style="left:${fixedColLeft(i)}px; width:${c.width}px; min-width:${c.width}px;">${c.label}</th>`;
+  });
+  regions.forEach(r=>{ theadRow1 += `<th class="regionhead" colspan="${r.areas.length}">${r.region}</th>`; });
+  theadRow1 += '</tr>';
+  let theadRow2 = '<tr>';
+  state.areas.forEach(a=>{
+    theadRow2 += `<th class="areahead"><div class="areahead-in">${a.terr} ${a.ort}</div></th>`;
+  });
+  theadRow2 += '</tr>';
+
+  let body = '';
+  for(let nr=1; nr<=151; nr++){
+    const m = state.mons[nr];
+    if(!m) continue;
+    body += `<tr data-row-nr="${nr}">`;
+    body += `<td class="sticky" style="left:${fixedColLeft(0)}px; width:${FIXED_COLS[0].width}px;"><b>${nr}</b></td>`;
+    body += `<td class="sticky" style="left:${fixedColLeft(1)}px; width:${FIXED_COLS[1].width}px;"><img class="rowimg" src="${IMG(nr)}" loading="lazy" onerror="this.style.visibility='hidden'"></td>`;
+    body += `<td class="sticky nameCell" style="left:${fixedColLeft(2)}px; width:${FIXED_COLS[2].width}px;">${m.name}${m.quest?' <span class="questbadge" title="Quest-Pokémon, nicht per W20 fangbar">Q</span>':''}</td>`;
+    let sterneOpts=''; for(let s=1;s<=5;s++) sterneOpts += `<option value="${s}" ${m.sterne===s?'selected':''}>${'★'.repeat(s)}</option>`;
+    body += `<td class="sticky" style="left:${fixedColLeft(3)}px; width:${FIXED_COLS[3].width}px;"><select class="sterne-sel" data-nr="${nr}">${sterneOpts}</select></td>`;
+    body += `<td class="sticky seltenheit-cell" data-nr="${nr}" style="left:${fixedColLeft(4)}px; width:${FIXED_COLS[4].width}px;">${seltenheitHTML(nr)}</td>`;
+    body += `<td class="sticky" style="left:${fixedColLeft(5)}px; width:${FIXED_COLS[5].width}px;">${typChip(m.typen[0])}</td>`;
+    body += `<td class="sticky" style="left:${fixedColLeft(6)}px; width:${FIXED_COLS[6].width}px;">${typChip(m.typen[1])}</td>`;
+    body += `<td class="sticky center" style="left:${fixedColLeft(7)}px; width:${FIXED_COLS[7].width}px;"><input type="checkbox" class="abil-chk" data-nr="${nr}" data-key="schneid" ${m.abil.schneid?'checked':''}></td>`;
+    body += `<td class="sticky center" style="left:${fixedColLeft(8)}px; width:${FIXED_COLS[8].width}px;"><input type="checkbox" class="abil-chk" data-nr="${nr}" data-key="zert" ${m.abil.zert?'checked':''}></td>`;
+    body += `<td class="sticky center" style="left:${fixedColLeft(9)}px; width:${FIXED_COLS[9].width}px;"><input type="checkbox" class="abil-chk" data-nr="${nr}" data-key="surf" ${m.abil.surf?'checked':''}></td>`;
+    state.areas.forEach(a=>{
+      const checked = m.orte.has(a.key);
+      body += `<td class="center areacell"><input type="checkbox" class="orte-chk" data-nr="${nr}" data-area="${a.key}" ${checked?'checked':''}></td>`;
+    });
+    body += '</tr>';
+  }
+
+  host.innerHTML = `
+    <div class="home-toolbar">
+      <h1>Pokémon-Tabelle · Kanto</h1>
+      <div class="hint">Sterne, Fähigkeiten und Fundorte hier ändern → Spielleiter-Karte und Kartenset aktualisieren sich automatisch. Seltenheit wird live aus der Anzahl gesetzter Fundorte berechnet (1 = ★ selten · 2 = ◆ ungewöhnlich · 3+ = ● gewöhnlich).</div>
+    </div>
+    <div class="hometable-wrap">
+      <table class="hometable">
+        <thead>${theadRow1}${theadRow2}</thead>
+        <tbody>${body}</tbody>
+      </table>
+    </div>`;
+
+  host.querySelector('tbody').addEventListener('change', e=>{
+    const t = e.target;
+    const nr = t.dataset.nr;
+    if(t.matches('.sterne-sel')) setSterne(nr, Number(t.value));
+    else if(t.matches('.abil-chk')) toggleAbil(nr, t.dataset.key);
+    else if(t.matches('.orte-chk')) toggleOrt(nr, t.dataset.area);
+  });
+}
+
+
+/* ===================== Spielleiter-Karte ===================== */
+function monsInArea(areaKey){
+  return Object.values(state.mons)
+    .filter(m=>!m.quest && m.orte.has(areaKey))
+    .map(m=>({nr:m.nr, name:m.name, sterne:m.sterne}));
+}
+
+function typeMatrixHTML(){
+  const types = Object.keys(TYP);
+  let html = '<table class="typematrix"><thead><tr><th class="corner">Angr. ↓ / Vert. →</th>';
+  types.forEach(t=> html += `<th><div class="vert" style="background:${TYP[t]}">${t}</div></th>`);
+  html += '</tr></thead><tbody>';
+  types.forEach(atk=>{
+    html += `<tr><th class="rowlab" style="background:${TYP[atk]}">${atk}</th>`;
+    types.forEach(def=>{
+      const v = (TYPE_MATRIX[atk]||{})[def];
+      let cell = '';
+      if(v==='+') cell = '<span class="c plus">+</span>';
+      else if(v==='−'||v==='-') cell = '<span class="c minus">−</span>';
+      else if(v==='X') cell = '<span class="c none">✕</span>';
+      html += `<td>${cell}</td>`;
+    });
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+  return html;
+}
+
+function areaCardHTML(a){
+  const mons = monsInArea(a.key);
+  const dist = computeAreaDistribution(mons);
+  let rows = `<div class="arow niete"><span class="arow-rng">${dist.niete[0]}–${dist.niete[1]}</span><span class="arow-name">Niete</span></div>`;
+  dist.entries.forEach(e=>{
+    rows += `<div class="arow"><span class="arow-rng">${e.range[0]===e.range[1]?e.range[0]:e.range[0]+'–'+e.range[1]}</span>
+      <span class="arow-name">${e.name}</span><span class="arow-star">${'★'.repeat(e.sterne)}</span></div>`;
+  });
+  if(mons.length===0) rows += `<div class="arow empty">Keine Pokémon zugeordnet (Tabelle bearbeiten)</div>`;
+  return `<div class="areacard">
+    <div class="areacard-head"><span class="terr">${a.terr}</span> ${a.ort}</div>
+    ${rows}
+  </div>`;
+}
+
+function questListHTML(){
+  const quests = Object.values(state.mons).filter(m=>m.quest).sort((a,b)=>a.nr-b.nr);
+  let html = '<div class="questgrid">';
+  quests.forEach(m=>{
+    const info = m.questInfo || {};
+    html += `<div class="questrow">
+      <img src="${IMG(m.nr)}" loading="lazy" onerror="this.style.visibility='hidden'">
+      <div><b>${m.name}</b> <span class="pid">#${m.nr}</span><br>
+      <span class="qtxt">${info.t||''} ${info.o||''}${info.w?' · '+info.w:''}</span></div>
+    </div>`;
+  });
+  html += '</div>';
+  return html;
+}
+
+function renderGM(){
+  const host = document.getElementById('page-gm');
+  const regions = [];
+  state.areas.forEach(a=>{
+    let r = regions.find(r=>r.region===a.region);
+    if(!r){ r={region:a.region, areas:[]}; regions.push(r); }
+    r.areas.push(a);
+  });
+  let areaRegionsHTML = '';
+  regions.forEach(r=>{
+    areaRegionsHTML += `<h3 class="region-title">${r.region}</h3><div class="areacard-grid">`;
+    r.areas.forEach(a=>{ areaRegionsHTML += areaCardHTML(a); });
+    areaRegionsHTML += '</div>';
+  });
+
+  host.innerHTML = `
+    <div class="gm-toolbar">
+      <h1>Spielleiter-Karte · Kanto</h1>
+      <div class="hint">Alle Werte werden live aus der Pokémon-Tabelle berechnet (Formeln nach Regelwerk §2–3). Änderungen an Sternen oder Fundorten wirken sich sofort hier aus.</div>
+      <button onclick="window.print()">🖨 Diese Seite drucken</button>
+    </div>
+
+    <div class="gm-grid-top">
+      <div class="gmbox">
+        <h2>Typen-Matrix</h2>
+        <div class="matrix-wrap">${typeMatrixHTML()}</div>
+        <div class="legend"><span><span class="c plus">+</span> +1 Schaden</span>
+          <span><span class="c minus">−</span> −1 Schaden</span>
+          <span><span class="c none">✕</span> kein Schaden</span><span>leer = normal</span></div>
+        <ul class="ruleul">
+          <li><b>Dualtyp-Verteidiger:</b> beide Spalten addieren, Deckel ±2</li>
+          <li><b>✕ schlägt alles:</b> kein Schaden, kein Wurf</li>
+          <li><b>Angreifer mit 2 Typen</b> wählt seinen Angriffstyp vor dem Wurf</li>
+        </ul>
+      </div>
+      <div class="gmbox">
+        <h2>Spickzettel</h2>
+        <div class="cheatgrid">
+          <div class="cheatbox"><b>Fangwurf (W6) nach Sternen</b>
+            <table class="mini"><tr><td>★</td><td>3+</td><td>★★★</td><td>5+</td></tr>
+            <tr><td>★★</td><td>4+</td><td>★★★★</td><td>6</td></tr>
+            <tr><td colspan="4">★★★★★ nur mit Bonus: Superball 6 · Hyperball 5+ · Mewtu nur Meisterball</td></tr></table>
+            <div class="tiny">Superball +1 · Hyperball +2 · Meisterball automatisch · Gegner ≤ ½ KP: +1</div></div>
+          <div class="cheatbox"><b>Werte-Formel („Zähe KP")</b>
+            <ul><li>KP = 2×Sterne + 8 · Angriff = Sterne</li>
+            <li>je Level (2–10): +1 KP · ungerade Level (3,5,7,9): +1 Angriff</li>
+            <li>Signaturbonus: ◆ KP+2/ANG+1 · ★ KP+4/ANG+2 (pro Familie fest)</li></ul></div>
+          <div class="cheatbox"><b>Suchen &amp; Bewegung</b>
+            <ul><li>W6 = Kacheln laufen · auf 🌿/💧/🪨 stehen bleiben = W20 suchen</li>
+            <li>Zeile der Kachel im Gebiet unten verwenden</li></ul></div>
+          <div class="cheatbox"><b>Level &amp; Entwicklung</b>
+            <ul><li>Max-Level = 2 + Anzahl Orden</li>
+            <li>3-stufige Familien: Lv 4 / Lv 8 · 2-stufige: Lv 6</li></ul></div>
+        </div>
+      </div>
+    </div>
+
+    <h2 class="section-title">Nicht wild fangbar (Quests &amp; Legendäre)</h2>
+    ${questListHTML()}
+
+    <h2 class="section-title">Gebietszeilen (W20, live berechnet)</h2>
+    ${areaRegionsHTML}
+  `;
+}
+
+
+/* ===================== Kartenset ===================== */
+const SIEGE_MAX = 36;
+const SIEGE_SCHWELLEN = {2:'2', 4:'3', 7:'4', 10:'5', 14:'6', 18:'7', 23:'8', 29:'9', 36:'10'};
+const CARD_BALLS_ICON = (()=>{
+  const BALL = top => `<svg class="ball" viewBox="0 0 20 20">
+    <circle cx="10" cy="10" r="8.6" fill="#fff" stroke="#111" stroke-width="1.3"/>
+    <path d="M1.4 10 a8.6 8.6 0 0 1 17.2 0 Z" fill="${top}"/>
+    ${top==='#20242c' ? '<path d="M3.6 5.4 L8.2 9.6 M16.4 5.4 L11.8 9.6" stroke="#f2c230" stroke-width="2.2" fill="none"/>' : ''}
+    <line x1="1.4" y1="10" x2="18.6" y2="10" stroke="#111" stroke-width="1.5"/>
+    <circle cx="10" cy="10" r="2.5" fill="#fff" stroke="#111" stroke-width="1.3"/></svg>`;
+  return [ BALL('#e6402e'), BALL('#2f6fc4'), BALL('#20242c') ];
+})();
+
+function cardStyle(m){
+  const c1 = TYP[m.typen[0]], c2 = TYP[m.typen[1]] || c1;
+  return `style="--bg1:${c1};--bg2:${c2}" class="card${m.typen.length>1?' dual':''}"`;
+}
+const cardTicos = m => m.typen.map(t=>`<span class="tico" style="--tc:${TYP[t]}"><img src="${TIMG(t)}" referrerpolicy="no-referrer"></span>`).join('');
+function cardFoot(nr){
+  const m = state.mons[nr];
+  const kl = klasseOf(state, nr);
+  const klInfo = kl ? KLASSE[kl] : {sym:'–',lab:'?'};
+  return `<div class="foot">
+    <div class="starchip"><span class="stars">${'★'.repeat(m.sterne)}</span></div>
+    <div class="klasse"><span class="sym">${klInfo.sym}</span><span class="lab">${klInfo.lab}</span></div>
+  </div>`;
+}
+function cardHeader(nr, cls){
+  const m = state.mons[nr];
+  return `<div class="${cls}">${cls==='bhead'?`<div class="pcircle"><img src="${IMG(nr)}" referrerpolicy="no-referrer"></div>`:''}
+    <div class="pname">${m.name}</div>${cardTicos(m)}<div class="pnr">#${String(nr).padStart(3,'0')}</div></div>`;
+}
+
+const fangRange = min => min > 6 ? '–' : (min === 6 ? '6' : `${Math.max(1, min)}–6`);
+function fangTableHTML(nr){
+  const m = state.mons[nr];
+  const t = SCHWELLE[m.sterne];
+  const oben  = [t, t-1, t-2].map(fangRange);
+  const unten = [t-1, t-2, t-3].map(fangRange);
+  return `<div class="fang">
+    <div class="fl"><span class="flab">FANG</span><span class="dice">🎲 W6</span></div>
+    <div class="fgrid">
+      <div class="fkp">&gt; ½ KP</div>${oben.map(r=>`<span class="rng">${r}</span>`).join('')}
+      <div></div>${CARD_BALLS_ICON.join('')}
+      <div class="fkp">&lt; ½ KP</div>${unten.map(r=>`<span class="rng">${r}</span>`).join('')}
+    </div></div>`;
+}
+
+function liveFangList(nr, distMap){
+  const m = state.mons[nr];
+  const list = [];
+  state.areas.forEach(a=>{
+    if(m.orte.has(a.key)){
+      const dist = distMap[a.key];
+      const entry = dist.entries.find(e=>e.nr===Number(nr));
+      if(entry) list.push({t:a.terr, o:a.ort, w: entry.range[0]===entry.range[1]?String(entry.range[0]):`${entry.range[0]}–${entry.range[1]}`});
+    }
+  });
+  return list;
+}
+
+function cardFront(nr, distMap){
+  const m = state.mons[nr];
+  const fangList = liveFangList(nr, distMap);
+  let panel;
+  if(m.quest){
+    const info = m.questInfo || {};
+    panel = `<div class="chip" style="flex:1">
+      <div class="fangtitle">BESONDERER FUNDORT<span class="dice">✦ Quest</span></div>
+      <div class="fort"><span class="ter">${info.t||'✦'}</span><span class="on">${info.o||''}</span><span class="rng">${info.w||''}</span></div>
+      <div class="fextra">Nicht per W20 auffindbar – nur über die genannte Quest/Bedingung.</div>
+    </div>
+    ${m.sterne>=4 ? fangTableHTML(nr) : ''}`;
+  } else if(fangList.length){
+    panel = `<div class="chip" style="flex:1">
+      <div class="fangtitle">FANGORTE<span class="dice">🎲 W20</span></div>
+      ${fangList.map(f=>`<div class="fort"><span class="ter">${f.t}</span><span class="on">${f.o}</span><span class="rng">${f.w}</span></div>`).join('')}
+    </div>
+    ${fangTableHTML(nr)}`;
+  } else {
+    const via = m.evo.length ? `Entwicklung aus der Vorstufe` : `Nur über Entwicklung / Tausch`;
+    panel = `<div class="chip" style="flex:1; display:flex; align-items:center; justify-content:center;">
+      <div class="notwild"><div class="nw1">Nicht wild fangbar</div><div class="nw2">${via}</div></div>
+    </div>`;
+  }
+  return `<div ${cardStyle(m)}><div class="frame"></div><div class="in">
+    ${cardHeader(nr,'head')}
+    <div class="artbox"><img src="${IMG(nr)}" referrerpolicy="no-referrer"></div>
+    ${panel}
+    ${cardFoot(nr)}
+  </div></div>`;
+}
+
+function kpBoxesHTML(nr){
+  const kp1 = computeKP(state, nr, 1);
+  let s='';
+  for(let i=1;i<=kp1;i++) s += `<div class="bx"></div>`;
+  for(let lv=2;lv<=10;lv++) s += `<div class="bx bonus">${lv}</div>`;
+  return s;
+}
+function angTrackHTML(nr){
+  return ['1–2','3–4','5–6','7–8','9–10'].map((lv,i)=>{
+    const level = i===0?1:(i*2+1);
+    return `<div class="acell"><span class="alv">Lv ${lv}</span><span class="aval">${computeANG(state,nr,level)}</span></div>`;
+  }).join('');
+}
+function siegeBoxesHTML(){
+  let s='';
+  for(let i=1;i<=SIEGE_MAX;i++){
+    const lv = SIEGE_SCHWELLEN[i];
+    s += lv ? `<div class="bx thresh">${lv}</div>` : `<div class="bx"></div>`;
+  }
+  return s;
+}
+function cardBack(nr){
+  const m = state.mons[nr];
+  const abilRows = [];
+  if(m.abil.schneid) abilRows.push(['🗡','Zerschneider ab Lv 2']);
+  if(m.abil.surf) abilRows.push(['🌊','Surfen ab Lv 3']);
+  if(m.abil.zert) abilRows.push(['🪨','Zertrümmerer ab Lv 4']);
+  if(m.abil.fly) abilRows.push(['🪽','Fliegen ab Lv 5']);
+  const evoRows = m.evo.length
+    ? m.evo.map(([enr,ename,lv])=>`<div class="grow"><img class="evoimg" src="${IMG(enr)}" referrerpolicy="no-referrer"><span>→ ${ename} ab Lv ${lv}</span></div>`)
+    : [`<div class="grow"><span class="gico">–</span><span>Keine Entwicklung</span></div>`];
+  const growRows = [ ...abilRows.map(f=>`<div class="grow"><span class="gico">${f[0]}</span><span>${f[1]}</span></div>`), ...evoRows ].join('');
+  return `<div ${cardStyle(m)}><div class="frame"></div><div class="in">
+    ${cardHeader(nr,'bhead')}
+    <div class="chip">
+      <div class="statlab">KP <span class="big">${computeKP(state,nr,1)}</span></div>
+      <div class="kpgrid">${kpBoxesHTML(nr)}</div>
+    </div>
+    <div class="chip">
+      <div class="statlab">ANGRIFF</div>
+      <div class="atrack">${angTrackHTML(nr)}</div>
+    </div>
+    <div class="chip">
+      <div class="statlab">SIEGE <span class="note">dicke Kästchen = neues Level</span></div>
+      <div class="siege">${siegeBoxesHTML()}</div>
+    </div>
+    <div class="chip">${growRows}</div>
+    ${cardFoot(nr)}
+  </div></div>`;
+}
+
+const CARD_MIRROR = [2,1,0, 5,4,3, 8,7,6];
+function renderCards(){
+  const host = document.getElementById('page-cards');
+  const distMap = {};
+  state.areas.forEach(a=>{ distMap[a.key] = computeAreaDistribution(monsInArea(a.key)); });
+
+  const nrs = Object.keys(state.mons).map(Number).sort((a,b)=>a-b);
+  let sheets = '';
+  for(let b=0; b*9 < nrs.length; b++){
+    const grp = nrs.slice(b*9, b*9+9);
+    const fronts = grp.map(nr=>cardFront(nr, distMap)).join('');
+    const backs = CARD_MIRROR.map(i => grp[i]!==undefined ? cardBack(grp[i]) : '<div class="card" style="background:none"></div>').join('');
+    sheets += `<div class="sheet"><div class="grid">${fronts}</div><div class="sheetlab">Kanto Komplettset · Bogen ${b+1}/${Math.ceil(nrs.length/9)} · VORDERSEITEN</div></div>`;
+    sheets += `<div class="sheet"><div class="grid">${backs}</div><div class="sheetlab">Kanto Komplettset · Bogen ${b+1}/${Math.ceil(nrs.length/9)} · RÜCKSEITEN (gespiegelt)</div></div>`;
+  }
+
+  host.innerHTML = `
+    <div class="cards-toolbar">
+      <h1>Kartenset · alle 151 Pokémon</h1>
+      <label><input type="checkbox" id="cutToggle" checked onchange="document.getElementById('page-cards').classList.toggle('nocut', !this.checked)"> Schnittlinien</label>
+      <button onclick="window.print()">🖨 Drucken (2 Seiten pro Bogen, duplex lange Kante)</button>
+      <span class="hint">Werte werden live aus der Pokémon-Tabelle berechnet (Sterne, Fundorte, Fähigkeiten).</span>
+    </div>
+    <div id="cardsheets">${sheets}</div>`;
+}
+
+
+/* ===================== Pokeshop ===================== */
+const BALL_TOP = { poke:'#ee3d34', super:'#2f74c0', hyper:'#f4c025', master:'#7a3fb0' };
+let shopUid = 0;
+function shopBallSVG(type){
+  const id = 'bc'+(shopUid++);
+  const top = BALL_TOP[type];
+  let marks = '';
+  if(type==='super') marks = `<g stroke="#e23b34" stroke-width="6" fill="none" stroke-linecap="round">
+      <path d="M23 41 L39 24"/><path d="M77 41 L61 24"/><path d="M33 43 L46 30"/><path d="M67 43 L54 30"/></g>`;
+  if(type==='hyper') marks = `<g fill="#191919"><rect x="30" y="20" width="7.5" height="20" rx="2.5"/>
+      <rect x="62.5" y="20" width="7.5" height="20" rx="2.5"/><rect x="33" y="26" width="34" height="6.5" rx="2.5"/></g>`;
+  if(type==='master') marks = `<text x="50" y="35" text-anchor="middle" font-family="Fredoka,sans-serif" font-weight="700" font-size="22" fill="#fff">M</text>
+      <circle cx="25" cy="30" r="5.5" fill="#e57ac0"/><circle cx="75" cy="30" r="5.5" fill="#e57ac0"/>`;
+  return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <defs><clipPath id="${id}"><circle cx="50" cy="50" r="47"/></clipPath></defs>
+    <g clip-path="url(#${id})">
+      <rect x="0" y="0" width="100" height="52" fill="${top}"/>
+      <rect x="0" y="48" width="100" height="52" fill="#f6f6f4"/>
+      <rect x="0" y="43" width="100" height="14" fill="#161616"/>
+      ${marks}
+    </g>
+    <circle cx="50" cy="50" r="47" fill="none" stroke="#161616" stroke-width="4.5"/>
+    <circle cx="50" cy="50" r="15" fill="#f6f6f4" stroke="#161616" stroke-width="5"/>
+    <circle cx="50" cy="50" r="6.5" fill="#f6f6f4" stroke="#161616" stroke-width="2.5"/>
+  </svg>`;
+}
+const SHOP_COIN = { 1:{face:'#cf8a3c', ring:'#a5692a'}, 2:{face:'#c2c8cf', ring:'#8f97a0'}, 5:{face:'#e6b52c', ring:'#b98a15'} };
+function shopCoinSVG(v){
+  const {face, ring} = SHOP_COIN[v];
+  return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="50" r="47" fill="${face}" stroke="${ring}" stroke-width="5"/>
+    <circle cx="50" cy="50" r="39" fill="none" stroke="rgba(255,255,255,.45)" stroke-width="2"/>
+    <text x="50" y="60" text-anchor="middle" font-family="Fredoka,sans-serif" font-weight="700"
+      font-size="42" fill="#fff" stroke="${ring}" stroke-width="1.2">${v}</text>
+    <text x="50" y="82" text-anchor="middle" font-family="Fredoka,sans-serif" font-weight="700" font-size="13" fill="#fff">₽</text>
+  </svg>`;
+}
+function shopPotionSVG(bottle, splash){
+  return `<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+    <rect x="16" y="4" width="8" height="5" rx="1" fill="#7a5a34"/>
+    <rect x="13" y="8" width="14" height="5" rx="2" fill="#a5763e"/>
+    <path d="M12 13 h16 v16 a5 5 0 0 1 -5 5 h-6 a5 5 0 0 1 -5 -5 Z" fill="${bottle}" stroke="#00000022" stroke-width="1.2"/>
+    <rect x="12" y="22" width="16" height="7" fill="${splash}" opacity=".9"/>
+    <ellipse cx="18" cy="18" rx="3.5" ry="5" fill="#ffffff" opacity=".35"/></svg>`;
+}
+const SHOP_REVIVE_SVG = `<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+  <path d="M20 4 L24 15 L35 15 L26 22 L29 33 L20 26 L11 33 L14 22 L5 15 L16 15 Z"
+    fill="#ffd23f" stroke="#e0a91e" stroke-width="1.4" stroke-linejoin="round"/>
+  <circle cx="20" cy="20" r="4" fill="#fff" opacity=".8"/></svg>`;
+
+const SHOP_ITEMS = [
+  {key:'trank', name:'Trank', eff:'Heilt 5 KP', price:2, col:'#ee6a4d', ico:shopPotionSVG('#ee6a4d','#c14a30')},
+  {key:'supertrank', name:'Supertrank', eff:'Heilt volle KP', price:4, col:'#5b7fd6', ico:shopPotionSVG('#5b7fd6','#3a56a8')},
+  {key:'beleber', name:'Beleber', eff:'Besiegtes Pokémon zurück<br>mit halben KP', price:5, col:'#e3b52a', ico:SHOP_REVIVE_SVG},
+];
+
+function chipsHTML(items, css){
+  return items.map(html=>`<div class="chip ${css}">${html}</div>`).join('');
+}
+
+function ballSheetHTML(){
+  const BALL_CFG = [
+    {type:'poke', name:'Pokéball', key:'poke'},
+    {type:'super', name:'Superball', key:'super'},
+    {type:'hyper', name:'Hyperball', key:'hyper'},
+    {type:'master', name:'Meisterball', key:'master', numbered:true},
+  ];
+  let grid = '';
+  BALL_CFG.forEach(cfg=>{
+    const n = state.shop[cfg.key];
+    grid += `<div class="group-label">${cfg.name} <span class="count">×${n}</span></div>`;
+    for(let i=0;i<n;i++){
+      grid += `<div class="chip ballchip">${shopBallSVG(cfg.type)}<span class="tag">${cfg.name}</span>${cfg.numbered?`<span class="idx">${i+1}/${n}</span>`:''}</div>`;
+    }
+  });
+  return `<div class="sheet shopsheet"><div class="sheet-head">Ball-Chips <small>runde Chips · 30 mm</small></div>
+    <div class="sheet-sub">Startausrüstung pro Spieler laut Regelwerk. Meisterball: nummeriert.</div>
+    <div class="shopgrid">${grid}</div></div>`;
+}
+function coinSheetHTML(){
+  let grid='';
+  [1,2,5].forEach(v=>{
+    const n = state.shop['coin'+v];
+    grid += `<div class="group-label">${v} ₽ <span class="count">×${n}</span></div>`;
+    for(let i=0;i<n;i++) grid += `<div class="chip coinchip">${shopCoinSVG(v)}</div>`;
+  });
+  return `<div class="sheet shopsheet"><div class="sheet-head">Pokédollar-Chips <small>Münzen · 26 mm</small></div>
+    <div class="shopgrid">${grid}</div></div>`;
+}
+function itemSheetHTML(){
+  let grid='';
+  SHOP_ITEMS.forEach(it=>{
+    const n = state.shop[it.key];
+    grid += `<div class="group-label">${it.name} <span class="count">×${n}</span></div>`;
+    for(let i=0;i<n;i++){
+      grid += `<div class="icard">
+        <div class="stripe" style="background:${it.col}"></div>
+        <div class="ic-top"><div class="ic-ico">${it.ico}</div><div class="ic-name">${it.name}</div></div>
+        <div class="ic-eff">${it.eff}</div>
+        <div class="ic-price">${it.price} ₽</div></div>`;
+    }
+  });
+  return `<div class="sheet shopsheet"><div class="sheet-head">Item-Karten <small>Sonstiges · 58 × 40 mm</small></div>
+    <div class="shopgrid">${grid}</div></div>`;
+}
+function eventCardHTML(ev, idx){
+  return `<div class="ecard">
+    <div class="watermark">?</div>
+    <div class="e-head"><div class="e-eyebrow">Ereignis</div><div class="e-title">${ev.title}</div></div>
+    <div class="e-body">${ev.body}</div>
+    <div class="e-foot"><span>KANTO · EVENT</span><span>${ev.foot}</span></div>
+    <button class="e-del noprint" onclick="removeEvent(${idx})" title="Event löschen">×</button>
+  </div>`;
+}
+function eventSheetHTML(){
+  let grid = state.events.map((ev,i)=>eventCardHTML(ev,i)).join('');
+  grid += `<div class="ecard blank addcard noprint" onclick="addEventPrompt()">
+    <div class="addplus">+</div><div class="addlabel">Neue Eventkarte</div></div>`;
+  return `<div class="sheet shopsheet"><div class="sheet-head">Event-Karten <small>60 × 88 mm</small></div>
+    <div class="sheet-sub">Eigene Karten über „+" ergänzen – werden lokal gespeichert und mitgedruckt.</div>
+    <div class="shopgrid">${grid}</div></div>`;
+}
+
+function addEventPrompt(){
+  const title = prompt('Titel der Eventkarte:');
+  if(!title) return;
+  const body = prompt('Text der Karte (HTML wie <b>fett</b> erlaubt):') || '';
+  const foot = prompt('Kategorie-Label (z.B. GESCHENK, GEFAHR, FUND, GLÜCK):') || 'EVENT';
+  state.events.push({title, body, foot});
+  persist();
+  renderShop();
+}
+function removeEvent(idx){
+  if(!confirm('Diese Eventkarte wirklich löschen?')) return;
+  state.events.splice(idx,1);
+  persist();
+  renderShop();
+}
+
+function shopNumberInput(key, label){
+  return `<label class="shopnum">${label}<input type="number" min="0" max="99" value="${state.shop[key]}" data-shopkey="${key}"></label>`;
+}
+
+function renderShop(){
+  const host = document.getElementById('page-shop');
+  host.innerHTML = `
+    <div class="shop-toolbar">
+      <h1>Pokeshop · Druckvorlagen</h1>
+      <label><input type="checkbox" id="shopCutToggle" checked onchange="document.getElementById('page-shop').classList.toggle('nocut', !this.checked)"> Schnittlinien</label>
+      <button onclick="window.print()">🖨 Alles drucken</button>
+      <span class="hint">Anzahl einstellen → Bögen aktualisieren sich sofort. Alles wird lokal gespeichert.</span>
+    </div>
+    <div class="shop-config">
+      <div class="cfgbox"><b>Bälle</b>
+        ${shopNumberInput('poke','Pokébälle')}
+        ${shopNumberInput('super','Superbälle')}
+        ${shopNumberInput('hyper','Hyperbälle')}
+        ${shopNumberInput('master','Meisterbälle')}
+      </div>
+      <div class="cfgbox"><b>Münzen</b>
+        ${shopNumberInput('coin1','1 ₽')}
+        ${shopNumberInput('coin2','2 ₽')}
+        ${shopNumberInput('coin5','5 ₽')}
+      </div>
+      <div class="cfgbox"><b>Sonstiges (Items)</b>
+        ${shopNumberInput('trank','Trank')}
+        ${shopNumberInput('supertrank','Supertrank')}
+        ${shopNumberInput('beleber','Beleber')}
+      </div>
+    </div>
+    <div id="shopSheets">
+      ${ballSheetHTML()}
+      ${coinSheetHTML()}
+      ${itemSheetHTML()}
+      ${eventSheetHTML()}
+    </div>`;
+
+  host.querySelector('.shop-config').addEventListener('change', e=>{
+    const t = e.target;
+    if(t.matches('[data-shopkey]')){
+      const v = Math.max(0, Math.min(99, Number(t.value)||0));
+      state.shop[t.dataset.shopkey] = v;
+      persist();
+      document.getElementById('shopSheets').innerHTML = ballSheetHTML()+coinSheetHTML()+itemSheetHTML()+eventSheetHTML();
+    }
+  });
+}
+
+
+/* ===================== Navigation & Init ===================== */
+const RENDERERS = { home: renderHome, gm: renderGM, cards: renderCards, shop: renderShop };
+
+function activatePage(name){
+  document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active', p.id === 'page-'+name));
+  document.querySelectorAll('nav .tab').forEach(b=>b.classList.toggle('active', b.dataset.page === name));
+  RENDERERS[name]();
+  try{ localStorage.setItem('kanto-spielsystem-lastpage', name); }catch(e){}
+}
+
+document.addEventListener('DOMContentLoaded', ()=>{
+  initGlobalState();
+  document.querySelectorAll('nav .tab[data-page]').forEach(btn=>{
+    btn.addEventListener('click', ()=> activatePage(btn.dataset.page));
+  });
+  let start = 'home';
+  try{ start = localStorage.getItem('kanto-spielsystem-lastpage') || 'home'; }catch(e){}
+  if(!RENDERERS[start]) start = 'home';
+  activatePage(start);
+});
+
+</script>
+</body>
+</html>
