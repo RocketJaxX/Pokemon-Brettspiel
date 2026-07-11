@@ -38,6 +38,7 @@ nav.topnav .savehint{font-size:11px; color:#b0a68f; font-weight:700; padding:0 1
   nav.topnav{display:none;}
   .page{padding:0;}
   body{background:#fff;}
+  .noprint{display:none !important;}
 }
 
 /* ===== Home: Pokémon-Tabelle ===== */
@@ -120,29 +121,105 @@ table.mini td{border:1px solid var(--line); padding:1px 6px; font-weight:800; ba
 .region-title{font-size:15px; margin:16px 0 6px; color:var(--ink); font-family:'Fredoka',sans-serif;}
 
 /* ===== Gebietszeilen (Original-Layout: Spalten nach Sternen) ===== */
-#page-gm .starhead{display:grid; grid-template-columns:150px 2fr 2fr 2fr 1fr; gap:6px;
+#page-gm .gm-screen .starhead{display:grid; grid-template-columns:150px 2fr 2fr 2fr 1fr; gap:6px;
   font-family:'Fredoka',sans-serif; font-size:11px; margin-bottom:4px;}
-#page-gm .starhead > div{background:var(--ink); color:var(--gold2); border-radius:5px; text-align:center; padding:4px 0;}
-#page-gm .starhead .sh0{color:#fff;}
-#page-gm .arearow{display:grid; grid-template-columns:150px 2fr 2fr 2fr 1fr; gap:6px; margin-bottom:6px;}
-#page-gm .areahead{background:var(--tc); color:#fff; border-radius:6px; padding:6px 8px;
+#page-gm .gm-screen .starhead > div{background:var(--ink); color:var(--gold2); border-radius:5px; text-align:center; padding:4px 0;}
+#page-gm .gm-screen .starhead .sh0{color:#fff;}
+#page-gm .gm-screen .arearow{display:grid; grid-template-columns:150px 2fr 2fr 2fr 1fr; gap:6px; margin-bottom:6px;}
+#page-gm .gm-screen .areahead{background:var(--tc); color:#fff; border-radius:6px; padding:6px 8px;
   display:flex; flex-direction:column; justify-content:center; gap:2px; text-shadow:0 1px 2px rgba(0,0,0,.35);}
-#page-gm .aname{font-family:'Fredoka',sans-serif; font-size:13px; line-height:1.1;}
-#page-gm .terr{font-size:10.5px; font-weight:800; opacity:.95;}
-#page-gm .niete{font-size:10px; font-weight:800; background:rgba(0,0,0,.3); border-radius:4px;
+#page-gm .gm-screen .aname{font-family:'Fredoka',sans-serif; font-size:13px; line-height:1.1;}
+#page-gm .gm-screen .terr{font-size:10.5px; font-weight:800; opacity:.95;}
+#page-gm .gm-screen .niete{font-size:10px; font-weight:800; background:rgba(0,0,0,.3); border-radius:4px;
   padding:1px 6px; align-self:flex-start;}
-#page-gm .scell{background:#fbf8ef; border:1px solid var(--line); border-radius:7px;
+#page-gm .gm-screen .scell{background:#fbf8ef; border:1px solid var(--line); border-radius:7px;
   display:flex; flex-wrap:wrap; gap:4px; align-items:center; justify-content:center; align-content:center; padding:4px 3px;}
-#page-gm .dash{color:#cfc6b0; font-weight:800; font-size:14px;}
-#page-gm .mon{width:52px; text-align:center; display:flex; flex-direction:column; align-items:center;}
-#page-gm .mon img{width:22px; height:22px; object-fit:contain;}
-#page-gm .mon .rng{font-family:'Fredoka',sans-serif; font-size:9.5px; background:var(--ink); color:#fff;
+#page-gm .gm-screen .dash{color:#cfc6b0; font-weight:800; font-size:14px;}
+#page-gm .gm-screen .mon{width:52px; text-align:center; display:flex; flex-direction:column; align-items:center;}
+#page-gm .gm-screen .mon img{width:22px; height:22px; object-fit:contain;}
+#page-gm .gm-screen .mon .rng{font-family:'Fredoka',sans-serif; font-size:9.5px; background:var(--ink); color:#fff;
   border-radius:4px; padding:0 5px; margin-bottom:1px; white-space:nowrap;}
-#page-gm .mon .mname{font-size:9px; font-weight:800; line-height:1.1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:52px;}
-#page-gm .mon .meta{font-size:8px; font-weight:800; color:#8a7f6d;}
-#page-gm .mon .meta .kl{color:#111; font-size:9.5px;}
+#page-gm .gm-screen .mon .mname{font-size:9px; font-weight:800; line-height:1.1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:52px;}
+#page-gm .gm-screen .mon .meta{font-size:8px; font-weight:800; color:#8a7f6d;}
+#page-gm .gm-screen .mon .meta .kl{color:#111; font-size:9.5px;}
 @media (max-width:1000px){
-  #page-gm .starhead, #page-gm .arearow{grid-template-columns:110px 1fr 1fr 1fr 1fr;}
+  #page-gm .gm-screen .starhead, #page-gm .gm-screen .arearow{grid-template-columns:110px 1fr 1fr 1fr 1fr;}
+}
+.gm-print{display:none;}
+
+/* ===== Druckvorlage GM: A4 quer -> 2x A5 (an der kurzen Kante gespiegelt duplex) ===== */
+.gm-print .sheet{width:297mm; height:209.9mm; margin:0 auto 14px; background:#fffdf6; position:relative;
+  box-shadow:0 2px 12px rgba(0,0,0,.15); display:flex;}
+.gm-print .sheetlab{position:absolute; bottom:1.2mm; right:3mm; font-size:6.5pt; color:#b0a68f; font-weight:800; z-index:2;}
+.gm-print .cut{position:absolute; left:148.5mm; top:0; bottom:0; border-left:0.35mm dashed #9a8f78; transform:translateX(-50%);}
+.gm-print .cut span{position:absolute; top:1mm; left:50%; transform:translateX(-50%); font-size:7.5pt;
+  color:#9a8f78; background:#fffdf6; padding:0 1px;}
+.gm-print .a5{width:148.5mm; height:209.9mm; position:relative; overflow:hidden;}
+.gm-print .a5in{padding:5mm 6mm 3mm;}
+.gm-print h1{font-family:'Fredoka',sans-serif; font-size:13px; margin-bottom:2mm;}
+.gm-print .sub{font-size:8px; color:#8a7f6d; font-weight:800; margin:-1mm 0 2mm;}
+
+.gm-print table.typematrix{border-collapse:collapse; margin:0 auto; font-size:5.4px;}
+.gm-print table.typematrix th, .gm-print table.typematrix td{border:0.5px solid var(--line); text-align:center; vertical-align:middle;}
+.gm-print table.typematrix td{width:6.6mm; height:6.6mm; background:#f6f1e4;}
+.gm-print table.typematrix .corner{border:none; background:transparent; font-size:5.8px; color:#8a7f6d;
+  text-align:right; padding-right:2px; font-weight:800; width:15mm; line-height:1.4;}
+.gm-print table.typematrix .vert{writing-mode:vertical-rl; transform:rotate(180deg); color:#fff; font-weight:800;
+  font-size:5.4px; padding:3px 1px; border-radius:2px; margin:0.5px auto; letter-spacing:.3px;
+  min-height:12.5mm; display:flex; align-items:center; justify-content:center;}
+.gm-print table.typematrix .rowlab{color:#fff; font-weight:800; font-size:5.4px; padding:2.4px 3px; border-radius:2px;
+  margin:0.5px; text-align:left; letter-spacing:.3px;}
+.gm-print .c{width:4.4mm; height:4.4mm; font-size:9.5px;}
+.gm-print .legend{font-size:8px; margin-top:2.5mm;}
+.gm-print .legend .c{width:3.6mm; height:3.6mm; font-size:8px; margin-right:2px;}
+.gm-print .ruleul{font-size:8px; margin-left:3mm; line-height:1.5;}
+
+.gm-print .boxgrid{display:grid; grid-template-columns:1fr; gap:2.4mm;}
+.gm-print .cheatbox{background:#f6f1e4; border:0.5px solid var(--line); border-radius:2mm; padding:2.2mm 2.8mm;
+  font-size:8.6px; line-height:1.45;}
+.gm-print .cheatbox b{font-family:'Fredoka',sans-serif; font-size:9px;}
+.gm-print .cheatbox ul{margin:1mm 0 0 3.5mm;}
+.gm-print table.mini{border-collapse:collapse; margin-top:1mm; font-size:8.6px;}
+.gm-print table.mini td{border:0.5px solid var(--line); padding:0.5mm 2mm; font-weight:800; background:#fff;}
+.gm-print .tiny{font-size:7.6px; margin-top:1mm;}
+
+.gm-print .starhead{display:grid; grid-template-columns:17mm 31mm 31mm 31mm 14mm; gap:1mm;
+  font-family:'Fredoka',sans-serif; font-size:8px; margin-bottom:1mm;}
+.gm-print .starhead > div{background:var(--ink); color:var(--gold); border-radius:1.4mm; text-align:center;
+  padding:0.6mm 0; letter-spacing:0.3px;}
+.gm-print .starhead .sh0{color:#fff;}
+.gm-print .arearow{display:grid; grid-template-columns:17mm 31mm 31mm 31mm 14mm; gap:1mm;
+  margin-bottom:1mm; page-break-inside:avoid;}
+.gm-print .areahead{background:var(--tc); color:#fff; border-radius:1.6mm; padding:1mm 1.4mm;
+  display:flex; flex-direction:column; justify-content:center; gap:0.3mm; text-shadow:0 1px 2px rgba(0,0,0,.35);}
+.gm-print .aname{font-family:'Fredoka',sans-serif; font-size:7.8px; line-height:1.1;}
+.gm-print .terr{font-size:6.2px; font-weight:800;}
+.gm-print .niete{font-size:6.2px; font-weight:800; background:rgba(0,0,0,.3); border-radius:1mm;
+  padding:0.2mm 1mm; align-self:flex-start; white-space:nowrap;}
+.gm-print .scell{background:#fbf8ef; border:0.5px solid var(--line); border-radius:1.6mm;
+  display:flex; flex-wrap:wrap; gap:0.5mm; align-items:center; justify-content:center;
+  align-content:center; padding:0.7mm 0.3mm;}
+.gm-print .dash{color:#cfc6b0; font-weight:800; font-size:8px;}
+.gm-print .mon{width:13.2mm; text-align:center; display:flex; flex-direction:column; align-items:center;}
+.gm-print .mon img{width:5.2mm; height:5.2mm; object-fit:contain;}
+.gm-print .mon .rng{font-family:'Fredoka',sans-serif; font-size:7.2px; background:var(--ink); color:#fff;
+  border-radius:1mm; padding:0 1.4mm; margin-bottom:0.2mm; white-space:nowrap;}
+.gm-print .mon .mname{font-size:6.1px; font-weight:800; line-height:1.05; white-space:nowrap; max-width:none;}
+.gm-print .mon .meta{font-size:5.6px; font-weight:800; color:#8a7f6d;}
+.gm-print .mon .meta .kl{color:#111; font-size:6.4px;}
+
+.gm-print .qhead{font-size:8px; font-weight:800; color:#5c5344; margin:1mm 0 2mm; line-height:1.4;}
+.gm-print .questgrid{display:grid; grid-template-columns:1fr 1fr; gap:1.6mm;}
+.gm-print .questrow{display:flex; gap:1.6mm; align-items:center; border:0.5px solid var(--line);
+  border-radius:1.6mm; padding:1.2mm 1.6mm; background:#fbf8ef; font-size:8.4px;}
+.gm-print .questrow img{width:8.5mm; height:8.5mm; object-fit:contain;}
+.gm-print .questrow .qtxt{color:#5c5344; font-weight:700; font-size:7.2px; line-height:1.3;}
+
+@media print{
+  #page-gm .gm-screen{display:none !important;}
+  #page-gm .gm-print{display:block !important;}
+  #page-gm .gm-print .sheet{margin:0; box-shadow:none; page-break-after:always;}
+  #page-gm .gm-print .sheet:last-child{page-break-after:auto;}
 }
 
 
@@ -233,7 +310,6 @@ table.mini td{border:1px solid var(--line); padding:1px 6px; font-weight:800; ba
 @media print{
   #page-cards .sheet{margin:0; box-shadow:none; page-break-after:always;}
   #page-cards .sheet:last-child{page-break-after:auto;}
-  @page{size:A4 portrait; margin:0;}
 }
 
 
@@ -297,22 +373,22 @@ table.mini td{border:1px solid var(--line); padding:1px 6px; font-weight:800; ba
 #page-shop .ecard .e-body{padding:3mm 4mm; font-size:9pt; font-weight:700; line-height:1.28; color:#eceaff; flex:1;}
 #page-shop .ecard .e-foot{margin-top:auto; padding:2.5mm 4mm; display:flex; align-items:center; justify-content:space-between;
   background:rgba(0,0,0,.22); font-size:7pt; font-weight:800; color:#c9c2f5;}
-#page-shop .ecard.blank{opacity:.9; cursor:pointer; align-items:center; justify-content:center; text-align:center;
-  background:repeating-linear-gradient(135deg, #2b2450, #2b2450 10px, #241f42 10px, #241f42 20px);}
-#page-shop .ecard.blank:hover{outline-color:#fff;}
-#page-shop .addplus{font-family:'Fredoka'; font-size:34pt; color:#fff; opacity:.7;}
-#page-shop .addlabel{font-family:'Fredoka'; font-size:9pt; color:#c9c2f5; margin-top:2mm;}
 #page-shop .e-del{position:absolute; top:1.5mm; right:1.5mm; z-index:3; width:5mm; height:5mm; border-radius:50%;
   background:rgba(0,0,0,.5); color:#fff; font-size:10px; line-height:1; border:none; cursor:pointer;}
+#page-shop .addeventbtn{display:block; margin:0 0 12px; background:var(--blau); color:#fff; padding:9px 18px; font-size:13px;}
+#page-shop .ecard.back{align-items:center; justify-content:center;
+  background:radial-gradient(120% 90% at 50% 30%, #5a4f95 0%, #2b2450 60%, #201b3d 100%);}
+#page-shop .e-back-q{font-family:'Fredoka'; font-weight:700; font-size:48pt; color:rgba(255,255,255,.85);
+  text-shadow:0 2px 8px rgba(0,0,0,.4);}
 
 @media print{
   #page-shop .noprint{display:none !important;}
   #page-shop .sheet.shopsheet{box-shadow:none; margin:0; border-radius:0; page-break-after:always;}
   #page-shop .sheet.shopsheet:last-child{page-break-after:auto;}
-  @page{size:A4 portrait; margin:0;}
 }
 
 </style>
+<style id="pagesize">@page{ size:A4 portrait; margin:0; }</style>
 </head>
 <body>
 <nav class="topnav">
@@ -782,62 +858,127 @@ function questListHTML(){
   return html;
 }
 
-function renderGM(){
-  const host = document.getElementById('page-gm');
+const CHEAT_FANGWURF = `<div class="cheatbox"><b>Fangwurf (W6) nach Sternen</b>
+  <table class="mini"><tr><td>★</td><td>3+</td><td>★★★</td><td>5+</td></tr>
+  <tr><td>★★</td><td>4+</td><td>★★★★</td><td>6</td></tr>
+  <tr><td colspan="4">★★★★★ nur mit Bonus: Superball 6 · Hyperball 5+ · Mewtu nur Meisterball</td></tr></table>
+  <div class="tiny">Superball +1 · Hyperball +2 · Meisterball automatisch · Gegner ≤ ½ KP: +1</div></div>`;
+const CHEAT_WERTE = `<div class="cheatbox"><b>Werte-Formel („Zähe KP")</b>
+  <ul><li>KP = 2×Sterne + 8 · Angriff = Sterne</li>
+  <li>je Level (2–10): +1 KP · ungerade Level (3,5,7,9): +1 Angriff</li>
+  <li>Signaturbonus: ◆ KP+2/ANG+1 · ★ KP+4/ANG+2 (pro Familie fest)</li></ul></div>`;
+const CHEAT_SUCHEN = `<div class="cheatbox"><b>Suchen &amp; Bewegung</b>
+  <ul><li>W6 = Kacheln laufen · auf 🌿/💧/🪨 stehen bleiben = W20 suchen</li>
+  <li>Zeile der Kachel im Gebiet verwenden</li></ul></div>`;
+const CHEAT_LEVEL = `<div class="cheatbox"><b>Level &amp; Entwicklung</b>
+  <ul><li>Max-Level = 2 + Anzahl Orden</li>
+  <li>3-stufige Familien: Lv 4 / Lv 8 · 2-stufige: Lv 6</li></ul></div>`;
+const TYPE_LEGEND_HTML = `<div class="legend"><span><span class="c plus">+</span> +1 Schaden</span>
+  <span><span class="c minus">−</span> −1 Schaden</span>
+  <span><span class="c none">✕</span> kein Schaden</span><span>leer = normal</span></div>`;
+const TYPE_RULES_HTML = `<ul class="ruleul">
+  <li><b>Dualtyp-Verteidiger:</b> beide Spalten addieren, Deckel ±2</li>
+  <li><b>✕ schlägt alles:</b> kein Schaden, kein Wurf</li>
+  <li><b>Angreifer mit 2 Typen</b> wählt seinen Angriffstyp vor dem Wurf</li>
+</ul>`;
+
+function groupAreasByRegion(){
   const regions = [];
   state.areas.forEach(a=>{
     let r = regions.find(r=>r.region===a.region);
     if(!r){ r={region:a.region, areas:[]}; regions.push(r); }
     r.areas.push(a);
   });
-  let starheadCols = '';
-  for(let s=1;s<=GM_STAR_COLS;s++) starheadCols += `<div>${'★'.repeat(s)}</div>`;
+  return regions;
+}
+function starheadColsHTML(){
+  let s = '';
+  for(let i=1;i<=GM_STAR_COLS;i++) s += `<div>${'★'.repeat(i)}</div>`;
+  return s;
+}
+
+function chunkAreasEven(arr, numChunks){
+  const n = arr.length;
+  const base = Math.floor(n/numChunks);
+  const rem = n - base*numChunks;
+  const sizes = Array(numChunks).fill(base);
+  for(let i=0;i<rem;i++) sizes[i]++;
+  const chunks = []; let idx = 0;
+  sizes.forEach(sz=>{ chunks.push(arr.slice(idx, idx+sz)); idx += sz; });
+  return chunks;
+}
+
+/* ===== Druckvorlage: A4 quer, 2× A5 nebeneinander, an der kurzen Kante gespiegelt duplex ===== */
+function a5AreaChunkHTML(chunk){
+  if(!chunk.length) return '<div class="a5"><div class="a5in"></div></div>';
+  const regionsInChunk = [...new Set(chunk.map(a=>a.region))];
+  return `<div class="a5"><div class="a5in">
+    <h1>${regionsInChunk.join(' / ')}</h1>
+    <div class="starhead"><div class="sh0">Gebiet</div>${starheadColsHTML()}</div>
+    ${chunk.map(areaRowHTML).join('')}
+  </div></div>`;
+}
+function a5CustomHTML(title, sub, inner){
+  return `<div class="a5"><div class="a5in">
+    ${title ? `<h1>${title}</h1>` : ''}
+    ${sub ? `<div class="sub">${sub}</div>` : ''}
+    ${inner}
+  </div></div>`;
+}
+function printSheetHTML(label, leftA5, rightA5){
+  return `<div class="sheet"><div class="sheetlab">${label}</div>${leftA5}${rightA5}<div class="cut"><span>✂</span></div></div>`;
+}
+
+function buildGMPrintHTML(){
+  const chunks = chunkAreasEven(state.areas, 12);
+  let out = '';
+  for(let s=0; s<3; s++){
+    const front = [chunks[s*4], chunks[s*4+1]];
+    const back = [chunks[s*4+2], chunks[s*4+3]];
+    out += printSheetHTML(`Routen &amp; Höhlen · Blatt ${s+1} · Vorderseite`, a5AreaChunkHTML(front[0]), a5AreaChunkHTML(front[1]));
+    out += printSheetHTML(`Routen &amp; Höhlen · Blatt ${s+1} · Rückseite`, a5AreaChunkHTML(back[0]), a5AreaChunkHTML(back[1]));
+  }
+
+  const typenA5 = a5CustomHTML('Typen-Tabelle', 'Angreifer (Zeile) → Verteidiger (Spalte) · Bonus/Malus auf den Schadenswurf (W6 + Angriff)',
+    `<div class="matrix-wrap">${typeMatrixHTML()}</div>${TYPE_LEGEND_HTML}${TYPE_RULES_HTML}`);
+  const spick1A5 = a5CustomHTML('Spickzettel I', '', `<div class="boxgrid">${CHEAT_FANGWURF}${CHEAT_WERTE}</div>`);
+  const questA5 = a5CustomHTML('Quests &amp; Legendäre', 'Nicht wild fangbar (nie beim W20) · Legendäre fliehen nicht, max. 1 Fangversuch pro Sitzung', questListHTML());
+  const spick2A5 = a5CustomHTML('Spickzettel II', '', `<div class="boxgrid">${CHEAT_SUCHEN}${CHEAT_LEVEL}</div>`);
+
+  out += printSheetHTML('Übersicht · Vorderseite', typenA5, spick1A5);
+  out += printSheetHTML('Übersicht · Rückseite', questA5, spick2A5);
+
+  return `<div class="gm-print">${out}</div>`;
+}
+
+function renderGM(){
+  const host = document.getElementById('page-gm');
+  const regions = groupAreasByRegion();
   let areaRegionsHTML = '';
   regions.forEach(r=>{
     areaRegionsHTML += `<h3 class="region-title">${r.region}</h3>
-      <div class="starhead"><div class="sh0">Gebiet</div>${starheadCols}</div>`;
+      <div class="starhead"><div class="sh0">Gebiet</div>${starheadColsHTML()}</div>`;
     r.areas.forEach(a=>{ areaRegionsHTML += areaRowHTML(a); });
   });
 
   host.innerHTML = `
+    <div class="gm-screen">
     <div class="gm-toolbar">
       <h1>Spielleiter-Karte · Kanto</h1>
       <div class="hint">Alle Werte werden live aus der Pokémon-Tabelle berechnet (Formeln nach Regelwerk §2–3). Änderungen an Sternen oder Fundorten wirken sich sofort hier aus.</div>
-      <button onclick="window.print()">🖨 Diese Seite drucken</button>
+      <button onclick="printPage('landscape')">🖨 Druckvorlagen (A4 quer → 2× A5)</button>
     </div>
 
     <div class="gm-grid-top">
       <div class="gmbox">
         <h2>Typen-Matrix</h2>
         <div class="matrix-wrap">${typeMatrixHTML()}</div>
-        <div class="legend"><span><span class="c plus">+</span> +1 Schaden</span>
-          <span><span class="c minus">−</span> −1 Schaden</span>
-          <span><span class="c none">✕</span> kein Schaden</span><span>leer = normal</span></div>
-        <ul class="ruleul">
-          <li><b>Dualtyp-Verteidiger:</b> beide Spalten addieren, Deckel ±2</li>
-          <li><b>✕ schlägt alles:</b> kein Schaden, kein Wurf</li>
-          <li><b>Angreifer mit 2 Typen</b> wählt seinen Angriffstyp vor dem Wurf</li>
-        </ul>
+        ${TYPE_LEGEND_HTML}
+        ${TYPE_RULES_HTML}
       </div>
       <div class="gmbox">
         <h2>Spickzettel</h2>
-        <div class="cheatgrid">
-          <div class="cheatbox"><b>Fangwurf (W6) nach Sternen</b>
-            <table class="mini"><tr><td>★</td><td>3+</td><td>★★★</td><td>5+</td></tr>
-            <tr><td>★★</td><td>4+</td><td>★★★★</td><td>6</td></tr>
-            <tr><td colspan="4">★★★★★ nur mit Bonus: Superball 6 · Hyperball 5+ · Mewtu nur Meisterball</td></tr></table>
-            <div class="tiny">Superball +1 · Hyperball +2 · Meisterball automatisch · Gegner ≤ ½ KP: +1</div></div>
-          <div class="cheatbox"><b>Werte-Formel („Zähe KP")</b>
-            <ul><li>KP = 2×Sterne + 8 · Angriff = Sterne</li>
-            <li>je Level (2–10): +1 KP · ungerade Level (3,5,7,9): +1 Angriff</li>
-            <li>Signaturbonus: ◆ KP+2/ANG+1 · ★ KP+4/ANG+2 (pro Familie fest)</li></ul></div>
-          <div class="cheatbox"><b>Suchen &amp; Bewegung</b>
-            <ul><li>W6 = Kacheln laufen · auf 🌿/💧/🪨 stehen bleiben = W20 suchen</li>
-            <li>Zeile der Kachel im Gebiet unten verwenden</li></ul></div>
-          <div class="cheatbox"><b>Level &amp; Entwicklung</b>
-            <ul><li>Max-Level = 2 + Anzahl Orden</li>
-            <li>3-stufige Familien: Lv 4 / Lv 8 · 2-stufige: Lv 6</li></ul></div>
-        </div>
+        <div class="cheatgrid">${CHEAT_FANGWURF}${CHEAT_WERTE}${CHEAT_SUCHEN}${CHEAT_LEVEL}</div>
       </div>
     </div>
 
@@ -846,6 +987,8 @@ function renderGM(){
 
     <h2 class="section-title">Gebietszeilen (W20, live berechnet)</h2>
     ${areaRegionsHTML}
+    </div>
+    ${buildGMPrintHTML()}
   `;
 }
 
@@ -1011,10 +1154,10 @@ function renderCards(){
   }
 
   host.innerHTML = `
-    <div class="cards-toolbar">
+    <div class="cards-toolbar noprint">
       <h1>Kartenset · alle 151 Pokémon</h1>
       <label><input type="checkbox" id="cutToggle" checked onchange="document.getElementById('page-cards').classList.toggle('nocut', !this.checked)"> Schnittlinien</label>
-      <button onclick="window.print()">🖨 Drucken (2 Seiten pro Bogen, duplex lange Kante)</button>
+      <button onclick="printPage('portrait')">🖨 Drucken (2 Seiten pro Bogen, duplex lange Kante)</button>
       <span class="hint">Werte werden live aus der Pokémon-Tabelle berechnet (Sterne, Fundorte, Fähigkeiten).</span>
     </div>
     <div id="cardsheets">${sheets}</div>`;
@@ -1077,55 +1220,107 @@ const SHOP_ITEMS = [
   {key:'beleber', name:'Beleber', eff:'Besiegtes Pokémon zurück<br>mit halben KP', price:5, col:'#e3b52a', ico:SHOP_REVIVE_SVG},
 ];
 
-function chipsHTML(items, css){
-  return items.map(html=>`<div class="chip ${css}">${html}</div>`).join('');
+const BALL_CFG = [
+  {type:'poke', name:'Pokéball', key:'poke'},
+  {type:'super', name:'Superball', key:'super'},
+  {type:'hyper', name:'Hyperball', key:'hyper'},
+  {type:'master', name:'Meisterball', key:'master', numbered:true},
+];
+
+/* Konservative Kapazität pro A4-Seite, damit Vorder-/Rückseiten-Bögen NIE
+   unterschiedlich oft umbrechen (sonst würde Duplexdruck falsche Motive
+   paaren). Beide Seiten drucken pro Häppchen exakt denselben Ausschnitt. */
+const PAGE_CAP = { ball:26, coin:32, item:9, event:6 };
+
+function chunkArr(arr, size){
+  const out = [];
+  for(let i=0;i<arr.length;i+=size) out.push(arr.slice(i, i+size));
+  return out;
+}
+function sheetWrap(title, small, sub, side, body){
+  const label = side==='back' ? 'Rückseite' : 'Vorderseite';
+  return `<div class="sheet shopsheet"><div class="sheet-head">${title} <small>${small} · ${label}</small></div>
+    ${sub?`<div class="sheet-sub">${sub}</div>`:''}
+    <div class="shopgrid">${body}</div></div>`;
+}
+/* baut Vorder- und Rückseite direkt hintereinander, mit identischem Inhalt
+   pro Häppchen -> beim Duplexdruck landet an jeder Position immer dasselbe Motiv */
+function duplexSection(chunks, buildFront, buildBack){
+  let out = '';
+  chunks.forEach(c=>{ out += buildFront(c); out += buildBack(c); });
+  return out;
 }
 
-function ballSheetHTML(){
-  const BALL_CFG = [
-    {type:'poke', name:'Pokéball', key:'poke'},
-    {type:'super', name:'Superball', key:'super'},
-    {type:'hyper', name:'Hyperball', key:'hyper'},
-    {type:'master', name:'Meisterball', key:'master', numbered:true},
-  ];
-  let grid = '';
+function buildBallDescriptors(){
+  const list = [];
   BALL_CFG.forEach(cfg=>{
     const n = state.shop[cfg.key];
-    grid += `<div class="group-label">${cfg.name} <span class="count">×${n}</span></div>`;
-    for(let i=0;i<n;i++){
-      grid += `<div class="chip ballchip">${shopBallSVG(cfg.type)}<span class="tag">${cfg.name}</span>${cfg.numbered?`<span class="idx">${i+1}/${n}</span>`:''}</div>`;
-    }
+    for(let i=0;i<n;i++) list.push({type:cfg.type, name:cfg.name, numbered:cfg.numbered, i, n});
   });
-  return `<div class="sheet shopsheet"><div class="sheet-head">Ball-Chips <small>runde Chips · 30 mm</small></div>
-    <div class="sheet-sub">Startausrüstung pro Spieler laut Regelwerk. Meisterball: nummeriert.</div>
-    <div class="shopgrid">${grid}</div></div>`;
+  return list;
 }
-function coinSheetHTML(){
-  let grid='';
-  [1,2,5].forEach(v=>{
-    const n = state.shop['coin'+v];
-    grid += `<div class="group-label">${v} ₽ <span class="count">×${n}</span></div>`;
-    for(let i=0;i<n;i++) grid += `<div class="chip coinchip">${shopCoinSVG(v)}</div>`;
+function ballChunkGrid(chunk){
+  let grid = '', lastType = null;
+  chunk.forEach(c=>{
+    if(c.type!==lastType){ grid += `<div class="group-label">${c.name} <span class="count">×${c.n}</span></div>`; lastType=c.type; }
+    grid += `<div class="chip ballchip">${shopBallSVG(c.type)}<span class="tag">${c.name}</span>${c.numbered?`<span class="idx">${c.i+1}/${c.n}</span>`:''}</div>`;
   });
-  return `<div class="sheet shopsheet"><div class="sheet-head">Pokédollar-Chips <small>Münzen · 26 mm</small></div>
-    <div class="shopgrid">${grid}</div></div>`;
+  return grid;
 }
-function itemSheetHTML(){
-  let grid='';
-  SHOP_ITEMS.forEach(it=>{
-    const n = state.shop[it.key];
-    grid += `<div class="group-label">${it.name} <span class="count">×${n}</span></div>`;
-    for(let i=0;i<n;i++){
-      grid += `<div class="icard">
-        <div class="stripe" style="background:${it.col}"></div>
-        <div class="ic-top"><div class="ic-ico">${it.ico}</div><div class="ic-name">${it.name}</div></div>
-        <div class="ic-eff">${it.eff}</div>
-        <div class="ic-price">${it.price} ₽</div></div>`;
-    }
+function ballSectionHTML(){
+  const chunks = chunkArr(buildBallDescriptors(), PAGE_CAP.ball);
+  if(!chunks.length) return '';
+  return duplexSection(chunks,
+    c=>sheetWrap('Ball-Chips','runde Chips · 30 mm','Startausrüstung pro Spieler laut Regelwerk. Meisterball: nummeriert.','front', ballChunkGrid(c)),
+    c=>sheetWrap('Ball-Chips','runde Chips · 30 mm','Rückseite – dasselbe Symbol wie vorne (beidseitig identisch bedrucken).','back', ballChunkGrid(c)));
+}
+
+function buildCoinDescriptors(){
+  const list = [];
+  [1,2,5].forEach(v=>{ const n = state.shop['coin'+v]; for(let i=0;i<n;i++) list.push({v,n}); });
+  return list;
+}
+function coinChunkGrid(chunk){
+  let grid = '', lastV = null;
+  chunk.forEach(c=>{
+    if(c.v!==lastV){ grid += `<div class="group-label">${c.v} ₽ <span class="count">×${c.n}</span></div>`; lastV=c.v; }
+    grid += `<div class="chip coinchip">${shopCoinSVG(c.v)}</div>`;
   });
-  return `<div class="sheet shopsheet"><div class="sheet-head">Item-Karten <small>Sonstiges · 58 × 40 mm</small></div>
-    <div class="shopgrid">${grid}</div></div>`;
+  return grid;
 }
+function coinSectionHTML(){
+  const chunks = chunkArr(buildCoinDescriptors(), PAGE_CAP.coin);
+  if(!chunks.length) return '';
+  return duplexSection(chunks,
+    c=>sheetWrap('Pokédollar-Chips','Münzen · 26 mm','','front', coinChunkGrid(c)),
+    c=>sheetWrap('Pokédollar-Chips','Münzen · 26 mm','Rückseite – dasselbe Symbol wie vorne.','back', coinChunkGrid(c)));
+}
+
+function buildItemDescriptors(){
+  const list = [];
+  SHOP_ITEMS.forEach(it=>{ const n = state.shop[it.key]; for(let i=0;i<n;i++) list.push(it); });
+  return list;
+}
+function itemChunkGrid(chunk){
+  let grid = '', lastKey = null;
+  chunk.forEach(it=>{
+    if(it.key!==lastKey){ grid += `<div class="group-label">${it.name} <span class="count">×${state.shop[it.key]}</span></div>`; lastKey=it.key; }
+    grid += `<div class="icard">
+      <div class="stripe" style="background:${it.col}"></div>
+      <div class="ic-top"><div class="ic-ico">${it.ico}</div><div class="ic-name">${it.name}</div></div>
+      <div class="ic-eff">${it.eff}</div>
+      <div class="ic-price">${it.price} ₽</div></div>`;
+  });
+  return grid;
+}
+function itemSectionHTML(){
+  const chunks = chunkArr(buildItemDescriptors(), PAGE_CAP.item);
+  if(!chunks.length) return '';
+  return duplexSection(chunks,
+    c=>sheetWrap('Item-Karten','Sonstiges · 58 × 40 mm','','front', itemChunkGrid(c)),
+    c=>sheetWrap('Item-Karten','Sonstiges · 58 × 40 mm','Rückseite – dasselbe Symbol wie vorne (beidseitig identisch bedrucken).','back', itemChunkGrid(c)));
+}
+
 function eventCardHTML(ev, idx){
   return `<div class="ecard">
     <div class="watermark">?</div>
@@ -1135,13 +1330,18 @@ function eventCardHTML(ev, idx){
     <button class="e-del noprint" onclick="removeEvent(${idx})" title="Event löschen">×</button>
   </div>`;
 }
-function eventSheetHTML(){
-  let grid = state.events.map((ev,i)=>eventCardHTML(ev,i)).join('');
-  grid += `<div class="ecard blank addcard noprint" onclick="addEventPrompt()">
-    <div class="addplus">+</div><div class="addlabel">Neue Eventkarte</div></div>`;
-  return `<div class="sheet shopsheet"><div class="sheet-head">Event-Karten <small>60 × 88 mm</small></div>
-    <div class="sheet-sub">Eigene Karten über „+" ergänzen – werden lokal gespeichert und mitgedruckt.</div>
-    <div class="shopgrid">${grid}</div></div>`;
+function eventBackCardHTML(){
+  return `<div class="ecard back"><div class="e-back-q">?</div></div>`;
+}
+function eventSectionHTML(){
+  const withIdx = state.events.map((ev,i)=>({ev,i}));
+  const chunks = chunkArr(withIdx, PAGE_CAP.event);
+  if(!chunks.length) chunks.push([]);
+  return duplexSection(chunks,
+    c=>sheetWrap('Event-Karten','60 × 88 mm','Eigene Karten über den Knopf unten ergänzen – werden lokal gespeichert und mitgedruckt.','front',
+      c.map(x=>eventCardHTML(x.ev,x.i)).join('')),
+    c=>sheetWrap('Event-Karten','60 × 88 mm','Einheitliche verdeckte Rückseite für alle Ereigniskarten.','back',
+      c.map(()=>eventBackCardHTML()).join('')));
 }
 
 function addEventPrompt(){
@@ -1167,13 +1367,13 @@ function shopNumberInput(key, label){
 function renderShop(){
   const host = document.getElementById('page-shop');
   host.innerHTML = `
-    <div class="shop-toolbar">
+    <div class="shop-toolbar noprint">
       <h1>Pokeshop · Druckvorlagen</h1>
       <label><input type="checkbox" id="shopCutToggle" checked onchange="document.getElementById('page-shop').classList.toggle('nocut', !this.checked)"> Schnittlinien</label>
-      <button onclick="window.print()">🖨 Alles drucken</button>
+      <button onclick="printPage('portrait')">🖨 Alles drucken (Vorder- &amp; Rückseiten)</button>
       <span class="hint">Anzahl einstellen → Bögen aktualisieren sich sofort. Alles wird lokal gespeichert.</span>
     </div>
-    <div class="shop-config">
+    <div class="shop-config noprint">
       <div class="cfgbox"><b>Bälle</b>
         ${shopNumberInput('poke','Pokébälle')}
         ${shopNumberInput('super','Superbälle')}
@@ -1191,12 +1391,8 @@ function renderShop(){
         ${shopNumberInput('beleber','Beleber')}
       </div>
     </div>
-    <div id="shopSheets">
-      ${ballSheetHTML()}
-      ${coinSheetHTML()}
-      ${itemSheetHTML()}
-      ${eventSheetHTML()}
-    </div>`;
+    <button class="noprint addeventbtn" onclick="addEventPrompt()">➕ Neue Eventkarte hinzufügen</button>
+    <div id="shopSheets">${shopSheetsHTML()}</div>`;
 
   host.querySelector('.shop-config').addEventListener('change', e=>{
     const t = e.target;
@@ -1204,14 +1400,27 @@ function renderShop(){
       const v = Math.max(0, Math.min(99, Number(t.value)||0));
       state.shop[t.dataset.shopkey] = v;
       persist();
-      document.getElementById('shopSheets').innerHTML = ballSheetHTML()+coinSheetHTML()+itemSheetHTML()+eventSheetHTML();
+      document.getElementById('shopSheets').innerHTML = shopSheetsHTML();
     }
   });
+}
+
+function shopSheetsHTML(){
+  return ballSectionHTML() + coinSectionHTML() + itemSectionHTML() + eventSectionHTML();
 }
 
 
 /* ===================== Navigation & Init ===================== */
 const RENDERERS = { home: renderHome, gm: renderGM, cards: renderCards, shop: renderShop };
+
+function setPrintOrientation(o){
+  const el = document.getElementById('pagesize');
+  if(el) el.textContent = `@page{ size:A4 ${o}; margin:0; }`;
+}
+function printPage(orientation){
+  setPrintOrientation(orientation);
+  window.print();
+}
 
 function activatePage(name){
   document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active', p.id === 'page-'+name));
