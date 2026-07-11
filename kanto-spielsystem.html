@@ -87,8 +87,6 @@ table.hometable input[type=checkbox]{width:14px; height:14px; cursor:pointer;}
 .gm-toolbar button{background:var(--rot); color:#fff; padding:8px 16px; font-size:13px;}
 .gmbox{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:10px 14px; margin-bottom:14px;}
 .gmbox h2{font-size:14px; margin-bottom:6px;}
-.gm-grid-top{display:grid; grid-template-columns:1fr 1fr; gap:14px; align-items:start;}
-@media (max-width:1100px){ .gm-grid-top{grid-template-columns:1fr;} }
 
 .matrix-wrap{overflow-x:auto;}
 table.typematrix{border-collapse:collapse; font-size:8.5px;}
@@ -102,13 +100,6 @@ table.typematrix .rowlab{color:#fff; font-weight:800; font-size:7.5px; padding:0
 .c.plus{background:var(--gruen);} .c.minus{background:var(--rot);} .c.none{background:#111;}
 .legend{display:flex; gap:12px; flex-wrap:wrap; font-size:11px; font-weight:800; margin:8px 0;}
 .ruleul{margin-left:16px; font-size:11.5px; line-height:1.5;}
-.cheatgrid{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
-.cheatbox{background:#f6f1e4; border:1px solid var(--line); border-radius:8px; padding:6px 9px; font-size:11px; line-height:1.4;}
-.cheatbox b{font-family:'Fredoka',sans-serif; font-size:11.5px;}
-.cheatbox ul{margin-left:14px;}
-table.mini{border-collapse:collapse; margin-top:3px; font-size:11px;}
-table.mini td{border:1px solid var(--line); padding:1px 6px; font-weight:800; background:#fff;}
-.tiny{font-size:9.5px; color:#5c5344; font-weight:700; margin-top:3px;}
 
 .section-title{font-size:16px; margin:14px 0 8px; border-bottom:2px solid var(--gold2); display:inline-block; padding-bottom:2px;}
 .questgrid{display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:8px; margin-bottom:10px;}
@@ -133,13 +124,14 @@ table.mini td{border:1px solid var(--line); padding:1px 6px; font-weight:800; ba
 #page-gm .gm-screen .niete{font-size:10px; font-weight:800; background:rgba(0,0,0,.3); border-radius:4px;
   padding:1px 6px; align-self:flex-start;}
 #page-gm .gm-screen .scell{background:#fbf8ef; border:1px solid var(--line); border-radius:7px;
-  display:flex; flex-wrap:wrap; gap:4px; align-items:center; justify-content:center; align-content:center; padding:4px 3px;}
-#page-gm .gm-screen .dash{color:#cfc6b0; font-weight:800; font-size:14px;}
-#page-gm .gm-screen .mon{width:52px; text-align:center; display:flex; flex-direction:column; align-items:center;}
+  display:grid; grid-template-columns:repeat(2,1fr); gap:4px; align-items:start; justify-items:center;
+  align-content:center; padding:4px 3px;}
+#page-gm .gm-screen .dash{color:#cfc6b0; font-weight:800; font-size:14px; grid-column:1/-1;}
+#page-gm .gm-screen .mon{width:100%; text-align:center; display:flex; flex-direction:column; align-items:center;}
 #page-gm .gm-screen .mon img{width:22px; height:22px; object-fit:contain;}
 #page-gm .gm-screen .mon .rng{font-family:'Fredoka',sans-serif; font-size:9.5px; background:var(--ink); color:#fff;
   border-radius:4px; padding:0 5px; margin-bottom:1px; white-space:nowrap;}
-#page-gm .gm-screen .mon .mname{font-size:9px; font-weight:800; line-height:1.1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:52px;}
+#page-gm .gm-screen .mon .mname{font-size:9px; font-weight:800; line-height:1.1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%;}
 #page-gm .gm-screen .mon .meta{font-size:8px; font-weight:800; color:#8a7f6d;}
 #page-gm .gm-screen .mon .meta .kl{color:#111; font-size:9.5px;}
 @media (max-width:1000px){
@@ -174,14 +166,6 @@ table.mini td{border:1px solid var(--line); padding:1px 6px; font-weight:800; ba
 .gm-print .legend .c{width:3.6mm; height:3.6mm; font-size:8px; margin-right:2px;}
 .gm-print .ruleul{font-size:8px; margin-left:3mm; line-height:1.5;}
 
-.gm-print .boxgrid{display:grid; grid-template-columns:1fr; gap:2.4mm;}
-.gm-print .cheatbox{background:#f6f1e4; border:0.5px solid var(--line); border-radius:2mm; padding:2.2mm 2.8mm;
-  font-size:8.6px; line-height:1.45;}
-.gm-print .cheatbox b{font-family:'Fredoka',sans-serif; font-size:9px;}
-.gm-print .cheatbox ul{margin:1mm 0 0 3.5mm;}
-.gm-print table.mini{border-collapse:collapse; margin-top:1mm; font-size:8.6px;}
-.gm-print table.mini td{border:0.5px solid var(--line); padding:0.5mm 2mm; font-weight:800; background:#fff;}
-.gm-print .tiny{font-size:7.6px; margin-top:1mm;}
 
 .gm-print .starhead{display:grid; grid-template-columns:17mm 31mm 31mm 31mm 14mm; gap:1mm;
   font-family:'Fredoka',sans-serif; font-size:8px; margin-bottom:1mm;}
@@ -197,10 +181,10 @@ table.mini td{border:1px solid var(--line); padding:1px 6px; font-weight:800; ba
 .gm-print .niete{font-size:6.2px; font-weight:800; background:rgba(0,0,0,.3); border-radius:1mm;
   padding:0.2mm 1mm; align-self:flex-start; white-space:nowrap;}
 .gm-print .scell{background:#fbf8ef; border:0.5px solid var(--line); border-radius:1.6mm;
-  display:flex; flex-wrap:wrap; gap:0.5mm; align-items:center; justify-content:center;
+  display:grid; grid-template-columns:repeat(2,1fr); gap:0.5mm; align-items:start; justify-items:center;
   align-content:center; padding:0.7mm 0.3mm;}
-.gm-print .dash{color:#cfc6b0; font-weight:800; font-size:8px;}
-.gm-print .mon{width:13.2mm; text-align:center; display:flex; flex-direction:column; align-items:center;}
+.gm-print .dash{color:#cfc6b0; font-weight:800; font-size:8px; grid-column:1/-1;}
+.gm-print .mon{width:100%; text-align:center; display:flex; flex-direction:column; align-items:center;}
 .gm-print .mon img{width:5.2mm; height:5.2mm; object-fit:contain;}
 .gm-print .mon .rng{font-family:'Fredoka',sans-serif; font-size:7.2px; background:var(--ink); color:#fff;
   border-radius:1mm; padding:0 1.4mm; margin-bottom:0.2mm; white-space:nowrap;}
@@ -436,13 +420,12 @@ const MONS_RAW = [{"nr": 1, "name": "Bisasam", "typen": ["Pflanze", "Gift"], "st
  ['Route 21','💧','Routen 19–25'],['Route 22','🌿','Routen 19–25'],['Route 23','🌿','Routen 19–25'],
  ['Route 23','💧','Routen 19–25'],['Route 24','🌿','Routen 19–25'],['Route 24','💧','Routen 19–25'],
  ['Route 25','🌿','Routen 19–25'],['Route 25','💧','Routen 19–25'],
- ['Safari Nord','🌿','Safari, Meer & Endgame'],['Safari Süd','🌿','Safari, Meer & Endgame'],
- ['Safari','💧','Safari, Meer & Endgame'],['Seeschauminseln','🪨','Safari, Meer & Endgame'],
- ['Seeschauminseln','💧','Safari, Meer & Endgame'],['Azuria-Höhle','🪨','Safari, Meer & Endgame'],
- ['Azuria-Höhle','💧','Safari, Meer & Endgame'],['Siegesstraße','🪨','Safari, Meer & Endgame'],
- ['Vertania-Wald','🌿','Wald & Höhlen'],['Mondberg','🪨','Wald & Höhlen'],
- ['Digda-Höhle','🪨','Wald & Höhlen'],['Felstunnel','🪨','Wald & Höhlen'],
- ['Kraftwerk','🪨','Wald & Höhlen'],['Pokémon-Turm','🪨','Wald & Höhlen'],
+ /* Nicht-Routen: nach Terrain (Wald/Wasser/Höhle) gruppiert, je alphabetisch sortiert */
+ ['Safari Nord','🌿','Wald'],['Safari Süd','🌿','Wald'],['Vertania-Wald','🌿','Wald'],
+ ['Azuria-Höhle','💧','Wasser'],['Safari','💧','Wasser'],['Seeschauminseln','💧','Wasser'],
+ ['Azuria-Höhle','🪨','Höhle'],['Digda-Höhle','🪨','Höhle'],['Felstunnel','🪨','Höhle'],
+ ['Kraftwerk','🪨','Höhle'],['Mondberg','🪨','Höhle'],['Pokémon-Turm','🪨','Höhle'],
+ ['Seeschauminseln','🪨','Höhle'],['Siegesstraße','🪨','Höhle'],
 ].map(([ort,terr,region],i)=>({
   key:ort+'|'+terr, ort, terr, region, idx:i,
   label: (ort==='Safari' && terr==='💧') ? 'Safari-Zone' : ort,
@@ -858,21 +841,6 @@ function questListHTML(){
   return html;
 }
 
-const CHEAT_FANGWURF = `<div class="cheatbox"><b>Fangwurf (W6) nach Sternen</b>
-  <table class="mini"><tr><td>★</td><td>3+</td><td>★★★</td><td>5+</td></tr>
-  <tr><td>★★</td><td>4+</td><td>★★★★</td><td>6</td></tr>
-  <tr><td colspan="4">★★★★★ nur mit Bonus: Superball 6 · Hyperball 5+ · Mewtu nur Meisterball</td></tr></table>
-  <div class="tiny">Superball +1 · Hyperball +2 · Meisterball automatisch · Gegner ≤ ½ KP: +1</div></div>`;
-const CHEAT_WERTE = `<div class="cheatbox"><b>Werte-Formel („Zähe KP")</b>
-  <ul><li>KP = 2×Sterne + 8 · Angriff = Sterne</li>
-  <li>je Level (2–10): +1 KP · ungerade Level (3,5,7,9): +1 Angriff</li>
-  <li>Signaturbonus: ◆ KP+2/ANG+1 · ★ KP+4/ANG+2 (pro Familie fest)</li></ul></div>`;
-const CHEAT_SUCHEN = `<div class="cheatbox"><b>Suchen &amp; Bewegung</b>
-  <ul><li>W6 = Kacheln laufen · auf 🌿/💧/🪨 stehen bleiben = W20 suchen</li>
-  <li>Zeile der Kachel im Gebiet verwenden</li></ul></div>`;
-const CHEAT_LEVEL = `<div class="cheatbox"><b>Level &amp; Entwicklung</b>
-  <ul><li>Max-Level = 2 + Anzahl Orden</li>
-  <li>3-stufige Familien: Lv 4 / Lv 8 · 2-stufige: Lv 6</li></ul></div>`;
 const TYPE_LEGEND_HTML = `<div class="legend"><span><span class="c plus">+</span> +1 Schaden</span>
   <span><span class="c minus">−</span> −1 Schaden</span>
   <span><span class="c none">✕</span> kein Schaden</span><span>leer = normal</span></div>`;
@@ -941,12 +909,9 @@ function buildGMPrintHTML(){
 
   const typenA5 = a5CustomHTML('Typen-Tabelle', 'Angreifer (Zeile) → Verteidiger (Spalte) · Bonus/Malus auf den Schadenswurf (W6 + Angriff)',
     `<div class="matrix-wrap">${typeMatrixHTML()}</div>${TYPE_LEGEND_HTML}${TYPE_RULES_HTML}`);
-  const spick1A5 = a5CustomHTML('Spickzettel I', '', `<div class="boxgrid">${CHEAT_FANGWURF}${CHEAT_WERTE}</div>`);
   const questA5 = a5CustomHTML('Quests &amp; Legendäre', 'Nicht wild fangbar (nie beim W20) · Legendäre fliehen nicht, max. 1 Fangversuch pro Sitzung', questListHTML());
-  const spick2A5 = a5CustomHTML('Spickzettel II', '', `<div class="boxgrid">${CHEAT_SUCHEN}${CHEAT_LEVEL}</div>`);
 
-  out += printSheetHTML('Übersicht · Vorderseite', typenA5, spick1A5);
-  out += printSheetHTML('Übersicht · Rückseite', questA5, spick2A5);
+  out += printSheetHTML('Übersicht', typenA5, questA5);
 
   return `<div class="gm-print">${out}</div>`;
 }
@@ -969,17 +934,11 @@ function renderGM(){
       <button onclick="printPage('landscape')">🖨 Druckvorlagen (A4 quer → 2× A5)</button>
     </div>
 
-    <div class="gm-grid-top">
-      <div class="gmbox">
-        <h2>Typen-Matrix</h2>
-        <div class="matrix-wrap">${typeMatrixHTML()}</div>
-        ${TYPE_LEGEND_HTML}
-        ${TYPE_RULES_HTML}
-      </div>
-      <div class="gmbox">
-        <h2>Spickzettel</h2>
-        <div class="cheatgrid">${CHEAT_FANGWURF}${CHEAT_WERTE}${CHEAT_SUCHEN}${CHEAT_LEVEL}</div>
-      </div>
+    <div class="gmbox">
+      <h2>Typen-Matrix</h2>
+      <div class="matrix-wrap">${typeMatrixHTML()}</div>
+      ${TYPE_LEGEND_HTML}
+      ${TYPE_RULES_HTML}
     </div>
 
     <h2 class="section-title">Nicht wild fangbar (Quests &amp; Legendäre)</h2>
@@ -1412,6 +1371,7 @@ function shopSheetsHTML(){
 
 /* ===================== Navigation & Init ===================== */
 const RENDERERS = { home: renderHome, gm: renderGM, cards: renderCards, shop: renderShop };
+const PAGE_ORIENTATION = { home:'portrait', gm:'landscape', cards:'portrait', shop:'portrait' };
 
 function setPrintOrientation(o){
   const el = document.getElementById('pagesize');
@@ -1426,6 +1386,7 @@ function activatePage(name){
   document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active', p.id === 'page-'+name));
   document.querySelectorAll('nav .tab').forEach(b=>b.classList.toggle('active', b.dataset.page === name));
   RENDERERS[name]();
+  setPrintOrientation(PAGE_ORIENTATION[name] || 'portrait');
   try{ localStorage.setItem('kanto-spielsystem-lastpage', name); }catch(e){}
 }
 
