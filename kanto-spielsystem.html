@@ -57,11 +57,15 @@ table.hometable th, table.hometable td{border:1px solid var(--line); padding:2px
   background:#fff; overflow:hidden; text-overflow:ellipsis;}
 table.hometable thead th{position:sticky; background:var(--ink); color:#fff; font-family:'Fredoka',sans-serif;
   font-weight:600; z-index:20;}
-table.hometable thead tr:first-child th{top:0; height:26px;}
-table.hometable thead tr:first-child th.fixedhead{height:100px;}
-table.hometable thead tr:last-child th{top:26px; height:74px; padding:2px 1px;}
+table.hometable thead tr:nth-child(1) th{top:0; height:26px;}
+table.hometable thead tr:nth-child(1) th.fixedhead{height:124px;}
+table.hometable thead tr:nth-child(2) th{top:26px; height:74px; padding:2px 1px;}
+table.hometable thead tr:nth-child(3) th{top:100px; height:24px; padding:1px;}
 table.hometable th.regionhead{font-size:10.5px; letter-spacing:.3px; background:#4a3f2f;}
 table.hometable th.areahead{background:#544636;}
+table.hometable th.levelhead{background:#3d3324;}
+table.hometable th.levelhead input.level-input{width:100%; height:100%; text-align:center; font-size:10px;
+  font-weight:800; color:var(--gold2); background:#3d3324; border:none; padding:0;}
 .areahead-in{writing-mode:vertical-rl; transform:rotate(180deg); font-size:9.5px; font-weight:700;
   white-space:nowrap; margin:0 auto; letter-spacing:.2px;}
 table.hometable td.sticky, table.hometable th.sticky{position:sticky; z-index:6;}
@@ -576,10 +580,17 @@ function defaultEvents(){
 
 let state = null;
 
+function defaultAreaLevels(){
+  const out = {};
+  state.areas.forEach(a=>{ out[a.key] = 1; });
+  return out;
+}
+
 function initGlobalState(){
   state = buildState();
   state.shop = defaultShop();
   state.events = defaultEvents();
+  state.areaLevel = defaultAreaLevels();
   const saved = loadPersisted();
   if(saved) applyPersisted(saved);
 }
@@ -601,13 +612,14 @@ function applyPersisted(saved){
   }
   if(saved.shop) Object.assign(state.shop, saved.shop);
   if(saved.events) state.events = saved.events;
+  if(saved.areaLevel) Object.assign(state.areaLevel, saved.areaLevel);
 }
 
 let persistTimer = null;
 function persist(){
   clearTimeout(persistTimer);
   persistTimer = setTimeout(()=>{
-    const out = { sterne:{}, abil:{}, orte:{}, shop: state.shop, events: state.events };
+    const out = { sterne:{}, abil:{}, orte:{}, shop: state.shop, events: state.events, areaLevel: state.areaLevel };
     Object.values(state.mons).forEach(m=>{
       out.sterne[m.nr] = m.sterne;
       out.abil[m.nr] = m.abil;
@@ -644,6 +656,14 @@ function toggleAbil(nr, key){
   state.mons[nr].abil[key] = !state.mons[nr].abil[key];
   persist();
 }
+function setAreaLevel(areaKey, val){
+  state.areaLevel[areaKey] = Math.max(1, Math.min(10, Number(val)||1));
+  persist();
+  document.querySelectorAll('.arealevel-tag').forEach(el=>{
+    if(el.dataset.area === areaKey) el.textContent = 'Level ' + state.areaLevel[areaKey];
+  });
+}
+
 function toggleOrt(nr, areaKey){
   const m = state.mons[nr];
   if(m.orte.has(areaKey)) m.orte.delete(areaKey); else m.orte.add(areaKey);
@@ -698,7 +718,7 @@ function renderHome(){
 
   let theadRow1 = '<tr>';
   FIXED_COLS.forEach((c,i)=>{
-    theadRow1 += `<th class="sticky fixedhead" rowspan="2" style="left:${fixedColLeft(i)}px; width:${c.width}px; min-width:${c.width}px;">${c.label}</th>`;
+    theadRow1 += `<th class="sticky fixedhead" rowspan="3" style="left:${fixedColLeft(i)}px; width:${c.width}px; min-width:${c.width}px;">${c.label}</th>`;
   });
   regions.forEach(r=>{ theadRow1 += `<th class="regionhead" colspan="${r.areas.length}">${r.region}</th>`; });
   theadRow1 += '</tr>';
@@ -707,6 +727,11 @@ function renderHome(){
     theadRow2 += `<th class="areahead"><div class="areahead-in">${a.terr} ${a.label}</div></th>`;
   });
   theadRow2 += '</tr>';
+  let theadRow3 = '<tr>';
+  state.areas.forEach(a=>{
+    theadRow3 += `<th class="levelhead"><input type="number" class="level-input" min="1" max="10" value="${state.areaLevel[a.key]}" data-area="${a.key}" title="Level für ${a.label}"></th>`;
+  });
+  theadRow3 += '</tr>';
 
   let body = '';
   for(let nr=1; nr<=151; nr++){
@@ -740,12 +765,12 @@ function renderHome(){
   host.innerHTML = `
     <div class="home-toolbar">
       <h1>Pokémon-Tabelle · Kanto</h1>
-      <div class="hint">Sterne, Fähigkeiten und Fundorte hier ändern → Spielleiter-Karte und Kartenset aktualisieren sich automatisch. Seltenheit wird live aus der Anzahl gesetzter Fundorte berechnet (1 = ★ selten · 2 = ◆ ungewöhnlich · 3+ = ● gewöhnlich). Tabelle lässt sich mit dem Scrollbalken unten, Shift+Mausrad oder Zwei-Finger-Wisch seitlich scrollen.</div>
+      <div class="hint">Sterne, Fähigkeiten und Fundorte hier ändern → Spielleiter-Karte und Kartenset aktualisieren sich automatisch. Seltenheit wird live aus der Anzahl gesetzter Fundorte berechnet (1 = ★ selten · 2 = ◆ ungewöhnlich · 3+ = ● gewöhnlich). Über den Zahlen in der letzten Kopfzeile lässt sich pro Route/Gebiet ein einzelnes Level festlegen (erscheint auf der Spielleiter-Karte). Tabelle lässt sich mit dem Scrollbalken unten, Shift+Mausrad oder Zwei-Finger-Wisch seitlich scrollen.</div>
     </div>
     <div class="hometable-wrap">
       <table class="hometable" style="width:${tableWidth}px">
         ${colgroup}
-        <thead>${theadRow1}${theadRow2}</thead>
+        <thead>${theadRow1}${theadRow2}${theadRow3}</thead>
         <tbody>${body}</tbody>
       </table>
     </div>`;
@@ -756,6 +781,10 @@ function renderHome(){
     if(t.matches('.sterne-sel')) setSterne(nr, Number(t.value));
     else if(t.matches('.abil-chk')) toggleAbil(nr, t.dataset.key);
     else if(t.matches('.orte-chk')) toggleOrt(nr, t.dataset.area);
+  });
+  host.querySelector('thead').addEventListener('change', e=>{
+    const t = e.target;
+    if(t.matches('.level-input')) setAreaLevel(t.dataset.area, t.value);
   });
 }
 
@@ -818,7 +847,7 @@ function areaRowHTML(a){
   const nieteTxt = dist.niete[0]===dist.niete[1] ? dist.niete[1] : `${dist.niete[0]}–${dist.niete[1]}`;
   return `<div class="arearow">
     <div class="areahead" style="--tc:${TERR_COLOR[a.terr]||'#8a7f6d'}">
-      <div class="aname">${a.label}</div>
+      <div class="aname">${a.label} - <span class="arealevel-tag" data-area="${a.key}">Level ${state.areaLevel[a.key]}</span></div>
       <div class="terr">${a.terr} ${TERR_LABEL[a.terr]||''}</div>
       <div class="niete">Niete ${nieteTxt}</div>
     </div>
