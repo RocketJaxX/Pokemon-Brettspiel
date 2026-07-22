@@ -545,23 +545,22 @@ class Zone {
     this.id = id;
     this.type = type; // 'route' | 'city' | 'cave'
     this.name = name;
-    this.levelMin = null;
-    this.levelMax = null;
+    this.level = null;
     this.label = { x: 0, y: 0, orientation: 'horizontal' };
     this.labelPlaced = false;
   }
 
   toJSON() {
     return {
-      id: this.id, type: this.type, name: this.name, levelMin: this.levelMin, levelMax: this.levelMax,
+      id: this.id, type: this.type, name: this.name, level: this.level,
       label: { ...this.label }, labelPlaced: this.labelPlaced
     };
   }
 
   static fromJSON(data) {
     const zone = new Zone(data.id, data.type, data.name);
-    zone.levelMin = data.levelMin ?? null;
-    zone.levelMax = data.levelMax ?? null;
+    // "level" is the current schema; older saves stored a levelMin/levelMax range — keep just the lower bound.
+    zone.level = data.level ?? data.levelMin ?? null;
     zone.label = { x: 0, y: 0, orientation: 'horizontal', ...(data.label || {}) };
     zone.labelPlaced = !!data.labelPlaced;
     return zone;
@@ -1394,8 +1393,7 @@ class Renderer {
   }
 
   _formatZoneLabelText(zone) {
-    const hasLevels = zone.levelMin != null && zone.levelMax != null;
-    return hasLevels ? `${zone.name} · Lv. ${zone.levelMin}–${zone.levelMax}` : zone.name;
+    return zone.level != null ? `${zone.name} - Level ${zone.level}` : zone.name;
   }
 
   _drawZoneLabels(ctx) {
@@ -2344,7 +2342,7 @@ class UIController {
       events: { label: '', color: '#e0a13a', iconUrl: '', width: 1, height: 1 },
       barriers: { label: '', color: '#8a8a8a', iconUrl: '', width: 1, height: 1 }
     };
-    this._newZoneDraft = { type: 'route', name: '', levelMin: '', levelMax: '' };
+    this._newZoneDraft = { type: 'route', name: '', level: '' };
     this.TOOL_DEFS = [
       { key: 'brush', glyph: '🖌️', label: 'Pinsel' },
       { key: 'building', glyph: '🏛️', label: 'Gebäude' },
@@ -2767,31 +2765,18 @@ class UIController {
     });
     nameField.appendChild(nameInput);
 
-    const levelRow = document.createElement('div');
-    levelRow.className = 'field-row';
-    const minField = document.createElement('label');
-    minField.className = 'field';
-    minField.innerHTML = '<span class="field-label">Level von</span>';
-    const minInput = document.createElement('input');
-    minInput.type = 'number'; minInput.value = zone.levelMin ?? '';
-    minInput.addEventListener('change', () => {
-      zone.levelMin = minInput.value === '' ? null : parseInt(minInput.value, 10);
+    const levelField = document.createElement('label');
+    levelField.className = 'field';
+    levelField.innerHTML = '<span class="field-label">Level</span>';
+    const levelInput = document.createElement('input');
+    levelInput.type = 'number'; levelInput.value = zone.level ?? '';
+    levelInput.addEventListener('change', () => {
+      zone.level = levelInput.value === '' ? null : parseInt(levelInput.value, 10);
       this.app.renderer.requestRender();
     });
-    minField.appendChild(minInput);
-    const maxField = document.createElement('label');
-    maxField.className = 'field';
-    maxField.innerHTML = '<span class="field-label">Level bis</span>';
-    const maxInput = document.createElement('input');
-    maxInput.type = 'number'; maxInput.value = zone.levelMax ?? '';
-    maxInput.addEventListener('change', () => {
-      zone.levelMax = maxInput.value === '' ? null : parseInt(maxInput.value, 10);
-      this.app.renderer.requestRender();
-    });
-    maxField.appendChild(maxInput);
-    levelRow.append(minField, maxField);
+    levelField.appendChild(levelInput);
 
-    wrap.append(title, nameField, levelRow);
+    wrap.append(title, nameField, levelField);
 
     if (zone.labelPlaced) {
       this._renderRadioGroup(wrap, `opt-zone-orientation-${zone.id}`, ['horizontal', 'vertical'],
@@ -2827,27 +2812,20 @@ class UIController {
     const nameInput = document.createElement('input');
     nameInput.type = 'text'; nameInput.placeholder = 'Name'; nameInput.value = draft.name;
     nameInput.addEventListener('input', () => { draft.name = nameInput.value; });
-    const levelRow = document.createElement('div');
-    levelRow.className = 'field-row';
-    const minInput = document.createElement('input');
-    minInput.type = 'number'; minInput.placeholder = 'Level von'; minInput.value = draft.levelMin;
-    minInput.addEventListener('input', () => { draft.levelMin = minInput.value; });
-    const maxInput = document.createElement('input');
-    maxInput.type = 'number'; maxInput.placeholder = 'Level bis'; maxInput.value = draft.levelMax;
-    maxInput.addEventListener('input', () => { draft.levelMax = maxInput.value; });
-    levelRow.append(minInput, maxInput);
+    const levelInput = document.createElement('input');
+    levelInput.type = 'number'; levelInput.placeholder = 'Level'; levelInput.value = draft.level;
+    levelInput.addEventListener('input', () => { draft.level = levelInput.value; });
     const addBtn = document.createElement('button');
     addBtn.type = 'button'; addBtn.className = 'btn'; addBtn.textContent = 'Zone erstellen';
     addBtn.addEventListener('click', () => {
       const zone = board.addZone(draft.type, draft.name.trim() || CONFIG.ZONE_TYPE_LABELS[draft.type]);
-      zone.levelMin = draft.levelMin === '' ? null : parseInt(draft.levelMin, 10);
-      zone.levelMax = draft.levelMax === '' ? null : parseInt(draft.levelMax, 10);
+      zone.level = draft.level === '' ? null : parseInt(draft.level, 10);
       tool.currentZoneId = zone.id;
       this.app.selection.selectZone(zone.id);
-      this._newZoneDraft = { type: draft.type, name: '', levelMin: '', levelMax: '' };
+      this._newZoneDraft = { type: draft.type, name: '', level: '' };
       this._renderToolOptions();
     });
-    wrap.append(nameInput, levelRow, addBtn);
+    wrap.append(nameInput, levelInput, addBtn);
     body.appendChild(wrap);
   }
 
