@@ -742,6 +742,12 @@ table.kztable tr.hi td{background:#fdf3d4; font-weight:800;}
   font-family:'Nunito',sans-serif;}
 #page-konzept .kz-rlab{fill:#8a7f6d; font-size:10.5px; font-weight:800; dominant-baseline:central;
   font-family:'Nunito',sans-serif;}
+#page-konzept .kz-ksym{font-size:21px; text-anchor:middle; font-family:'Nunito',sans-serif;}
+#page-konzept .kz-ksym.an{fill:#33291f;}
+#page-konzept .kz-ksym.aus{fill:#ddd5c2;}
+#page-konzept .kz-glab{fill:#8a7f6d; font-size:12px; font-weight:800; text-anchor:middle; font-family:'Nunito',sans-serif;}
+#page-konzept .kz-vlab{fill:#33291f; font-size:13px; font-weight:800; font-family:'Fredoka',sans-serif;}
+#page-konzept .kz-formelsvg{fill:#8a2f1f; font-size:13px; font-weight:800; font-family:'Nunito',sans-serif;}
 @media print{ #page-konzept{max-width:none;} }
 
 
@@ -4054,18 +4060,24 @@ function renderBoard(){
    denselben Formeln wie das echte Spiel, damit ein Modell nie an der Realität vorbeiläuft.
    Nichts aus diesem Reiter geht in ein Spielmaterial oder in einen Ausdruck. */
 
-/* Signaturstufe = der KP-Ringversatz. Sie hängt nicht nur von der Richtung (Schild/Kanone) ab,
-   sondern auch von der Klasse: sigBonus() gibt kp {A:0,B:2,C:4} und ang {A:0,B:1,C:1}. */
-const KZ_SIG = [
-  {key:'none', kurz:'–',    label:'– ohne',        kpStufe:0, ang:0},
-  {key:'kpB',  kurz:'🛡◆',  label:'🛡 Tank bei ◆', kpStufe:1, ang:0},
-  {key:'kpC',  kurz:'🛡★',  label:'🛡 Tank bei ★', kpStufe:2, ang:0},
-  {key:'ang',  kurz:'💣',   label:'💣 Glaskanone', kpStufe:0, ang:1},
+/* Die drei Angaben, die auf der Karte stehen und die Mechanik bestimmen. Bewusst getrennt
+   gehalten (statt zu einer Signaturstufe verschmolzen), weil genau diese drei Gruppen als
+   Kerben an die Kartenunterkante sollen. Die Verrechnung spiegelt sigBonus(): der Schild
+   gibt kp {A:0,B:2,C:4}, die Kanone ang {A:0,B:1,C:1} – bei Klasse ● also jeweils nichts. */
+const KZ_SIGDIR = [
+  {key:'kp',   sym:'🛡', label:'🛡 Tank'},
+  {key:'none', sym:'–',  label:'– normal'},
+  {key:'ang',  sym:'💣', label:'💣 Glaskanone'},
+];
+const KZ_KLASSEN = [
+  {key:'A', sym:'●', label:'● gewöhnlich'},
+  {key:'B', sym:'◆', label:'◆ ungewöhnlich'},
+  {key:'C', sym:'★', label:'★ selten'},
 ];
 const KZ_KP_BASEN  = [10,12,14,16,18,20,22];
 const KZ_ANG_BASEN = [2,3,4,5];
 const KZ_CX = 340, KZ_CY = 340, KZ_R_MIN = 104, KZ_R_MAX = 300;
-let kzState = {sterne:3, sig:'none', siege:1, zeigeAng:true};
+let kzState = {sterne:3, sigDir:'none', klasse:'A', siege:1, zeigeAng:true};
 
 function kzLevel(w){
   let lvl = 1;
@@ -4073,12 +4085,72 @@ function kzLevel(w){
   return lvl;
 }
 function kzWerte(){
-  const sig = KZ_SIG.find(s=>s.key===kzState.sig) || KZ_SIG[0];
-  const kpBasis  = 2*kzState.sterne + 8 + sig.kpStufe*2;
-  const angBasis = 2 + Math.floor((kzState.sterne-1)/2) + sig.ang;
+  const kl = kzState.klasse;
+  const kpStufe = kzState.sigDir==='kp'  ? {A:0,B:1,C:2}[kl] : 0;   // = sigBonus(kl,'kp') ÷ 2
+  const angPlus = kzState.sigDir==='ang' ? {A:0,B:1,C:1}[kl] : 0;   // = sigBonus(kl,'ang')
+  const kpBasis  = 2*kzState.sterne + 8 + kpStufe*2;
+  const angBasis = 2 + Math.floor((kzState.sterne-1)/2) + angPlus;
   const lvl = kzLevel(kzState.siege);
-  return {sig, kpBasis, angBasis, lvl, kp: kpBasis + (lvl-1), ang: angBasis + Math.floor(lvl/3),
+  return {kpStufe, angPlus, kpBasis, angBasis, lvl,
+          kp: kpBasis + (lvl-1), ang: angBasis + Math.floor(lvl/3),
           kpRing: KZ_KP_BASEN.indexOf(kpBasis), angRing: KZ_ANG_BASEN.indexOf(angBasis)};
+}
+
+/* Kartenunterkante als "Barcode": drei Kerbgruppen (Sterne / Signatur / Klasse) gegenüber
+   der Variante, bei der eine einzige Kerbe direkt den fertigen Ring kodiert. */
+function kzKarteSVG(){
+  const v = kzWerte();
+  const kerbe = (x,y) => `<path d="M ${x-14} ${y} L ${x} ${y+20} L ${x+14} ${y} Z" fill="#fdf0e0" stroke="#d6452f" stroke-width="2.5" stroke-linejoin="round"/>`;
+  const fuehler = (x,y,farbe) =>
+    `<path d="M ${x-10} ${y+52} L ${x} ${y+22} L ${x+10} ${y+52} Z" fill="${farbe}"/>` +
+    `<rect x="${x-5}" y="${y+50}" width="10" height="16" rx="2" fill="${farbe}"/>`;
+  const feld = (x,y,sym,an) =>
+    `<text class="kz-ksym ${an?'an':'aus'}" x="${x}" y="${y}">${sym}</text>`;
+
+  const EDGE_A = 132;
+  let a = '';
+  // Sterne: Kerbe unter dem letzten Stern
+  for(let s=1; s<=5; s++){
+    const x = 62 + (s-1)*38;
+    a += feld(x, EDGE_A-16, '★', s<=kzState.sterne);
+    if(s===kzState.sterne){ a += kerbe(x, EDGE_A) + fuehler(x, EDGE_A, '#2f7fc4'); }
+  }
+  a += `<text class="kz-glab" x="138" y="${EDGE_A+82}">Sterne → ${kzState.sterne}</text>`;
+  // Signatur: Schild / normal / Kanone
+  KZ_SIGDIR.forEach((s,i)=>{
+    const x = 300 + i*40;
+    a += feld(x, EDGE_A-16, s.sym, kzState.sigDir===s.key);
+    if(kzState.sigDir===s.key){ a += kerbe(x, EDGE_A) + fuehler(x, EDGE_A, '#59b04a'); }
+  });
+  a += `<text class="kz-glab" x="340" y="${EDGE_A+82}">Signatur</text>`;
+  // Klasse: ● ◆ ★
+  KZ_KLASSEN.forEach((k,i)=>{
+    const x = 470 + i*40;
+    a += feld(x, EDGE_A-16, k.sym, kzState.klasse===k.key);
+    if(kzState.klasse===k.key){ a += kerbe(x, EDGE_A) + fuehler(x, EDGE_A, '#c8940f'); }
+  });
+  a += `<text class="kz-glab" x="510" y="${EDGE_A+82}">Klasse</text>`;
+
+  const EDGE_B = 400;
+  let b = '';
+  for(let i=0; i<7; i++){
+    const x = 100 + i*66;
+    b += `<text class="kz-ksym ${i===v.kpRing?'an':'aus'}" x="${x}" y="${EDGE_B-16}">${KZ_KP_BASEN[i]}</text>`;
+    if(i===v.kpRing){ b += kerbe(x, EDGE_B) + fuehler(x, EDGE_B, '#2f7fc4'); }
+  }
+  b += `<text class="kz-glab" x="320" y="${EDGE_B+82}">eine Kerbe = fertiger KP-Ring ${v.kpRing+1}</text>`;
+
+  return `
+<svg viewBox="0 0 640 505" role="img" aria-label="Kartenunterkante als mechanischer Barcode">
+  <text class="kz-vlab" x="20" y="18">Variante A · drei Kerbgruppen (deine Idee)</text>
+  <rect x="20" y="26" width="600" height="${EDGE_A-26}" rx="8" fill="#fffdf6" stroke="#d8cfbc" stroke-width="2"/>
+  ${a}
+  <text class="kz-formelsvg" x="20" y="${EDGE_A+118}">(Sterne − 1) + Signaturstufe ${v.kpStufe}
+    = (${kzState.sterne} − 1) + ${v.kpStufe} = KP-Ring ${v.kpRing+1}${v.kpStufe===0 && kzState.sigDir==='kp' ? '  ·  Schild bei ● gibt nichts' : ''}</text>
+  <text class="kz-vlab" x="20" y="${EDGE_B-96}">Variante B · eine Kerbe, Umrechnung schon beim Drucken erledigt</text>
+  <rect x="20" y="${EDGE_B-88}" width="600" height="${EDGE_B-(EDGE_B-88)}" rx="8" fill="#fffdf6" stroke="#d8cfbc" stroke-width="2"/>
+  ${b}
+</svg>`;
 }
 
 /* Ringliste von innen nach außen; die Radien verteilen sich gleichmäßig, damit man direkt
@@ -4152,6 +4224,8 @@ function kzVarianten(){
 }
 
 function kzRenderLive(){
+  const karte = document.getElementById('kz-karte');
+  if(karte) karte.innerHTML = kzKarteSVG();
   const live = document.getElementById('kz-live');
   if(!live) return;
   const v = kzWerte();
@@ -4167,10 +4241,10 @@ function kzRenderLive(){
           <div><div class="t">KP max</div><div class="v">${v.kp}</div></div>
         </div>
         <div class="kz-formel">KP-Blende = (Sterne − 1) + Signaturstufe
-          = (${kzState.sterne} − 1) + ${v.sig.kpStufe} = <b>Ring ${v.kpRing+1}</b> → KP-Basis ${v.kpBasis}</div>
+          = (${kzState.sterne} − 1) + ${v.kpStufe} = <b>Ring ${v.kpRing+1}</b> → KP-Basis ${v.kpBasis}</div>
         ${kzState.zeigeAng
           ? `<div class="kz-formel">ANG-Blende = (Sterne − 1) ÷ 2 + Kanone
-               = ${Math.floor((kzState.sterne-1)/2)} + ${v.sig.ang} = <b>Ring ${v.angRing+1}</b> → ANG-Basis ${v.angBasis}</div>`
+               = ${Math.floor((kzState.sterne-1)/2)} + ${v.angPlus} = <b>Ring ${v.angRing+1}</b> → ANG-Basis ${v.angBasis}</div>`
           : `<div class="kz-ok">Angriff kommt hier <b>von der Karte</b> (4-Felder-Leiste: ${v.angBasis} ·
                ${v.angBasis+1} · ${v.angBasis+2} · ${v.angBasis+3} für Lv 1–2 / 3–5 / 6–8 / 9–10). Die Scheibe
                braucht dadurch nur <b>9 statt 13 Ringe</b> – gut ein Drittel mehr Platz je Ziffer – und es bleibt
@@ -4187,8 +4261,10 @@ function renderKonzept(){
   const varianten = kzVarianten();
   const sterneBtns = [1,2,3,4,5].map(s=>
     `<button data-kz="sterne" data-val="${s}" class="${kzState.sterne===s?'on':''}">${'⭐'.repeat(s)}</button>`).join('');
-  const sigBtns = KZ_SIG.map(s=>
-    `<button data-kz="sig" data-val="${s.key}" class="${kzState.sig===s.key?'on':''}">${s.label}</button>`).join('');
+  const sigBtns = KZ_SIGDIR.map(s=>
+    `<button data-kz="sigDir" data-val="${s.key}" class="${kzState.sigDir===s.key?'on':''}">${s.label}</button>`).join('');
+  const klasseBtns = KZ_KLASSEN.map(k=>
+    `<button data-kz="klasse" data-val="${k.key}" class="${kzState.klasse===k.key?'on':''}">${k.label}</button>`).join('');
 
   host.innerHTML = `
   <div id="kz-root">
@@ -4238,8 +4314,10 @@ function renderKonzept(){
       <div class="kz-flex" style="gap:26px;">
         <div class="kz-ctl" style="flex:1 1 300px;"><span class="lab">Rädchen 1 · Sterne</span>
           <div class="kz-btns">${sterneBtns}</div></div>
-        <div class="kz-ctl" style="flex:1 1 340px;"><span class="lab">Rädchen 2 · Signatur</span>
+        <div class="kz-ctl" style="flex:1 1 290px;"><span class="lab">Rädchen 2 · Signatur</span>
           <div class="kz-btns">${sigBtns}</div></div>
+        <div class="kz-ctl" style="flex:1 1 290px;"><span class="lab">Rädchen 3 · Klasse (entscheidet die Höhe des Bonus)</span>
+          <div class="kz-btns">${klasseBtns}</div></div>
         <div class="kz-ctl" style="flex:1 1 260px;">
           <span class="lab">Siege (dreht die Scheibe): <b id="kz-siegeval">${kzState.siege}</b></span>
           <input type="range" id="kz-siege" min="1" max="36" step="1" value="${kzState.siege}">
@@ -4249,6 +4327,48 @@ function renderKonzept(){
         </div>
       </div>
       <div id="kz-live"></div>
+    </div>
+
+    <div class="kzbox">
+      <h2>Kann die Karte die Mechanik selbst stellen?</h2>
+      <p><b>Die Idee:</b> Kerben an der Kartenunterkante – unter dem letzten Stern, unter dem Signatur-Symbol,
+        unter dem Klassen-Symbol. Ein Fühler greift sie beim Einschieben ab und stellt die Blende, ganz ohne
+        Handgriff. Das ist im Kern eine <b>Lochkarte</b>, und ja: es ist druckbar.</p>
+      <div class="kz-flex">
+        <div class="kz-svgwrap" style="flex:1 1 520px;"><div id="kz-karte"></div></div>
+        <div class="kz-panel">
+          <h3>Abgriff ohne Federn</h3>
+          <p>Der Schlitten bekommt oben einen <b>V-Trichter</b>, breit genug für den ganzen Verstellweg.
+            Beim Einschieben läuft die Kerbe an der Trichterflanke entlang und zentriert den Schlitten
+            selbst – rein geometrisch, keine Federn, nichts das sich verhakt.</p>
+          <h3>Der Haken bei drei Gruppen</h3>
+          <p>Sterne und Signaturstufe sind additiv, das erledigen zwei gestapelte Schlitten. Aber
+            <b>Signatur und Klasse müssen verrechnet werden</b>: 🛡 gibt bei ● nichts, bei ◆ eine Stufe,
+            bei ★ zwei. Das ist ein UND-Glied im Gehäuse – baubar, aber es ist genau die Sorte Kleinteil,
+            die im Betrieb klemmt.</p>
+          <div class="kz-ok"><b>Variante B spart das komplett:</b> Wir drucken die Karten ja selbst – dann
+            kann die Umrechnung schon beim Drucken passieren und <b>eine einzige Kerbe kodiert direkt den
+            fertigen Ring</b>. Keine Verrechnung, kein UND-Glied, ein Fühler. Die Symbole für Sterne, Signatur
+            und Klasse bleiben trotzdem sichtbar auf der Karte – sie sind dann nur noch für den Menschen da.</div>
+          <h3>Der echte Engpass ist nicht der Drucker</h3>
+          <p>Bei 9 Ringen auf 70 mm Scheibe liegt der Rasterabstand bei rund <b>2,7 mm</b> – die Kerbe muss also
+            auf etwa <b>±1 mm</b> sitzen. Das ist für den 3D-Druck völlig unkritisch, aber es bedeutet
+            <b>rund 450 Karten mit millimetergenauem Ausschnitt</b>. Mit Schere und Skalpell ist das die neue
+            Mammutaufgabe – nur an anderer Stelle als vorher.</p>
+          <div class="kz-note">Milderungen, falls du diesen Weg gehen willst: Kerbraster auf der Karte grob
+            halten (z. B. 7,5 mm) und über einen <b>Untersetzungshebel</b> auf 2,7 mm herunterbringen · eine
+            <b>Stanzschablone</b> aus dem 3D-Drucker, in die die Karte einrastet · oder ein Schneideplotter,
+            falls du Zugang hast.</div>
+        </div>
+      </div>
+      <h3>Die radikal einfache Variante: die Karte <i>ist</i> die Blende</h3>
+      <p>Wenn die Karte ohnehin die Information trägt, kann sie den Ring auch direkt freigeben, statt einen
+        Schieber zu stellen: Karte <b>über</b> die Scheibe legen, mit einem <b>Fenster an der richtigen Stelle</b>.
+        Damit entfallen Fühler, Schlitten und Trichter ersatzlos – <b>null bewegliche Teile</b>. Zu schneiden ist
+        genau ein Fenster je Karte, und ein Millimeter daneben zeigt immer noch die richtige Zahl, nur leicht
+        außermittig. Das ist deutlich fehlertoleranter als jede Rastmechanik. Voraussetzung ist, dass die Scheibe
+        <b>außen in einer Ringnut</b> läuft statt auf einer Mittelnabe – dann bleibt die Mitte frei und die Karte
+        ist ein schlichtes Rechteck.</p>
     </div>
 
     <div class="kzbox">
@@ -4270,9 +4390,10 @@ function renderKonzept(){
   root.addEventListener('click', e=>{
     const b = e.target.closest('button[data-kz]');
     if(!b) return;
-    if(b.dataset.kz==='sterne')   kzState.sterne = Number(b.dataset.val);
-    else if(b.dataset.kz==='sig') kzState.sig = b.dataset.val;
-    else if(b.dataset.kz==='ang') kzState.zeigeAng = !kzState.zeigeAng;
+    if(b.dataset.kz==='sterne')      kzState.sterne = Number(b.dataset.val);
+    else if(b.dataset.kz==='sigDir') kzState.sigDir = b.dataset.val;
+    else if(b.dataset.kz==='klasse') kzState.klasse = b.dataset.val;
+    else if(b.dataset.kz==='ang')    kzState.zeigeAng = !kzState.zeigeAng;
     renderKonzept();
   });
   root.addEventListener('input', e=>{
