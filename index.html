@@ -151,10 +151,24 @@ table.typematrix .rowlab{color:#fff; font-weight:800; font-size:7.5px; padding:0
   color:#9a8f78; background:#fffdf6; padding:0 1px;}
 .gm-print .a5{width:148.5mm; height:209.9mm; position:relative; overflow:hidden;}
 .gm-print .a5in{padding:5mm 6mm 3mm;}
-/* ---- Spielanleitung als Broschüre: A4-Innenseite (210×296.8mm) auf die A5-Hälfte
-   skaliert (Faktor 148.5/210 = 0,707143 – deckungsgleich mit der Verkleinerung A4→A5). ---- */
-.gm-print .hb-scalewrap{position:absolute; top:0; left:0; width:210mm; height:296.8mm;
-  transform:scale(0.707143); transform-origin:top left;}
+
+/* ===== Druckvorlage Spielanleitung: A4 quer -> 2x A5, gefalzt (Beschluss 29.07.2026) =====
+   Eigener Namensraum (nicht .gm-print!): Die echten Handbuch-Klassen (u. a. table.typematrix,
+   .starhead, .arearow) tauchen auch in den (toten, nie aufgerufenen) .gm-print-Kartenregeln
+   auf – unter .gm-print gerendert, erbten sie versehentlich deren Schriftgrößen/-umbruchregeln
+   und wichen dadurch von der Höhenmessung (hbMeasure, misst nur unter .hb) ab, was Inhalte auf
+   die nächste Blattseite überlaufen ließ. */
+.hb-print{display:none;}
+.hb-print .sheet{width:297mm; height:209.9mm; margin:0 auto 14px; background:#fffdf6; position:relative;
+  box-shadow:0 2px 12px rgba(0,0,0,.15); display:flex; overflow:hidden;}
+.hb-print .sheetlab{position:absolute; bottom:1.2mm; right:3mm; font-size:6.5pt; color:#b0a68f; font-weight:800; z-index:2;}
+.hb-print .fold{position:absolute; left:148.5mm; top:0; bottom:0; border-left:0.15mm dashed #d8cfbc; transform:translateX(-50%);}
+.hb-print .a5{width:148.5mm; height:209.9mm; position:relative; overflow:hidden;}
+/* A4-Innenseite (210×296.8mm) auf die A5-Hälfte skaliert (Faktor 148.5/210 = 0,707143 –
+   deckungsgleich mit der Verkleinerung A4→A5). Bewusst mit "zoom" statt "transform:scale" –
+   Chromiums Druck-Paginierung bemisst Seitenumbrüche bei transformierten Boxen an der
+   UNSKALIERTEN Größe, "zoom" skaliert dagegen auch das Layout. */
+.hb-print .hb-scalewrap{zoom:0.707143;}
 .gm-print h1{font-family:'Fredoka',sans-serif; font-size:13px; margin-bottom:2mm;}
 .gm-print .sub{font-size:8px; color:#8a7f6d; font-weight:800; margin:-1mm 0 2mm;}
 
@@ -208,10 +222,10 @@ table.typematrix .rowlab{color:#fff; font-weight:800; font-size:7.5px; padding:0
 
 @media print{
   #page-gm .gm-screen{display:none !important;}
-  #page-gm .gm-print{display:block !important;}
-  #page-gm .gm-print .sheet{margin:0; box-shadow:none; page-break-after:always;}
-  #page-gm .gm-print .sheet:last-child{page-break-after:auto;}
-  #page-gm .gm-print .hb-scalewrap .hb-page{page-break-after:auto; break-after:auto;}
+  #page-gm .hb-print{display:block !important;}
+  #page-gm .hb-print .sheet{margin:0; box-shadow:none; page-break-after:always;}
+  #page-gm .hb-print .sheet:last-child{page-break-after:auto;}
+  #page-gm .hb-print .hb-scalewrap .hb-page{page-break-after:auto; break-after:auto;}
 }
 
 
@@ -652,7 +666,6 @@ table.typematrix .rowlab{color:#fff; font-weight:800; font-size:7.5px; padding:0
 #page-volvelle .vol-note{background:#fdf0e0; border-left:3px solid var(--rot); border-radius:0 8px 8px 0;
   padding:8px 14px; margin-bottom:14px; font-size:12px; font-weight:700; line-height:1.5;}
 
-@page{ size:A4 landscape; margin:8mm; }
 #page-volvelle .vsheet{background:var(--paper); border-radius:10px; box-shadow:0 2px 10px rgba(0,0,0,.1);
   padding:9mm; margin-bottom:14px; display:flex; gap:10mm; align-items:flex-start;}
 #page-volvelle .vcol{display:flex; flex-direction:column; align-items:center; gap:5mm;}
@@ -2103,7 +2116,7 @@ function hbA5HTML(pageDivHTML){
 }
 function hbFoldSheetHTML(label, leftHTML, rightHTML){
   return `<div class="sheet"><div class="sheetlab">${label}</div>${hbA5HTML(leftHTML)}${hbA5HTML(rightHTML)}` +
-    `<div class="cut"><span>⌇ hier falzen</span></div></div>`;
+    `<div class="fold"></div></div>`;
 }
 function buildHandbuchPrintHTML(pageDivs){
   const P = pageDivs.length, S = P/4;
@@ -2112,7 +2125,7 @@ function buildHandbuchPrintHTML(pageDivs){
     out += hbFoldSheetHTML(`Blatt ${i}/${S} · Vorderseite`, pageDivs[2*i-1], pageDivs[P-2*i]);
     out += hbFoldSheetHTML(`Blatt ${i}/${S} · Rückseite`,  pageDivs[2*i-2], pageDivs[P-2*i+1]);
   }
-  return `<div class="gm-print">${out}</div>`;
+  return `<div class="hb-print">${out}</div>`;
 }
 
 function renderGM(){
@@ -3190,6 +3203,7 @@ function renderDoc(){
       <li><span class="badge ok">erledigt</span> <b>Kartenrückseite (28.07.2026):</b> KP-, Angriffs- und Siege-Beschriftung stehen links <i>neben</i> ihren Kästchen. Das gewonnene Höhenbudget verhindert, dass Sterne und Klasse unten aus dem Rahmen laufen.</li>
       <li><span class="badge ok">erledigt</span> <b>Evoli-Familie (28.07.2026):</b> Blitza und Flamara fehlten in Evolis Entwicklungsliste und hatten dadurch keine Seltenheitsklasse. Ergänzt – beide sind jetzt ★ wie Aquana.</li>
       <li><span class="badge ok">erledigt</span> <b>Spielanleitung als Broschüre (29.07.2026):</b> Ansicht bleibt normale Bildlaufseiten, der Druck imponiert automatisch auf A4 quer als fertiges, faltbares und tackerbares Heft. Details in Kapitel 12.</li>
+      <li><span class="badge ok">erledigt</span> <b>Druckfehler behoben – doppelte Seitengröße (29.07.2026):</b> Ein zweites, fest codiertes <code>@page{margin:8mm}</code> in der Volvelle-CSS galt (weil <code>@page</code> nicht auf einen Reiter beschränkt werden kann) unbemerkt für <b>jeden</b> Ausdruck der Datei, nicht nur Volvelle. Randlos geplante Drucke (Karten, Arenen, jetzt auch das Broschürenheft) liefen dadurch pro Blatt geringfügig über die Seite hinaus und erzeugten je eine fast leere Folgeseite – beim Kartenset z. B. 68 statt 34 Seiten. Rand läuft jetzt über denselben dynamischen Kanal wie die Seitenausrichtung; nur Volvelle bekommt weiterhin 8mm, alle anderen 0.</li>
       <li><span class="badge ok">erledigt</span> <b>Signatur &amp; Typen editierbar (29.07.2026):</b>
         Signatur (🛡️ Tank / 💣 Glaskanone / – normal) sowie Typ 1 und Typ 2 sind jetzt eigene, direkt in
         der Pokémon-Tabelle editierbare Dropdown-Felder – unabhängig von Klasse und Fundorten gespeichert,
@@ -3298,6 +3312,7 @@ function renderDoc(){
       <li><b>28.07.2026 (6)</b> – Top-4-Blatt: Der Champion heißt jetzt <b>Gary</b> (bis dahin „Blau" nach der deutschen Spielfassung). Die Pokémon-Bilder füllen die Zeilenhöhe wie auf den Arenaleiter-Karten (12 mm statt 8 mm, einheitliche Zeilenhöhe über alle fünf Spalten). Der Wertblock aus Name, Level, Angriff und KP-Kästchen ist nur noch so breit wie sein Inhalt und sitzt mittig neben dem Bild – Name, Werte und Kästchen behalten dabei eine gemeinsame linke Kante, sodass die Fünfergruppen der KP-Leiste lesbar bleiben.</li>
       <li><b>28.07.2026 (5)</b> – Datenpflege: Die <b>Signatur-Richtung</b> (Tank / Glaskanone / keine) steht jetzt als eigenes Feld <code>sig</code> bei jedem Pokémon, statt aus der Differenz zwischen gespeichertem und berechnetem Wert abgeleitet zu werden. Die alte Ableitung brach, sobald sich die Klasse eines Pokémon änderte: Bei Klasse ● ist der Bonus 0, die Richtung war dann nicht mehr erkennbar. Zuordnung eingefroren auf den geprüften Stand 57 Tanks / 53 Glaskanonen / 41 ohne; Kontrolle über alle 1510 Wertpaare: kein einziger Spielwert hat sich dadurch verändert. Außerdem bereinigt: Der Evoli-Satz in Kapitel 4 („Quest-Geschenk in Prismania, Wahl der Entwicklung bei Lv 3") widersprach den Daten – Evoli ist ein normaler Fang auf Route 5 und entwickelt sich bei Lv 6, wobei der Spieler zwischen Aquana, Blitza und Flamara wählt. Diese Wahlregel stand bisher in keinem Spielmaterial und ist jetzt in der Anleitung erklärt. Startkapital von 5 ₽ je Spieler als Vorschlag in die Anleitung aufgenommen.</li>
       <li><b>29.07.2026</b> – Beschlüsse-Reiter bereinigt: verwaistes Rückseite-Fragment zwischen Kapitel 11/12 eingegliedert, mehrere offene Punkte entschieden (Startkapital 5 ₽, Meisterball-Quest bei Prof. Eich, Arena-Teams, Siege bei Teamwechsel, Zugreihenfolge/Showmatch für 3 Spieler), neue Kategorie „Mögliche Erweiterungen", erledigte Punkte in Kapitel 14 je Kategorie einklappbar. Pokémon-Tabelle: Signatur und Typ 1/2 als editierbare Dropdown-Spalten. Spielanleitung druckt jetzt als fertige A4-quer-Broschüre (Bildschirmansicht bleibt unverändert die normale Seitenfolge).</li>
+      <li><b>29.07.2026 (2)</b> – Broschüren-Falzlinie ohne Schriftzug, nur noch ein sehr feiner gestrichelter Strich. Dabei entdeckt und behoben: Ein zweites, fest codiertes <code>@page{margin:8mm}</code> in der Volvelle-CSS wirkte unbemerkt auf <b>jeden</b> Ausdruck der Datei (nicht nur Volvelle), weil sich <code>@page</code>-Regeln nicht auf einen Reiter beschränken lassen. Randlos geplante Drucke liefen dadurch je Blatt geringfügig über die Seite hinaus und erzeugten eine fast leere Folgeseite – u. a. beim Kartenset (68 statt 34 Seiten) und beim neuen Broschürenheft. Rand läuft jetzt über denselben dynamischen Kanal wie die Seitenausrichtung; nur Volvelle bekommt weiterhin 8mm, alle anderen 0.</li>
     </ul>
   </div>`;
   groupDoneItemsInChapter14();
@@ -3927,10 +3942,19 @@ function renderBoard(){
 
 const RENDERERS = { home: renderHome, gm: renderGM, cards: renderCards, shop: renderShop, doc: renderDoc, volvelle: renderVolvelle, trainerkarte: renderTrainerkarte, board: renderBoard, arenen: renderArenen };
 const PAGE_ORIENTATION = { home:'portrait', gm:'landscape', cards:'portrait', shop:'portrait', doc:'portrait', volvelle:'landscape', trainerkarte:'portrait', board:'landscape', arenen:'landscape' };
+/* Nur Volvelle braucht einen echten Papierrand (Scheiben dürfen nicht bis an die Kante) –
+   alle anderen Reiter drucken randlos und übernehmen die 209.9mm/296.5mm-Feinabstimmung
+   ihrer .sheet-Maße selbst. Beschluss 29.07.2026: früher stand dafür ein zweites, statisches
+   @page{margin:8mm} in der Volvelle-CSS, das (weil @page nicht auf einen Reiter beschränkt
+   werden kann) global galt und JEDEN Ausdruck – auch randlos geplante wie Karten oder das neue
+   Broschürenheft – auf 8mm Rand zwang, wodurch Inhalte knapp über die Seite hinausliefen und
+   eine fast leere Folgeseite erzeugten. Jetzt läuft der Rand über denselben dynamischen Kanal
+   wie die Ausrichtung, bleibt für Volvelle unverändert bei 8mm und ist für alle anderen 0. */
+const PAGE_MARGIN = { volvelle:'8mm' };
 
-function setPrintOrientation(o){
+function setPrintOrientation(o, margin){
   const el = document.getElementById('pagesize');
-  if(el) el.textContent = `@page{ size:A4 ${o}; margin:0; }`;
+  if(el) el.textContent = `@page{ size:A4 ${o}; margin:${margin||'0'}; }`;
 }
 function printPage(orientation){
   setPrintOrientation(orientation);
@@ -3941,13 +3965,13 @@ function activatePage(name){
   document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active', p.id === 'page-'+name));
   document.querySelectorAll('nav .tab').forEach(b=>b.classList.toggle('active', b.dataset.page === name));
   RENDERERS[name]();
-  setPrintOrientation(PAGE_ORIENTATION[name] || 'portrait');
+  setPrintOrientation(PAGE_ORIENTATION[name] || 'portrait', PAGE_MARGIN[name]);
   try{ localStorage.setItem('kanto-spielsystem-lastpage', name); }catch(e){}
 }
 
 window.addEventListener('beforeprint', ()=>{
   const active = document.querySelector('.page.active');
-  if(active){ const name = active.id.replace('page-',''); setPrintOrientation(PAGE_ORIENTATION[name] || 'portrait'); }
+  if(active){ const name = active.id.replace('page-',''); setPrintOrientation(PAGE_ORIENTATION[name] || 'portrait', PAGE_MARGIN[name]); }
 });
 
 document.addEventListener('DOMContentLoaded', ()=>{
