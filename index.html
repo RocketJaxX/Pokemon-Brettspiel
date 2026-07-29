@@ -691,6 +691,59 @@ table.typematrix .rowlab{color:#fff; font-weight:800; font-size:7.5px; padding:0
   font-size:12.5px; font-weight:700; border-radius:0 6px 6px 0;}
 @media print{ #page-doc{max-width:none;} .dchapter{box-shadow:none; break-inside:avoid;} }
 
+/* ===== Konzept-Labor (Ideen testen, nichts davon ist beschlossen oder wird gedruckt) ===== */
+#page-konzept{max-width:1180px; margin:0 auto; padding:18px 16px 60px;}
+#page-konzept h1{font-size:20px; margin-bottom:3px;}
+#page-konzept .kz-lead{font-size:12.5px; color:#5c5344; font-weight:700; max-width:860px; margin-bottom:14px;}
+.kzbox{background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:16px 20px; margin-bottom:16px;
+  box-shadow:0 2px 10px rgba(0,0,0,.08);}
+.kzbox h2{font-size:16px; color:var(--ink); border-bottom:2px solid var(--gold2); padding-bottom:5px; margin-bottom:10px;}
+.kzbox h3{font-size:13px; color:var(--rot); margin:13px 0 5px;}
+.kzbox p{font-size:13px; line-height:1.55; margin-bottom:7px;}
+.kzbox ul{margin:5px 0 9px 20px; font-size:13px; line-height:1.55;}
+.kzbox li{margin-bottom:3px;}
+.kzbox code{background:#f2ecdc; padding:0 4px; border-radius:3px; font-size:12px;}
+.kz-flex{display:flex; gap:22px; flex-wrap:wrap; align-items:flex-start;}
+.kz-panel{flex:1; min-width:290px;}
+.kz-svgwrap{flex:0 1 560px; min-width:300px;}
+.kz-svgwrap svg{width:100%; height:auto; display:block;}
+.kz-ctl{margin-bottom:11px;}
+.kz-ctl .lab{font-family:'Fredoka',sans-serif; font-size:12px; color:#5c5344; margin-bottom:4px; display:block;}
+.kz-btns{display:flex; gap:5px; flex-wrap:wrap;}
+.kz-btns button{background:#efe8d6; color:var(--ink); border:1px solid var(--line); padding:6px 11px; font-size:13px;
+  border-radius:7px; font-weight:700;}
+.kz-btns button:hover{background:#e4dbc4;}
+.kz-btns button.on{background:var(--ink); color:var(--gold2); border-color:var(--ink);}
+.kz-ctl input[type=range]{width:100%; accent-color:var(--rot);}
+.kz-read{display:flex; gap:8px; margin:10px 0 4px;}
+.kz-read > div{flex:1; background:#fbf8ef; border:1px solid var(--line); border-radius:9px; padding:7px 4px; text-align:center;}
+.kz-read .t{font-size:10px; font-weight:800; color:#8a7f6d; text-transform:uppercase; letter-spacing:.4px;}
+.kz-read .v{font-family:'Fredoka',sans-serif; font-size:26px; color:var(--rot); line-height:1.15;}
+.kz-note{background:#fdf0e0; border-left:3px solid var(--rot); padding:7px 11px; margin:9px 0; font-size:12px;
+  font-weight:700; line-height:1.5; border-radius:0 7px 7px 0;}
+.kz-ok{background:#eef5ec; border-left:3px solid var(--gruen); padding:7px 11px; margin:9px 0; font-size:12px;
+  font-weight:700; line-height:1.5; border-radius:0 7px 7px 0;}
+.kz-formel{background:#f7f2e4; border-left:3px solid var(--gold); padding:6px 10px; margin:8px 0;
+  font-weight:800; font-size:12.5px; border-radius:0 6px 6px 0;}
+table.kztable{border-collapse:collapse; font-size:12px; margin-top:6px;}
+table.kztable th{background:var(--ink); color:#fff; padding:4px 9px; text-align:left;
+  font-family:'Fredoka',sans-serif; font-weight:600; font-size:11.5px;}
+table.kztable td{padding:3px 9px; border-bottom:1px solid var(--line);}
+table.kztable tr.hi td{background:#fdf3d4; font-weight:800;}
+#page-konzept .kz-n{font-size:12px; font-weight:800; text-anchor:middle; dominant-baseline:central;
+  font-family:'Nunito',sans-serif;}
+#page-konzept .kz-siege{fill:#a89a7c; font-size:11px;}
+#page-konzept .kz-lvl{fill:#33291f;}
+#page-konzept .kz-akt{fill:#1f6b2f;}
+#page-konzept .kz-aus{fill:#d3cab4;}
+#page-konzept .kz-hub{fill:#e3b52a; font-size:14px; text-anchor:middle; font-family:'Fredoka',sans-serif;}
+#page-konzept .kz-hubv{fill:#fff; font-size:38px; text-anchor:middle; font-family:'Fredoka',sans-serif;}
+#page-konzept .kz-tab{fill:#fff; font-size:11px; font-weight:800; text-anchor:middle; dominant-baseline:central;
+  font-family:'Nunito',sans-serif;}
+#page-konzept .kz-rlab{fill:#8a7f6d; font-size:10.5px; font-weight:800; dominant-baseline:central;
+  font-family:'Nunito',sans-serif;}
+@media print{ #page-konzept{max-width:none;} }
+
 
 /* ===== Volvellen: Karte fürs 3D-Druck-Gehäuse (Vorderseite + 2 Papierscheiben zum Aufkleben) ===== */
 #page-volvelle{max-width:1400px; margin:0 auto; padding:16px;}
@@ -848,6 +901,7 @@ table.typematrix .rowlab{color:#fff; font-weight:800; font-size:7.5px; padding:0
   <button class="tab" data-page="cards">🃏 Karten (Normal)</button>
   <button class="tab" data-page="volvelle">🎡 Karten (Volvelle)</button>
   <button class="tab" data-page="board">🗺 Spielbrett</button>
+  <button class="tab" data-page="konzept">🧪 Konzept</button>
   <span class="spacer"></span>
   <span class="savehint" id="saveHint">Änderungen werden automatisch lokal gespeichert</span>
   <button class="tab" onclick="exportJSON()" title="Datenstand als JSON herunterladen (für den Austausch mit der KI)">⬇ JSON</button>
@@ -867,6 +921,7 @@ table.typematrix .rowlab{color:#fff; font-weight:800; font-size:7.5px; padding:0
   <section class="page" id="page-volvelle"></section>
 <section class="page" id="page-arenen"></section>
 <section class="page" id="page-board"></section>
+<section class="page" id="page-konzept"></section>
 </main>
 <script>
 
@@ -3994,8 +4049,243 @@ function renderBoard(){
   document.getElementById('board-frame').srcdoc = new TextDecoder('utf-8').decode(bytes);
 }
 
-const RENDERERS = { home: renderHome, gm: renderGM, cards: renderCards, shop: renderShop, doc: renderDoc, volvelle: renderVolvelle, trainerkarte: renderTrainerkarte, board: renderBoard, arenen: renderArenen };
-const PAGE_ORIENTATION = { home:'portrait', gm:'landscape', cards:'portrait', shop:'portrait', doc:'portrait', volvelle:'landscape', trainerkarte:'portrait', board:'landscape', arenen:'landscape' };
+/* ===================== Konzept-Labor =====================
+   Spielwiese für Mechanik-Ideen, die noch NICHT beschlossen sind. Rechnet bewusst mit
+   denselben Formeln wie das echte Spiel, damit ein Modell nie an der Realität vorbeiläuft.
+   Nichts aus diesem Reiter geht in ein Spielmaterial oder in einen Ausdruck. */
+
+/* Signaturstufe = der KP-Ringversatz. Sie hängt nicht nur von der Richtung (Schild/Kanone) ab,
+   sondern auch von der Klasse: sigBonus() gibt kp {A:0,B:2,C:4} und ang {A:0,B:1,C:1}. */
+const KZ_SIG = [
+  {key:'none', kurz:'–',    label:'– ohne',        kpStufe:0, ang:0},
+  {key:'kpB',  kurz:'🛡◆',  label:'🛡 Tank bei ◆', kpStufe:1, ang:0},
+  {key:'kpC',  kurz:'🛡★',  label:'🛡 Tank bei ★', kpStufe:2, ang:0},
+  {key:'ang',  kurz:'💣',   label:'💣 Glaskanone', kpStufe:0, ang:1},
+];
+const KZ_KP_BASEN  = [10,12,14,16,18,20,22];
+const KZ_ANG_BASEN = [2,3,4,5];
+const KZ_CX = 340, KZ_CY = 340, KZ_R_MIN = 104, KZ_R_MAX = 300;
+let kzState = {sterne:3, sig:'none', siege:1, zeigeAng:true};
+
+function kzLevel(w){
+  let lvl = 1;
+  Object.keys(SIEGE_SCHWELLEN).map(Number).sort((a,b)=>a-b).forEach(t=>{ if(w>=t) lvl = Number(SIEGE_SCHWELLEN[t]); });
+  return lvl;
+}
+function kzWerte(){
+  const sig = KZ_SIG.find(s=>s.key===kzState.sig) || KZ_SIG[0];
+  const kpBasis  = 2*kzState.sterne + 8 + sig.kpStufe*2;
+  const angBasis = 2 + Math.floor((kzState.sterne-1)/2) + sig.ang;
+  const lvl = kzLevel(kzState.siege);
+  return {sig, kpBasis, angBasis, lvl, kp: kpBasis + (lvl-1), ang: angBasis + Math.floor(lvl/3),
+          kpRing: KZ_KP_BASEN.indexOf(kpBasis), angRing: KZ_ANG_BASEN.indexOf(angBasis)};
+}
+
+/* Ringliste von innen nach außen; die Radien verteilen sich gleichmäßig, damit man direkt
+   sieht, wie viel Platz je Ring bleibt (mit und ohne Angriffs-Ringe). */
+function kzRinge(){
+  const out = [{art:'siege', lab:'Siege'}, {art:'level', lab:'Level'}];
+  if(kzState.zeigeAng) KZ_ANG_BASEN.forEach((b,i)=> out.push({art:'ang', basis:b, i, lab:'ANG '+b}));
+  KZ_KP_BASEN.forEach((b,i)=> out.push({art:'kp', basis:b, i, lab:'KP '+b}));
+  const schritt = (KZ_R_MAX - KZ_R_MIN) / (out.length - 1);
+  out.forEach((r,i)=> r.r = KZ_R_MIN + i*schritt);
+  return {ringe: out, schritt};
+}
+
+function kzScheibeSVG(){
+  const v = kzWerte();
+  const {ringe, schritt} = kzRinge();
+  const dreh = -(kzState.siege - 1) * 10;
+  const aktiv = r => (r.art==='kp' && r.i===v.kpRing) || (r.art==='ang' && r.i===v.angRing);
+  const txt = (pos, r, s, cls) =>
+    `<text class="kz-n ${cls}" x="${KZ_CX}" y="${(KZ_CY-r).toFixed(1)}" ` +
+    `transform="rotate(${(pos-1)*10} ${KZ_CX} ${KZ_CY})">${s}</text>`;
+
+  let scheibe = '';
+  ringe.forEach(r=>{
+    scheibe += `<circle cx="${KZ_CX}" cy="${KZ_CY}" r="${(r.r+schritt/2).toFixed(1)}" fill="none" stroke="#ece4d0" stroke-width="1"/>`;
+  });
+  for(let s=1; s<=36; s++){
+    const lv = kzLevel(s);
+    ringe.forEach(r=>{
+      if(r.art==='siege')      scheibe += txt(s, r.r, s, 'kz-siege');
+      else if(r.art==='level') scheibe += txt(s, r.r, lv, 'kz-lvl');
+      else if(r.art==='ang')   scheibe += txt(s, r.r, r.basis + Math.floor(lv/3), aktiv(r)?'kz-akt':'kz-aus');
+      else                     scheibe += txt(s, r.r, r.basis + (lv-1), aktiv(r)?'kz-akt':'kz-aus');
+    });
+  }
+
+  const fensterOben = KZ_R_MAX + schritt/2 + 4, fensterUnten = KZ_R_MIN - schritt/2 - 4;
+  const schieber = (r, farbe, beschriftung) =>
+    `<rect x="${KZ_CX+34}" y="${(KZ_CY-r-11).toFixed(1)}" width="150" height="22" rx="5" fill="${farbe}"/>` +
+    `<path d="M ${KZ_CX+34} ${(KZ_CY-r-8).toFixed(1)} L ${KZ_CX+24} ${(KZ_CY-r).toFixed(1)} L ${KZ_CX+34} ${(KZ_CY-r+8).toFixed(1)} Z" fill="${farbe}"/>` +
+    `<text class="kz-tab" x="${KZ_CX+109}" y="${(KZ_CY-r).toFixed(1)}">${beschriftung}</text>`;
+
+  const kpR  = ringe.find(r=>r.art==='kp'  && r.i===v.kpRing).r;
+  const angR = kzState.zeigeAng ? ringe.find(r=>r.art==='ang' && r.i===v.angRing).r : null;
+
+  return `
+<svg viewBox="0 0 680 700" role="img" aria-label="Konzeptmodell der universellen Volvelle-Scheibe">
+  <circle cx="${KZ_CX}" cy="${KZ_CY}" r="${(KZ_R_MAX+schritt/2+8).toFixed(1)}" fill="#fffdf6" stroke="#d8cfbc" stroke-width="2"/>
+  <g transform="rotate(${dreh} ${KZ_CX} ${KZ_CY})">${scheibe}</g>
+  <circle cx="${KZ_CX}" cy="${KZ_CY}" r="${(KZ_R_MIN-schritt/2-6).toFixed(1)}" fill="#33291f"/>
+  <text class="kz-hub" x="${KZ_CX}" y="${KZ_CY-16}">Siege</text>
+  <text class="kz-hubv" x="${KZ_CX}" y="${KZ_CY+22}">${kzState.siege}</text>
+  <rect x="${KZ_CX-27}" y="${(KZ_CY-fensterOben).toFixed(1)}" width="54"
+        height="${(fensterOben-fensterUnten).toFixed(1)}" rx="9" fill="none" stroke="#d6452f" stroke-width="3"/>
+  <text class="kz-rlab" x="${KZ_CX+34}" y="${(KZ_CY-fensterOben-14).toFixed(1)}">Fenster in der Schale</text>
+  ${schieber(kpR, '#2f7fc4', 'Blende KP · Ring ' + (v.kpRing+1) + '/7')}
+  ${angR!==null ? schieber(angR, '#59b04a', 'Blende ANG · Ring ' + (v.angRing+1) + '/4') : ''}
+</svg>`;
+}
+
+function kzVarianten(){
+  const map = new Map();
+  for(let nr=1; nr<=151; nr++){
+    if(!state.mons[nr]) continue;
+    const kp = computeKP(state,nr,1), ang = computeANG(state,nr,1);
+    const key = kp+'/'+ang;
+    if(!map.has(key)) map.set(key, {kp, ang, n:0});
+    map.get(key).n++;
+  }
+  return Array.from(map.values()).sort((a,b)=> a.kp-b.kp || a.ang-b.ang);
+}
+
+function kzRenderLive(){
+  const live = document.getElementById('kz-live');
+  if(!live) return;
+  const v = kzWerte();
+  live.innerHTML = `
+    <div class="kz-flex">
+      <div class="kz-svgwrap">${kzScheibeSVG()}</div>
+      <div class="kz-panel">
+        <h3>Was der Spieler im Fenster liest</h3>
+        <div class="kz-read">
+          <div><div class="t">Siege</div><div class="v">${kzState.siege}</div></div>
+          <div><div class="t">Level</div><div class="v">${v.lvl}</div></div>
+          <div><div class="t">Angriff</div><div class="v">${v.ang}</div></div>
+          <div><div class="t">KP max</div><div class="v">${v.kp}</div></div>
+        </div>
+        <div class="kz-formel">KP-Blende = (Sterne − 1) + Signaturstufe
+          = (${kzState.sterne} − 1) + ${v.sig.kpStufe} = <b>Ring ${v.kpRing+1}</b> → KP-Basis ${v.kpBasis}</div>
+        ${kzState.zeigeAng
+          ? `<div class="kz-formel">ANG-Blende = (Sterne − 1) ÷ 2 + Kanone
+               = ${Math.floor((kzState.sterne-1)/2)} + ${v.sig.ang} = <b>Ring ${v.angRing+1}</b> → ANG-Basis ${v.angBasis}</div>`
+          : `<div class="kz-ok">Angriff kommt hier <b>von der Karte</b> (4-Felder-Leiste: ${v.angBasis} ·
+               ${v.angBasis+1} · ${v.angBasis+2} · ${v.angBasis+3} für Lv 1–2 / 3–5 / 6–8 / 9–10). Die Scheibe
+               braucht dadurch nur <b>9 statt 13 Ringe</b> – gut ein Drittel mehr Platz je Ziffer – und es bleibt
+               <b>ein einziger Schieber</b> zu bedienen.</div>`}
+        <p>Die Scheibe selbst ist bei jeder Einstellung <b>dieselbe</b> – sie dreht sich nur mit den Siegen.
+          Was sich beim Kartenwechsel ändert, ist ausschließlich, <b>welcher Ring durchs Fenster sichtbar</b> ist.
+          Grün = aktiver Ring, grau = von der Blende verdeckt.</p>
+      </div>
+    </div>`;
+}
+
+function renderKonzept(){
+  const host = document.getElementById('page-konzept');
+  const varianten = kzVarianten();
+  const sterneBtns = [1,2,3,4,5].map(s=>
+    `<button data-kz="sterne" data-val="${s}" class="${kzState.sterne===s?'on':''}">${'⭐'.repeat(s)}</button>`).join('');
+  const sigBtns = KZ_SIG.map(s=>
+    `<button data-kz="sig" data-val="${s.key}" class="${kzState.sig===s.key?'on':''}">${s.label}</button>`).join('');
+
+  host.innerHTML = `
+  <div id="kz-root">
+    <h1>🧪 Konzept-Labor</h1>
+    <div class="kz-lead">Spielwiese für Mechanik-Ideen, die noch nicht beschlossen sind. Alles hier rechnet mit
+      denselben Formeln wie das echte Spiel – nichts davon landet in einem Spielmaterial oder Ausdruck,
+      solange es nicht ausdrücklich in die Beschlüsse übernommen wird.</div>
+
+    <div class="kzbox">
+      <h2>Idee: Volvelle mit Sterne- und Signatur-Rädchen</h2>
+      <p><b>Die Idee:</b> Statt für jedes der 151 Pokémon eine eigene Scheibe zu bauen, bekommt jede Volvelle
+        zwei Einsteller. Beim Einschieben einer neuen Karte stellt man Sterne und Signatur ein, und die
+        Anzeige zeigt automatisch die richtigen Werte.</p>
+
+      <h3>Befund 1 – drei Stellungen reichen nicht, es sind vier</h3>
+      <p>Der Signaturbonus hängt nicht nur von der Richtung ab, sondern zusätzlich von der <b>Klasse</b>:
+        Ein Schild gibt <b>+2 KP bei ◆</b> und <b>+4 KP bei ★</b>, bei ● gar nichts. Die Kanone gibt +1 Angriff
+        bei ◆ und ★, bei ● ebenfalls nichts. „Schild / Normal / Kanone" ist also nicht eindeutig – das Rädchen
+        braucht die Stellungen <code>–</code>, <code>🛡◆</code>, <code>🛡★</code>, <code>💣</code>. Auf der Karte
+        stehen Sterne und Klasse ohnehin schon in der Fußzeile, das Symbol müsste nur dazu.</p>
+
+      <h3>Befund 2 – der Haken: beide Rädchen wirken auf beide Anzeigen</h3>
+      <p>Die Sterne verändern KP <i>und</i> Angriff, die Signatur ebenfalls. Zwei Rädchen, die je zwei Ringe
+        verdrehen müssen, brauchen zwei <b>Summiergetriebe</b> (Differentiale). Das ist echtes Uhrwerk – mit
+        FDM-Druck baubar, aber zerbrechlich und für ein Kind nicht wartbar. Diesen Weg würde ich nicht gehen.</p>
+
+      <h3>Befund 3 – die Lösung: nicht drehen, sondern blenden</h3>
+      <p>Statt Scheiben zu verdrehen, druckt man <b>alle Varianten gleichzeitig</b> als konzentrische Ringe auf
+        eine einzige, universelle Scheibe. Die „Rädchen" werden dann zu <b>Schiebern, die nur das Fenster
+        radial verschieben</b> – kein Antrieb, keine Zahnräder, nur Rastpunkte. Es braucht 7 KP-Ringe und
+        4 Angriffs-Ringe, mehr Kombinationen gibt es im ganzen Spiel nicht.</p>
+      <div class="kz-ok">Und der Clou: <b>KP-Ring = (Sterne − 1) + Signaturstufe</b> – über alle 151 Pokémon exakt
+        additiv geprüft. Zwei gestapelte Schieber (unten die Sterne mit 5 gleichmäßigen Rasten, darauf die
+        Signatur mit 3 Rasten) ergeben durch reines Aufeinanderlegen die richtige Position. Genau deine Idee,
+        nur ohne Getriebe.</div>
+      <div class="kz-note">Beim Angriff ist der Sterne-Anteil <code>0,0,1,1,2</code> statt gleichmäßig – dort
+        müssten die 5 Rasten ungleich sitzen. Einfacher Ausweg: den Angriff gar nicht auf die Scheibe nehmen,
+        sondern als 4-Felder-Leiste auf die Karte drucken (die normalen Karten haben sie schon). Dann bleibt
+        <b>ein einziger Schieber</b> übrig – und die Scheibe hat statt 13 nur 9 Ringe, also deutlich größere
+        Ziffern. Probier es unten mit dem Schalter aus.</div>
+    </div>
+
+    <div class="kzbox">
+      <h2>Interaktives Modell</h2>
+      <p>Stell Sterne und Signatur ein wie beim Kartenwechsel und dreh dann an den Siegen. Die Scheibe ist
+        immer dieselbe – nur die Blenden wandern.</p>
+      <div class="kz-flex" style="gap:26px;">
+        <div class="kz-ctl" style="flex:1 1 300px;"><span class="lab">Rädchen 1 · Sterne</span>
+          <div class="kz-btns">${sterneBtns}</div></div>
+        <div class="kz-ctl" style="flex:1 1 340px;"><span class="lab">Rädchen 2 · Signatur</span>
+          <div class="kz-btns">${sigBtns}</div></div>
+        <div class="kz-ctl" style="flex:1 1 260px;">
+          <span class="lab">Siege (dreht die Scheibe): <b id="kz-siegeval">${kzState.siege}</b></span>
+          <input type="range" id="kz-siege" min="1" max="36" step="1" value="${kzState.siege}">
+          <div class="kz-btns" style="margin-top:8px;">
+            <button data-kz="ang" data-val="toggle" class="${kzState.zeigeAng?'on':''}">Angriffs-Ringe auf der Scheibe</button>
+          </div>
+        </div>
+      </div>
+      <div id="kz-live"></div>
+    </div>
+
+    <div class="kzbox">
+      <h2>Warum 7 KP-Ringe und 4 Angriffs-Ringe genügen</h2>
+      <p>Über alle 151 Pokémon gibt es nur <b>${varianten.length} verschiedene Wertesätze</b>. Die Zeile deiner
+        aktuellen Einstellung ist hervorgehoben – wenn sie leer bleibt, ist die Kombination im Spiel gar nicht
+        besetzt (mechanisch aber trotzdem harmlos).</p>
+      <table class="kztable">
+        <tr><th>KP-Basis (Lv 1)</th><th>ANG-Basis (Lv 1)</th><th>auf Lv 10</th><th>Pokémon</th></tr>
+        ${varianten.map(x=>{
+          const hi = (x.kp===kzWerte().kpBasis && x.ang===kzWerte().angBasis) ? ' class="hi"' : '';
+          return `<tr${hi}><td>${x.kp}</td><td>${x.ang}</td><td>${x.kp+9} KP · ANG ${x.ang+3}</td><td>${x.n}</td></tr>`;
+        }).join('')}
+      </table>
+    </div>
+  </div>`;
+
+  const root = document.getElementById('kz-root');
+  root.addEventListener('click', e=>{
+    const b = e.target.closest('button[data-kz]');
+    if(!b) return;
+    if(b.dataset.kz==='sterne')   kzState.sterne = Number(b.dataset.val);
+    else if(b.dataset.kz==='sig') kzState.sig = b.dataset.val;
+    else if(b.dataset.kz==='ang') kzState.zeigeAng = !kzState.zeigeAng;
+    renderKonzept();
+  });
+  root.addEventListener('input', e=>{
+    if(e.target.id !== 'kz-siege') return;
+    kzState.siege = Number(e.target.value);
+    document.getElementById('kz-siegeval').textContent = kzState.siege;
+    kzRenderLive();
+  });
+  kzRenderLive();
+}
+
+const RENDERERS = { home: renderHome, gm: renderGM, cards: renderCards, shop: renderShop, doc: renderDoc, volvelle: renderVolvelle, trainerkarte: renderTrainerkarte, board: renderBoard, arenen: renderArenen, konzept: renderKonzept };
+const PAGE_ORIENTATION = { home:'portrait', gm:'landscape', cards:'portrait', shop:'portrait', doc:'portrait', volvelle:'landscape', trainerkarte:'portrait', board:'landscape', arenen:'landscape', konzept:'portrait' };
 /* Nur Volvelle braucht einen echten Papierrand (Scheiben dürfen nicht bis an die Kante) –
    alle anderen Reiter drucken randlos und übernehmen die 209.9mm/296.5mm-Feinabstimmung
    ihrer .sheet-Maße selbst. Beschluss 29.07.2026: früher stand dafür ein zweites, statisches
