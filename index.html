@@ -748,6 +748,31 @@ table.kztable tr.hi td{background:#fdf3d4; font-weight:800;}
 #page-konzept .kz-glab{fill:#8a7f6d; font-size:12px; font-weight:800; text-anchor:middle; font-family:'Nunito',sans-serif;}
 #page-konzept .kz-vlab{fill:#33291f; font-size:13px; font-weight:800; font-family:'Fredoka',sans-serif;}
 #page-konzept .kz-formelsvg{fill:#8a2f1f; font-size:13px; font-weight:800; font-family:'Nunito',sans-serif;}
+/* Konzeptkarte – alle Größen in mm, die Karte wird als Ganzes skaliert gezeichnet */
+#page-konzept .kk-n{text-anchor:middle; dominant-baseline:central; font-weight:800; font-family:'Nunito',sans-serif;}
+#page-konzept .kk-siege{fill:#a89a7c;}
+#page-konzept .kk-lvl{fill:#33291f;}
+#page-konzept .kk-akt{fill:#1f6b2f;}
+#page-konzept .kk-aus{fill:#ddd5c2;}
+#page-konzept .kk-name{fill:#fff; font-size:5.6px; font-family:'Fredoka',sans-serif;
+  paint-order:stroke; stroke:rgba(0,0,0,.35); stroke-width:.6px;}
+#page-konzept .kk-nr{fill:#fff; font-size:3.6px; font-weight:800; text-anchor:end; font-family:'Fredoka',sans-serif;
+  paint-order:stroke; stroke:rgba(0,0,0,.3); stroke-width:.5px;}
+#page-konzept .kk-pill{fill:#fff; font-size:2.5px; font-weight:800; text-anchor:middle; dominant-baseline:central;
+  font-family:'Nunito',sans-serif;}
+#page-konzept .kk-lab{fill:#fff; font-size:1.9px; font-weight:800; letter-spacing:.15px; dominant-baseline:central;
+  font-family:'Nunito',sans-serif; paint-order:stroke; stroke:rgba(0,0,0,.4); stroke-width:.45px;}
+#page-konzept .kk-lab.kk-r{text-anchor:end;} #page-konzept .kk-lab.kk-l{text-anchor:start;}
+#page-konzept .kk-mini{fill:#8a7f6d; font-size:1.9px; font-weight:800; text-anchor:middle; font-family:'Nunito',sans-serif;}
+#page-konzept .kk-angv{fill:#8a2f1f; font-size:3.4px; text-anchor:middle; font-family:'Fredoka',sans-serif;}
+#page-konzept .kk-fang{fill:#33291f; font-size:2.5px; font-weight:800; font-family:'Nunito',sans-serif;}
+#page-konzept .kk-fang.kk-r{text-anchor:end;}
+#page-konzept .kk-fang2{fill:#33291f; font-size:2.1px; font-weight:800; font-family:'Nunito',sans-serif;}
+#page-konzept .kk-fuss{fill:#f0d98a; font-size:4px; font-family:'Nunito',sans-serif;
+  paint-order:stroke; stroke:rgba(0,0,0,.35); stroke-width:.5px;}
+#page-konzept .kk-fuss.kk-r{text-anchor:end; fill:#fff;}
+#page-konzept .kk-leer{fill:rgba(255,255,255,.35); stroke:none;}
+#page-konzept .kk-mulde{fill:#8a7f6d; font-size:2.6px; font-weight:800; font-family:'Nunito',sans-serif;}
 @media print{ #page-konzept{max-width:none;} }
 
 
@@ -4077,7 +4102,155 @@ const KZ_KLASSEN = [
 const KZ_KP_BASEN  = [10,12,14,16,18,20,22];
 const KZ_ANG_BASEN = [2,3,4,5];
 const KZ_CX = 340, KZ_CY = 340, KZ_R_MIN = 104, KZ_R_MAX = 300;
-let kzState = {sterne:3, sigDir:'none', klasse:'A', siege:1, zeigeAng:true};
+let kzState = {sterne:3, sigDir:'none', klasse:'A', siege:1, zeigeAng:false, kpNow:14};
+
+/* ---- Konzeptkarte: die Karte liegt ÜBER der Scheibe. Ihre Ausschnitte entscheiden, welcher
+   Ring sichtbar ist – die Scheibe selbst ist für alle 151 Pokémon identisch und dreht sich nur
+   mit den Siegen. Maße in mm, 1:1 zum bestehenden Volvelle-Format (80 × 124 mm). ---- */
+const KK = {W:80, H:124, S:6,            // Karte und Zeichenmaßstab (px je mm)
+            cx:40, cy:50, rOut:37,       // große Scheibe: Mittelpunkt und Außenrand
+            rA:33, rI:11.5,              // äußerster und innerster Ringradius
+            kx:20, ky:106, krOut:17, krRing:13};   // kleine Scheibe (aktuelle KP), nach links gesetzt,
+                                                   // damit rechts daneben Platz für Text bleibt
+
+function kkRinge(){
+  const liste = [{art:'siege'}, {art:'level'}];
+  if(kzState.zeigeAng) KZ_ANG_BASEN.forEach((b,i)=> liste.push({art:'ang', basis:b, i}));
+  KZ_KP_BASEN.forEach((b,i)=> liste.push({art:'kp', basis:b, i}));
+  const p = (KK.rA - KK.rI) / (liste.length - 1);
+  liste.forEach((r,i)=> r.r = KK.rA - i*p);
+  return {liste, p};
+}
+
+function kkKarteSVG(){
+  const v = kzWerte();
+  const {liste, p} = kkRinge();
+  const kpNow = Math.min(kzState.kpNow, v.kp);
+  const rSiege = liste[0].r, rLevel = liste[1].r;
+  const rKP  = liste.find(x=>x.art==='kp' && x.i===v.kpRing).r;
+  const rANG = kzState.zeigeAng ? liste.find(x=>x.art==='ang' && x.i===v.angRing).r : null;
+  const f = n => n.toFixed(2);
+
+  /* Ein Ausschnitt ist genau einen Sektor breit (36 Sektoren = 10°), sonst lugen die
+     Nachbarzahlen mit ins Fenster. Die 5 % Zugabe sind Schneidtoleranz. */
+  const lochMasse = r => ({w: 2*r*Math.sin(Math.PI/36)*1.05, h: p - 0.4});
+  const loch = (r, fill) => { const m = lochMasse(r);
+    return `<rect x="${f(KK.cx-m.w/2)}" y="${f(KK.cy-r-m.h/2)}" width="${f(m.w)}" height="${f(m.h)}" rx="0.4" ${fill}/>`; };
+  const kleinLoch = fill => `<rect x="${f(KK.kx-1.55)}" y="${f(KK.ky-KK.krRing-1.7)}" width="3.1" height="3.4" rx="0.4" ${fill}/>`;
+
+  /* Zahlen der großen Scheibe: an 12 Uhr gesetzt und mitgedreht, damit sie im Fenster aufrecht stehen. */
+  let zahlen = '';
+  const fs = f(p*0.74);
+  for(let w=1; w<=36; w++){
+    const lv = kzLevel(w);
+    liste.forEach(r=>{
+      let t, cls;
+      if(r.art==='siege')      { t=w;  cls='kk-siege'; }
+      else if(r.art==='level') { t=lv; cls='kk-lvl'; }
+      else if(r.art==='ang')   { t=r.basis+Math.floor(lv/3); cls = r.i===v.angRing ? 'kk-akt' : 'kk-aus'; }
+      else                     { t=r.basis+(lv-1);           cls = r.i===v.kpRing  ? 'kk-akt' : 'kk-aus'; }
+      zahlen += `<text class="kk-n ${cls}" font-size="${fs}" x="${KK.cx}" y="${f(KK.cy-r.r)}" `
+             +  `transform="rotate(${(w-1)*10} ${KK.cx} ${KK.cy})">${t}</text>`;
+    });
+  }
+  let kzahlen = '';
+  for(let i=0; i<=31; i++){
+    kzahlen += `<text class="kk-n kk-lvl" font-size="2" x="${KK.kx}" y="${f(KK.ky-KK.krRing)}" `
+            +  `transform="rotate(${(i*360/32).toFixed(2)} ${KK.kx} ${KK.ky})">${i}</text>`;
+  }
+
+  const pill = (t,x,y) => `<rect x="${x}" y="${y}" width="16" height="4.8" rx="2.4" fill="${TYP[t]}" stroke="#fff" stroke-width=".35"/>`
+    + `<text class="kk-pill" x="${x+8}" y="${f(y+2.5)}">${t}</text>`;
+  const fensterRahmen = r => { const m = lochMasse(r);
+    return `<rect x="${f(KK.cx-m.w/2)}" y="${f(KK.cy-r-m.h/2)}" width="${f(m.w)}" height="${f(m.h)}" rx="0.5" `
+         + `fill="none" stroke="#33291f" stroke-opacity=".55" stroke-width=".3"/>`; };
+
+  /* Angriffs-Leiter – nur nötig, solange der Angriff nicht als Ring auf der Scheibe steht. */
+  let angLeiter = '';
+  if(!kzState.zeigeAng){
+    ['1–2','3–5','6–8','9–10'].forEach((lv,i)=>{
+      const x = 6 + i*17;
+      angLeiter += `<rect x="${x}" y="63" width="15.5" height="8" rx="1.2" fill="#fffdf6" fill-opacity=".82" stroke="#33291f" stroke-opacity=".3" stroke-width=".3"/>`
+        + `<text class="kk-mini" x="${x+7.75}" y="65.9">Lv ${lv}</text>`
+        + `<text class="kk-angv" x="${x+7.75}" y="69.4">${v.angBasis+i}</text>`;
+    });
+    angLeiter = `<text class="kk-lab" x="6" y="61.4" text-anchor="start">ANGRIFF</text>` + angLeiter;
+  }
+
+  const sterne = '★'.repeat(kzState.sterne) + '<tspan class="kk-leer">' + '★'.repeat(5-kzState.sterne) + '</tspan>';
+  const klSym  = KZ_KLASSEN.find(k=>k.key===kzState.klasse).sym;
+  const sgSym  = KZ_SIGDIR.find(s=>s.key===kzState.sigDir).sym;
+
+  return `
+<svg viewBox="0 0 ${(KK.W+12)*KK.S} ${(KK.H+12)*KK.S}" role="img"
+     aria-label="Konzeptkarte Bisasam über der universellen Scheibe">
+  <defs>
+    <linearGradient id="kkBg" x1="0" y1="0" x2="0.35" y2="1">
+      <stop offset="0%" stop-color="${TYP['Pflanze']}"/><stop offset="100%" stop-color="${TYP['Gift']}"/>
+    </linearGradient>
+    <clipPath id="kkArt"><circle cx="${KK.cx}" cy="${KK.cy}" r="${f(KK.rI-p/2-0.4)}"/></clipPath>
+    <mask id="kkMask" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse"
+          x="-2" y="-2" width="${KK.W+4}" height="${KK.H+4}">
+      <rect x="0" y="0" width="${KK.W}" height="${KK.H}" rx="3" fill="#fff"/>
+      ${loch(rSiege,'fill="#000"')}${loch(rLevel,'fill="#000"')}${loch(rKP,'fill="#000"')}
+      ${rANG!==null ? loch(rANG,'fill="#000"') : ''}
+      ${kleinLoch('fill="#000"')}
+      <rect x="0" y="43" width="4" height="14" rx="1.8" fill="#000"/>
+      <rect x="${KK.W-4}" y="43" width="4" height="14" rx="1.8" fill="#000"/>
+      <rect x="${KK.kx-7}" y="${KK.H-3.5}" width="14" height="3.5" rx="1.6" fill="#000"/>
+    </mask>
+  </defs>
+
+  <g transform="translate(${6*KK.S} ${6*KK.S}) scale(${KK.S})">
+    <!-- Scheiben liegen UNTER der Karte -->
+    <circle cx="${KK.cx}" cy="${KK.cy}" r="${KK.rOut}" fill="#fffdf6" stroke="#b8ab8e" stroke-width=".5"/>
+    <circle cx="${KK.cx}" cy="${KK.cy}" r="${KK.rOut-1.6}" fill="none" stroke="#e0d6bb" stroke-width=".3"/>
+    <g transform="rotate(${-(kzState.siege-1)*10} ${KK.cx} ${KK.cy})">${zahlen}</g>
+    <circle cx="${KK.kx}" cy="${KK.ky}" r="${KK.krOut}" fill="#fffdf6" stroke="#b8ab8e" stroke-width=".5"/>
+    <g transform="rotate(${(-kpNow*360/32).toFixed(2)} ${KK.kx} ${KK.ky})">${kzahlen}</g>
+
+    <!-- Die Karte: alles Gedruckte wird von derselben Maske beschnitten wie der Kartenkörper -->
+    <g mask="url(#kkMask)">
+      <rect x="0" y="0" width="${KK.W}" height="${KK.H}" rx="3" fill="url(#kkBg)"/>
+      <rect x="1.4" y="1.4" width="${KK.W-2.8}" height="${KK.H-2.8}" rx="2" fill="none"
+            stroke="#fff" stroke-opacity=".5" stroke-width=".5"/>
+      <text class="kk-name" x="5" y="9.2">Bisasam</text>
+      <text class="kk-nr" x="${KK.W-5}" y="8.8">#001</text>
+      ${pill('Pflanze', 5, 11.2)}${pill('Gift', 23, 11.2)}
+      <circle cx="${KK.cx}" cy="${KK.cy}" r="${f(KK.rI-p/2-0.4)}" fill="#fffdf6" fill-opacity=".9"/>
+      <image href="${IMG(1)}" clip-path="url(#kkArt)" preserveAspectRatio="xMidYMid meet"
+             x="${f(KK.cx-(KK.rI-p/2-0.4))}" y="${f(KK.cy-(KK.rI-p/2-0.4))}"
+             width="${f(2*(KK.rI-p/2-0.4))}" height="${f(2*(KK.rI-p/2-0.4))}"/>
+      <circle cx="${KK.cx}" cy="${KK.cy}" r="${f(KK.rI-p/2-0.4)}" fill="none" stroke="#33291f"
+              stroke-opacity=".45" stroke-width=".5"/>
+      <text class="kk-lab kk-r" x="${f(KK.cx-lochMasse(rSiege).w/2-1.2)}" y="${f(KK.cy-rSiege)}">SIEGE</text>
+      <text class="kk-lab kk-r" x="${f(KK.cx-lochMasse(rLevel).w/2-1.2)}" y="${f(KK.cy-rLevel)}">LEVEL</text>
+      <text class="kk-lab kk-l" x="${f(KK.cx+lochMasse(rKP).w/2+1.2)}" y="${f(KK.cy-rKP)}">KP MAX</text>
+      ${rANG!==null ? `<text class="kk-lab kk-l" x="${f(KK.cx+lochMasse(rANG).w/2+1.2)}" y="${f(KK.cy-rANG)}">ANGRIFF</text>` : ''}
+      ${angLeiter}
+      <text class="kk-lab" x="6" y="76.4" text-anchor="start">FANGORT</text>
+      <rect x="6" y="78" width="68" height="7" rx="1.2" fill="#fffdf6" fill-opacity=".82"/>
+      <text class="kk-fang" x="8.5" y="82.4">🌿 Vertania-Wald</text>
+      <text class="kk-fang kk-r" x="71.5" y="82.4">W20 · 20</text>
+      <text class="kk-lab" x="38" y="88.4" text-anchor="start">FÄHIGKEIT &amp; ENTWICKLUNG</text>
+      <rect x="38" y="90" width="36" height="12" rx="1.2" fill="#fffdf6" fill-opacity=".82"/>
+      <text class="kk-fang2" x="40" y="93.8">🗡 Zerschneider</text>
+      <text class="kk-fang2" x="40" y="97" >ab Lv 2</text>
+      <text class="kk-fang2" x="40" y="100.4">↗ Lv 4 · Lv 8</text>
+      <text class="kk-lab" x="${KK.kx}" y="${KK.ky-KK.krRing+3.6}" text-anchor="middle">KP JETZT</text>
+      <text class="kk-fuss" x="5" y="${KK.H-4.5}">${sterne}</text>
+      <text class="kk-fuss kk-r" x="${KK.W-5}" y="${KK.H-4.5}">${sgSym} &#160; ${klSym}</text>
+    </g>
+
+    <!-- Fensterkanten und Griffmulden liegen sichtbar auf der Karte -->
+    ${fensterRahmen(rSiege)}${fensterRahmen(rLevel)}${fensterRahmen(rKP)}
+    ${rANG!==null ? fensterRahmen(rANG) : ''}
+    ${kleinLoch('fill="none" stroke="#33291f" stroke-opacity=".55" stroke-width=".3"')}
+    <text class="kk-mulde" x="${KK.W+6}" y="50">Griffmulde:<tspan x="${KK.W+6}" dy="3.4">Scheibe drehen</tspan></text>
+    <path d="M ${KK.W+5} 47 L ${KK.W+1} 50 L ${KK.W+5} 53" fill="none" stroke="#8a7f6d" stroke-width=".5"/>
+  </g>
+</svg>`;
+}
 
 function kzLevel(w){
   let lvl = 1;
@@ -4231,7 +4404,7 @@ function kzRenderLive(){
   const v = kzWerte();
   live.innerHTML = `
     <div class="kz-flex">
-      <div class="kz-svgwrap">${kzScheibeSVG()}</div>
+      <div class="kz-svgwrap" style="flex:0 1 340px;">${kkKarteSVG()}</div>
       <div class="kz-panel">
         <h3>Was der Spieler im Fenster liest</h3>
         <div class="kz-read">
@@ -4252,8 +4425,16 @@ function kzRenderLive(){
         <p>Die Scheibe selbst ist bei jeder Einstellung <b>dieselbe</b> – sie dreht sich nur mit den Siegen.
           Was sich beim Kartenwechsel ändert, ist ausschließlich, <b>welcher Ring durchs Fenster sichtbar</b> ist.
           Grün = aktiver Ring, grau = von der Blende verdeckt.</p>
+        <div class="kz-ok">Auf der Karte sind nur <b>${kzState.zeigeAng?4:3} Löcher</b> zu schneiden.
+          Zwei davon (Siege, Level) sitzen bei <b>jedem</b> Pokémon an derselben Stelle – die stanzt eine
+          Schablone. Nur das KP-Fenster wandert, und zwar exakt um
+          <b>(Sterne − 1) + Signaturstufe</b> Ringe nach außen.</div>
       </div>
-    </div>`;
+    </div>
+    <h3>Dieselbe Scheibe ohne Karte darüber</h3>
+    <p>Alle sieben KP-Ringe sind aufgedruckt – die Karte gibt nur einen davon frei. Diese Scheibe ist für
+      alle 151 Pokémon identisch, es müssen also nur so viele gedruckt werden, wie es Volvellen gibt.</p>
+    <div class="kz-svgwrap" style="flex:0 1 520px;">${kzScheibeSVG()}</div>`;
 }
 
 function renderKonzept(){
@@ -4319,10 +4500,17 @@ function renderKonzept(){
         <div class="kz-ctl" style="flex:1 1 290px;"><span class="lab">Rädchen 3 · Klasse (entscheidet die Höhe des Bonus)</span>
           <div class="kz-btns">${klasseBtns}</div></div>
         <div class="kz-ctl" style="flex:1 1 260px;">
-          <span class="lab">Siege (dreht die Scheibe): <b id="kz-siegeval">${kzState.siege}</b></span>
+          <span class="lab">Siege (dreht die große Scheibe): <b id="kz-siegeval">${kzState.siege}</b></span>
           <input type="range" id="kz-siege" min="1" max="36" step="1" value="${kzState.siege}">
-          <div class="kz-btns" style="margin-top:8px;">
+          <span class="lab" style="margin-top:6px;">Aktuelle KP (dreht die kleine Scheibe):
+            <b id="kz-kpval">${Math.min(kzState.kpNow, kzWerte().kp)}</b></span>
+          <input type="range" id="kz-kpnow" min="0" max="31" step="1" value="${kzState.kpNow}">
+        </div>
+        <div class="kz-ctl" style="flex:1 1 240px;">
+          <span class="lab">Ansicht</span>
+          <div class="kz-btns">
             <button data-kz="ang" data-val="toggle" class="${kzState.zeigeAng?'on':''}">Angriffs-Ringe auf der Scheibe</button>
+            <button data-kz="preset" data-val="bisasam">↺ Werte von Bisasam</button>
           </div>
         </div>
       </div>
@@ -4394,12 +4582,17 @@ function renderKonzept(){
     else if(b.dataset.kz==='sigDir') kzState.sigDir = b.dataset.val;
     else if(b.dataset.kz==='klasse') kzState.klasse = b.dataset.val;
     else if(b.dataset.kz==='ang')    kzState.zeigeAng = !kzState.zeigeAng;
+    else if(b.dataset.kz==='preset') Object.assign(kzState, {sterne:3, sigDir:'kp', klasse:'C'});
     renderKonzept();
   });
   root.addEventListener('input', e=>{
-    if(e.target.id !== 'kz-siege') return;
-    kzState.siege = Number(e.target.value);
-    document.getElementById('kz-siegeval').textContent = kzState.siege;
+    if(e.target.id === 'kz-siege'){
+      kzState.siege = Number(e.target.value);
+      document.getElementById('kz-siegeval').textContent = kzState.siege;
+    } else if(e.target.id === 'kz-kpnow'){
+      kzState.kpNow = Number(e.target.value);
+      document.getElementById('kz-kpval').textContent = Math.min(kzState.kpNow, kzWerte().kp);
+    } else return;
     kzRenderLive();
   });
   kzRenderLive();
