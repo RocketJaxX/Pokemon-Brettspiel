@@ -452,21 +452,57 @@ table.typematrix .rowlab{color:#fff; font-weight:800; font-size:7.5px; padding:0
 .hb .hbdice{display:grid; grid-template-columns:repeat(4,1fr); gap:2mm; margin:0 0 3mm;}
 .hb .hbdice div{border:0.4mm solid #1a120a; border-radius:1.5mm; text-align:center; padding:1.5mm 1mm; font-size:9.5pt; font-weight:800;}
 .hb .hbdice div b{display:block; font-family:'Fredoka',sans-serif; font-size:13pt; color:#8a2f1f;}
-/* Deckblatt & Rueckseite */
-.hb-cover{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center;
-  justify-content:center; text-align:center; padding:20mm 18mm;
-  background:linear-gradient(160deg,#fdf3d4 0%,#f3e3b4 45%,#e8d49a 100%);}
-.hb-cover .ct{font-family:'Fredoka',sans-serif; font-size:34pt; line-height:1.05; color:#8a2f1f;}
-.hb-cover .cs{font-family:'Fredoka',sans-serif; font-size:17pt; color:#1a120a; margin-top:3mm;}
-.hb-cover .cline{width:60mm; height:1mm; background:#d9b04a; border-radius:1mm; margin:6mm 0;}
-.hb-cover .cmeta{font-size:12pt; font-weight:800; color:#5c5344; line-height:1.7;}
-.hb-cover .cballs{font-size:26pt; letter-spacing:4mm; margin-top:8mm;}
-.hb-cover .cfoot{position:absolute; bottom:14mm; left:0; right:0; font-size:9pt; color:#7a6f5c; font-weight:700;}
-.hb-back{position:absolute; inset:0; display:flex; flex-direction:column; padding:24mm 20mm 18mm;
-  background:linear-gradient(200deg,#fdf3d4 0%,#f3e3b4 55%,#e8d49a 100%);}
-.hb-back .bt{font-family:'Fredoka',sans-serif; font-size:24pt; color:#8a2f1f; text-align:center;}
-.hb-back .bx{font-size:11.5pt; line-height:1.6; margin-top:6mm;}
-.hb-back .bl{margin-top:auto; border-top:0.5mm solid #c9bb8e; padding-top:4mm; font-size:10pt; font-weight:700; color:#5c5344;}
+/* Deckblatt & Rueckseite: Wiesenszene mit Himmel, Wolken und den drei Kanto-Startern
+   (Beschluss 29.07.2026 – ersetzt die reine Farbverlauf-Fläche). Alles per CSS gezeichnet,
+   keine Anime-Figuren – die Artworks sind dieselben offiziellen Pokémon-Bilder wie im
+   restlichen Heft (PokéWiki, live per Hash-URL). */
+.hb-cover, .hb-back{position:absolute; inset:0; overflow:hidden; text-align:center;
+  background:linear-gradient(180deg,#5fb3ee 0%,#8ed4f4 30%,#c9ecec 55%,#e3f4cf 76%,#e3f4cf 100%);}
+.hb-cover .sun, .hb-back .sun{position:absolute; top:-24mm; right:-12mm; width:110mm; height:110mm; border-radius:50%;
+  background:radial-gradient(circle,rgba(255,250,222,.95) 0%,rgba(255,238,170,.5) 35%,rgba(255,238,170,0) 68%);}
+.hb-cover .clouds, .hb-back .clouds{position:absolute; inset:0;
+  background-image:
+    radial-gradient(ellipse 22mm 8mm at 16% 15%, rgba(255,255,255,.92), rgba(255,255,255,0) 72%),
+    radial-gradient(ellipse 15mm 6mm at 25% 12%, rgba(255,255,255,.85), rgba(255,255,255,0) 72%),
+    radial-gradient(ellipse 27mm 9mm at 74% 9%, rgba(255,255,255,.85), rgba(255,255,255,0) 72%),
+    radial-gradient(ellipse 15mm 6mm at 84% 14%, rgba(255,255,255,.75), rgba(255,255,255,0) 72%),
+    radial-gradient(ellipse 19mm 7mm at 48% 22%, rgba(255,255,255,.6), rgba(255,255,255,0) 72%);}
+.hb-cover .hillback, .hb-back .hillback{position:absolute; left:-20%; right:-20%; bottom:-58mm; height:100mm;
+  border-radius:50%; background:#a9dd78;}
+.hb-cover .hillfront, .hb-back .hillfront{position:absolute; left:-15%; right:-15%; bottom:-40mm; height:80mm;
+  border-radius:50%; background:#7fc157;}
+.hb-cover .flowers, .hb-back .flowers{position:absolute; left:0; right:0; bottom:0; height:44mm;
+  background-image:
+    radial-gradient(circle 1.3mm at 10% 66%, #fff 90%, transparent 92%),
+    radial-gradient(circle 1.3mm at 21% 46%, #ffe45e 90%, transparent 92%),
+    radial-gradient(circle 1.3mm at 38% 70%, #fff 90%, transparent 92%),
+    radial-gradient(circle 1.3mm at 61% 50%, #ffe45e 90%, transparent 92%),
+    radial-gradient(circle 1.3mm at 76% 68%, #fff 90%, transparent 92%),
+    radial-gradient(circle 1.3mm at 90% 48%, #ffe45e 90%, transparent 92%);}
+.hb-cover .mons, .hb-back .mons{position:absolute; left:0; right:0; bottom:19mm; display:flex;
+  justify-content:center; align-items:flex-end; gap:8mm;}
+.hb-cover .mons img, .hb-back .mons img{display:block; object-fit:contain;
+  filter:drop-shadow(0 2.5mm 2mm rgba(20,40,10,.35));}
+.hb-cover .mons .m1{width:36mm; transform:rotate(-6deg);}
+.hb-cover .mons .m2{width:48mm; margin-bottom:-3mm;}
+.hb-cover .mons .m3{width:36mm; transform:rotate(6deg);}
+.hb-back .mons img{width:26mm; opacity:.92;}
+.hb-cover .textbox{position:absolute; left:50%; top:24mm; transform:translateX(-50%); z-index:2;
+  width:150mm; background:rgba(255,253,246,.8); border:0.6mm solid rgba(255,255,255,.75);
+  border-radius:6mm; padding:9mm 12mm 8mm; box-shadow:0 3mm 8mm rgba(40,60,10,.18);}
+.hb-cover .ct{font-family:'Fredoka',sans-serif; font-size:30pt; line-height:1.05; color:#1f6b2f;}
+.hb-cover .cs{font-family:'Fredoka',sans-serif; font-size:15pt; color:#1a120a; margin-top:2mm;}
+.hb-cover .cline{width:50mm; height:1mm; background:#d9b04a; border-radius:1mm; margin:4mm auto;}
+.hb-cover .cmeta{font-size:11pt; font-weight:800; color:#5c5344; line-height:1.6;}
+.hb-cover .cballs{font-size:22pt; letter-spacing:4mm; margin-top:3mm;}
+.hb-cover .cfoot{position:absolute; z-index:2; bottom:10mm; left:0; right:0; font-size:9pt; color:#fff;
+  font-weight:800; text-shadow:0 1mm 2mm rgba(0,0,0,.4);}
+.hb-back .textbox{position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); z-index:2;
+  width:158mm; background:rgba(255,253,246,.82); border:0.6mm solid rgba(255,255,255,.75);
+  border-radius:6mm; padding:12mm 14mm; box-shadow:0 3mm 8mm rgba(40,60,10,.18);}
+.hb-back .bt{font-family:'Fredoka',sans-serif; font-size:22pt; color:#1f6b2f; text-align:center;}
+.hb-back .bx{font-size:11pt; line-height:1.55; margin-top:5mm;}
+.hb-back .bl{margin-top:5mm; border-top:0.5mm solid #c9bb8e; padding-top:3.5mm; font-size:9.5pt; font-weight:700; color:#5c5344;}
 /* Gebietszeilen im A4-Heft */
 .hb .starhead{display:grid; grid-template-columns:26mm 1fr 1fr 1fr 17mm; gap:1.2mm; margin-bottom:1.4mm;}
 .hb .starhead > div{background:#1a120a; color:#f0d98a; border-radius:1.4mm; text-align:center;
@@ -2047,12 +2083,21 @@ function buildHandbuch(){
 
   /* Deckblatt */
   seiten.push('<div class="hb-page"><div class="hb-cover">' +
-    '<div class="ct">Pokémon<br>Kanto</div>' +
-    '<div class="cs">Das Brettspiel</div>' +
-    '<div class="cline"></div>' +
-    '<div class="cmeta">Spielanleitung<br>1–3 Spieler · ab 6 Jahren<br>Eine Reise durch die Region Kanto</div>' +
-    '<div class="cballs">🔴 ⚪ 🔴</div>' +
-    '<div class="cfoot">Fan-Projekt für den privaten Gebrauch</div>' +
+    '<div class="sun"></div><div class="clouds"></div>' +
+    '<div class="hillback"></div><div class="hillfront"></div><div class="flowers"></div>' +
+    '<div class="mons">' +
+      `<img class="m1" src="${IMG(1)}" alt="" loading="lazy">` +
+      `<img class="m2" src="${IMG(4)}" alt="" loading="lazy">` +
+      `<img class="m3" src="${IMG(7)}" alt="" loading="lazy">` +
+    '</div>' +
+    '<div class="textbox">' +
+      '<div class="ct">Pokémon<br>Kanto</div>' +
+      '<div class="cs">Das Brettspiel</div>' +
+      '<div class="cline"></div>' +
+      '<div class="cmeta">Spielanleitung<br>1–3 Spieler · ab 6 Jahren<br>Eine Reise durch die Region Kanto</div>' +
+      '<div class="cballs">🔴 ⚪ 🔴</div>' +
+    '</div>' +
+    '<div class="cfoot">Fan Projekt von RocketJaxX</div>' +
     '</div></div>');
 
   /* Regelkapitel */
@@ -2088,17 +2133,26 @@ function buildHandbuch(){
 
   /* Rückseite */
   const rueck = '<div class="hb-page"><div class="hb-back">' +
-    '<div class="bt">Pokémon Kanto</div>' +
-    '<div class="bx"><p>Ein Starter, ein Würfel und eine ganze Region: In <b>Pokémon Kanto</b> reist ihr von ' +
-    'Alabastia aus über Routen, durch Wälder und Höhlen. Ihr fangt wilde Pokémon, trainiert sie in Kämpfen, ' +
-    'holt euch acht Orden – und stellt euch am Ende der Pokémon-Liga.</p>' +
-    '<p>Im Kampf entscheidet nicht die Größe, sondern der <b>richtige Typ</b>: Wasser löscht Feuer, Feuer ' +
-    'verbrennt Pflanzen, Pflanzen trinken Wasser. Wer sein Team klug zusammenstellt, gewinnt auch gegen ' +
-    'viel stärkere Gegner.</p>' +
-    '<p>Jeder Spieler geht seinen eigenen Weg durch Kanto – helfen, tauschen und gegeneinander antreten ' +
-    'dürft ihr trotzdem jederzeit.</p></div>' +
-    '<div class="bl">1–3 Spieler · ab 6 Jahren · 151 Pokémon · 8 Arenen · 1 Champion<br>' +
-    'Ein Fan-Projekt für den privaten Gebrauch – nicht für den Verkauf bestimmt.</div>' +
+    '<div class="sun"></div><div class="clouds"></div>' +
+    '<div class="hillback"></div><div class="hillfront"></div><div class="flowers"></div>' +
+    '<div class="mons">' +
+      `<img src="${IMG(1)}" alt="" loading="lazy">` +
+      `<img src="${IMG(4)}" alt="" loading="lazy">` +
+      `<img src="${IMG(7)}" alt="" loading="lazy">` +
+    '</div>' +
+    '<div class="textbox">' +
+      '<div class="bt">Pokémon Kanto</div>' +
+      '<div class="bx"><p>Ein Starter, ein Würfel und eine ganze Region: In <b>Pokémon Kanto</b> reist ihr von ' +
+      'Alabastia aus über Routen, durch Wälder und Höhlen. Ihr fangt wilde Pokémon, trainiert sie in Kämpfen, ' +
+      'holt euch acht Orden – und stellt euch am Ende der Pokémon-Liga.</p>' +
+      '<p>Im Kampf entscheidet nicht die Größe, sondern der <b>richtige Typ</b>: Wasser löscht Feuer, Feuer ' +
+      'verbrennt Pflanzen, Pflanzen trinken Wasser. Wer sein Team klug zusammenstellt, gewinnt auch gegen ' +
+      'viel stärkere Gegner.</p>' +
+      '<p>Jeder Spieler geht seinen eigenen Weg durch Kanto – helfen, tauschen und gegeneinander antreten ' +
+      'dürft ihr trotzdem jederzeit.</p></div>' +
+      '<div class="bl">1–3 Spieler · ab 6 Jahren · 151 Pokémon · 8 Arenen · 1 Champion<br>' +
+      'Fan Projekt von RocketJaxX.</div>' +
+    '</div>' +
     '</div></div>';
 
   let nr = 2;
@@ -2766,7 +2820,7 @@ function renderDoc(){
 
   <div class="dchapter" id="d1"><h2>1. Grundkonzept</h2>
     <ul>
-      <li>Pen-&amp;-Paper-Stil, Zielgruppe ab 6 Jahren, nur privater Gebrauch. <b>Bis zu 3 Spieler</b> –
+      <li>Pen-&amp;-Paper-Stil, Zielgruppe ab 6 Jahren, Fan Projekt von RocketJaxX. <b>Bis zu 3 Spieler</b> –
         einer je Starter-Pokémon (Bisasam / Glumanda / Schiggy).</li>
       <li><b>Kein Spielleiter erforderlich (Beschluss 27.07.2026).</b> Alle Tabellen, die früher „Spielleiter-Material"
         hießen, sind jetzt <b>zentrale Nachschlage-Dokumente</b>, in die alle Spieler gemeinsam schauen.</li>
