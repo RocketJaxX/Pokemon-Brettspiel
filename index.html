@@ -151,6 +151,10 @@ table.typematrix .rowlab{color:#fff; font-weight:800; font-size:7.5px; padding:0
   color:#9a8f78; background:#fffdf6; padding:0 1px;}
 .gm-print .a5{width:148.5mm; height:209.9mm; position:relative; overflow:hidden;}
 .gm-print .a5in{padding:5mm 6mm 3mm;}
+/* ---- Spielanleitung als Broschüre: A4-Innenseite (210×296.8mm) auf die A5-Hälfte
+   skaliert (Faktor 148.5/210 = 0,707143 – deckungsgleich mit der Verkleinerung A4→A5). ---- */
+.gm-print .hb-scalewrap{position:absolute; top:0; left:0; width:210mm; height:296.8mm;
+  transform:scale(0.707143); transform-origin:top left;}
 .gm-print h1{font-family:'Fredoka',sans-serif; font-size:13px; margin-bottom:2mm;}
 .gm-print .sub{font-size:8px; color:#8a7f6d; font-weight:800; margin:-1mm 0 2mm;}
 
@@ -207,6 +211,7 @@ table.typematrix .rowlab{color:#fff; font-weight:800; font-size:7.5px; padding:0
   #page-gm .gm-print{display:block !important;}
   #page-gm .gm-print .sheet{margin:0; box-shadow:none; page-break-after:always;}
   #page-gm .gm-print .sheet:last-child{page-break-after:auto;}
+  #page-gm .gm-print .hb-scalewrap .hb-page{page-break-after:auto; break-after:auto;}
 }
 
 
@@ -2084,20 +2089,44 @@ function buildHandbuch(){
     '</div></div>';
 
   let nr = 2;
-  const innen = seiten.slice(1).map(s=> hbSeite(s.inhalt, s.fuss, nr++)).join('');
-  return seiten[0] + innen + rueck;
+  const innen = seiten.slice(1).map(s=> hbSeite(s.inhalt, s.fuss, nr++));
+  return [seiten[0], ...innen, rueck];   // ein Eintrag je Seite, Seite 1 = Deckblatt, letzte = Rückseite
+}
+
+/* ---- Broschüren-Druck: A4 quer, 2 Innenseiten je Blattseite, in der Mitte gefalzt und getackert
+   (Beschluss 29.07.2026). Für Blatt i (1..Seitenzahl/4):
+   Vorderseite = Seite 2i | Seite (P−2i+1) · Rückseite = Seite (2i−1) | Seite (P−2i+2).
+   Die Rückseite ist links/rechts gegenüber der Vorderseite gespiegelt – sonst käme Blatt 1 mit
+   Rückblatt links und Deckblatt rechts aus dem Drucker, statt umgekehrt. ---- */
+function hbA5HTML(pageDivHTML){
+  return `<div class="a5"><div class="hb-scalewrap">${pageDivHTML}</div></div>`;
+}
+function hbFoldSheetHTML(label, leftHTML, rightHTML){
+  return `<div class="sheet"><div class="sheetlab">${label}</div>${hbA5HTML(leftHTML)}${hbA5HTML(rightHTML)}` +
+    `<div class="cut"><span>⌇ hier falzen</span></div></div>`;
+}
+function buildHandbuchPrintHTML(pageDivs){
+  const P = pageDivs.length, S = P/4;
+  let out = '';
+  for(let i=1; i<=S; i++){
+    out += hbFoldSheetHTML(`Blatt ${i}/${S} · Vorderseite`, pageDivs[2*i-1], pageDivs[P-2*i]);
+    out += hbFoldSheetHTML(`Blatt ${i}/${S} · Rückseite`,  pageDivs[2*i-2], pageDivs[P-2*i+1]);
+  }
+  return `<div class="gm-print">${out}</div>`;
 }
 
 function renderGM(){
   const host = document.getElementById('page-gm');
+  const pageDivs = buildHandbuch();
   host.innerHTML =
     '<div class="hb-toolbar noprint">' +
       '<h1>📕 Spielanleitung</h1>' +
-      '<button onclick="printPage(\'portrait\')">🖨 Heft drucken (A4 hoch)</button>' +
-      '<span class="hint">Beidseitig drucken (lange Kante). Die Seitenzahl ist immer durch 4 teilbar – ' +
-      'im Druckdialog lässt sich damit auch „Broschüre“ wählen; sonst einfach links tackern.</span>' +
+      '<button onclick="printPage(\'landscape\')">🖨 Heft drucken (A4 quer, Broschüre)</button>' +
+      '<span class="hint">Druckt fertig als Broschüre: A4 quer, beidseitig (an der kurzen Kante wenden). ' +
+      'Blätter in gedruckter Reihenfolge stapeln (Blatt 1 oben), in der Mitte falzen und tackern.</span>' +
     '</div>' +
-    '<div class="hb">' + buildHandbuch() + '</div>';
+    '<div class="gm-screen"><div class="hb">' + pageDivs.join('') + '</div></div>' +
+    buildHandbuchPrintHTML(pageDivs);
 }
 
 
@@ -3103,11 +3132,18 @@ function renderDoc(){
       Hefts knickt und verschmutzt am schnellsten, und ein Brettspiel ohne erklärende Rückseite wirkt
       unfertig. Griffbereit bleibt die Tabelle trotzdem – sie ist die letzte Seite vor dem Umschlag und
       liegt zusätzlich auf dem Trainerpass.</p>
-    <h3>Druck</h3>
-    <p>A4 hoch, beidseitig über die lange Kante. Die Seitenzahl wird automatisch auf ein <b>Vielfaches von 4</b>
-      aufgefüllt, damit im Druckdialog auch „Broschüre" gewählt werden kann (Falz in der Mitte); sonst
-      einfach als Blattstapel links tackern. Alle Werte im Heft (Arenentabelle, Preise, Level-Schwellen,
-      Gebietszeilen, Typtabelle) werden aus denselben Daten erzeugt wie die Spielkarten.</p>
+    <h3>Druck: fertige Broschüre (Beschluss 29.07.2026)</h3>
+    <p>Der Reiter zeigt die Seiten am Bildschirm weiterhin normal nacheinander (A4 hoch, durchscrollen).
+      Für den Ausdruck wird automatisch auf <b>A4 quer</b> umgeschaltet und die Seitenreihenfolge selbst
+      zur Broschüre imponiert – kein Verlass mehr auf die „Broschüre"-Funktion des Druckdialogs. Die
+      Seitenzahl wird weiter auf ein <b>Vielfaches von 4</b> aufgefüllt (Blattzahl = Seitenzahl ÷ 4).
+      Je Blatt: Vorderseite = Innenseite 2<i>i</i> links / Innenseite (Gesamt−2<i>i</i>+1) rechts, Rückseite
+      = Innenseite (2<i>i</i>−1) links / Innenseite (Gesamt−2<i>i</i>+2) rechts – Blatt 1 trägt so auf der
+      Rückseite links das Deckblatt und rechts das Rückblatt, auf der Vorderseite links die erste und
+      rechts die letzte Innenseite. Gedruckt wird beidseitig (an der kurzen Kante wenden); die Blätter in
+      gedruckter Reihenfolge stapeln (Blatt 1 oben), in der Mitte falzen und tackern – fertig ist das Heft.
+      Alle Werte im Heft (Arenentabelle, Preise, Level-Schwellen, Gebietszeilen, Typtabelle) werden aus
+      denselben Daten erzeugt wie die Spielkarten.</p>
     <p class="note">Weiterhin eigene Drucksachen: Arenaleiter-/Top-4-Karten (Reiter „Arenen"),
       Trainerpass, Pokeshop-Bögen und die beiden Kartensets.</p>
   </div>
@@ -3153,6 +3189,7 @@ function renderDoc(){
       <li><span class="badge ok">erledigt</span> <b>Arenakarten-Layout v3 (28.07.2026):</b> Rechte Kartenhälfte fest in 5 Pokémon-Zeilen geteilt (gleiche Optik auf allen 8 Karten, größere Bilder), Erst- und Rückkampf je zur Hälfte, Belohnung als Fußzeile der jeweiligen Spalte.</li>
       <li><span class="badge ok">erledigt</span> <b>Kartenrückseite (28.07.2026):</b> KP-, Angriffs- und Siege-Beschriftung stehen links <i>neben</i> ihren Kästchen. Das gewonnene Höhenbudget verhindert, dass Sterne und Klasse unten aus dem Rahmen laufen.</li>
       <li><span class="badge ok">erledigt</span> <b>Evoli-Familie (28.07.2026):</b> Blitza und Flamara fehlten in Evolis Entwicklungsliste und hatten dadurch keine Seltenheitsklasse. Ergänzt – beide sind jetzt ★ wie Aquana.</li>
+      <li><span class="badge ok">erledigt</span> <b>Spielanleitung als Broschüre (29.07.2026):</b> Ansicht bleibt normale Bildlaufseiten, der Druck imponiert automatisch auf A4 quer als fertiges, faltbares und tackerbares Heft. Details in Kapitel 12.</li>
       <li><span class="badge ok">erledigt</span> <b>Signatur &amp; Typen editierbar (29.07.2026):</b>
         Signatur (🛡️ Tank / 💣 Glaskanone / – normal) sowie Typ 1 und Typ 2 sind jetzt eigene, direkt in
         der Pokémon-Tabelle editierbare Dropdown-Felder – unabhängig von Klasse und Fundorten gespeichert,
@@ -3260,6 +3297,7 @@ function renderDoc(){
       <li><b>28.07.2026 (7)</b> – Arenaleiter-Teams neu besetzt (Reihenfolge = Einsatzreihenfolge, letztes Pokémon jeweils nur im Rückkampf): <b>Misty</b> Sterndu · Starmie + Entoron · <b>Erika</b> Sarzenia · Tangela · Giflor + Kokowei · <b>Koga</b> Smogon · Sleimok · Smogmog + Arbok · <b>Sabrina</b> Traumato · Pantimos · Simsala + Hypno · <b>Giovanni</b> Digdri · Snobilikat · Sandamer · Knogga + Rizeros. Rocko, Major Bob und Pyro unverändert. Die Teams sind durchweg höherwertig als vorher (kaum noch 1★-Füllmaterial), was die Arenen für unvorbereitete Spieler deutlich härter macht: Ein Starter mit zwei beliebigen Begleitern gewinnt bei Giovanni nur noch in 46 % statt 71 %, bei Erika in 49 % statt 70 %, bei Sabrina in 36 % statt 53 %. Mit zwei typgerechten Kontern im Team liegen dagegen <b>alle acht Arenen bei 97–100 %</b>, auch im Rückkampf – die Änderung verstärkt also genau die Kernmechanik „Typ schlägt Stärke". Härteste Arena bleibt Koga: Ein einzelner schwacher Konter (Traumato ⭐⭐) reicht dort nicht (27 %), mit Digdri oder Hypno sind es 97 %.</li>
       <li><b>28.07.2026 (6)</b> – Top-4-Blatt: Der Champion heißt jetzt <b>Gary</b> (bis dahin „Blau" nach der deutschen Spielfassung). Die Pokémon-Bilder füllen die Zeilenhöhe wie auf den Arenaleiter-Karten (12 mm statt 8 mm, einheitliche Zeilenhöhe über alle fünf Spalten). Der Wertblock aus Name, Level, Angriff und KP-Kästchen ist nur noch so breit wie sein Inhalt und sitzt mittig neben dem Bild – Name, Werte und Kästchen behalten dabei eine gemeinsame linke Kante, sodass die Fünfergruppen der KP-Leiste lesbar bleiben.</li>
       <li><b>28.07.2026 (5)</b> – Datenpflege: Die <b>Signatur-Richtung</b> (Tank / Glaskanone / keine) steht jetzt als eigenes Feld <code>sig</code> bei jedem Pokémon, statt aus der Differenz zwischen gespeichertem und berechnetem Wert abgeleitet zu werden. Die alte Ableitung brach, sobald sich die Klasse eines Pokémon änderte: Bei Klasse ● ist der Bonus 0, die Richtung war dann nicht mehr erkennbar. Zuordnung eingefroren auf den geprüften Stand 57 Tanks / 53 Glaskanonen / 41 ohne; Kontrolle über alle 1510 Wertpaare: kein einziger Spielwert hat sich dadurch verändert. Außerdem bereinigt: Der Evoli-Satz in Kapitel 4 („Quest-Geschenk in Prismania, Wahl der Entwicklung bei Lv 3") widersprach den Daten – Evoli ist ein normaler Fang auf Route 5 und entwickelt sich bei Lv 6, wobei der Spieler zwischen Aquana, Blitza und Flamara wählt. Diese Wahlregel stand bisher in keinem Spielmaterial und ist jetzt in der Anleitung erklärt. Startkapital von 5 ₽ je Spieler als Vorschlag in die Anleitung aufgenommen.</li>
+      <li><b>29.07.2026</b> – Beschlüsse-Reiter bereinigt: verwaistes Rückseite-Fragment zwischen Kapitel 11/12 eingegliedert, mehrere offene Punkte entschieden (Startkapital 5 ₽, Meisterball-Quest bei Prof. Eich, Arena-Teams, Siege bei Teamwechsel, Zugreihenfolge/Showmatch für 3 Spieler), neue Kategorie „Mögliche Erweiterungen", erledigte Punkte in Kapitel 14 je Kategorie einklappbar. Pokémon-Tabelle: Signatur und Typ 1/2 als editierbare Dropdown-Spalten. Spielanleitung druckt jetzt als fertige A4-quer-Broschüre (Bildschirmansicht bleibt unverändert die normale Seitenfolge).</li>
     </ul>
   </div>`;
   groupDoneItemsInChapter14();
@@ -3888,7 +3926,7 @@ function renderBoard(){
 }
 
 const RENDERERS = { home: renderHome, gm: renderGM, cards: renderCards, shop: renderShop, doc: renderDoc, volvelle: renderVolvelle, trainerkarte: renderTrainerkarte, board: renderBoard, arenen: renderArenen };
-const PAGE_ORIENTATION = { home:'portrait', gm:'portrait', cards:'portrait', shop:'portrait', doc:'portrait', volvelle:'landscape', trainerkarte:'portrait', board:'landscape', arenen:'landscape' };
+const PAGE_ORIENTATION = { home:'portrait', gm:'landscape', cards:'portrait', shop:'portrait', doc:'portrait', volvelle:'landscape', trainerkarte:'portrait', board:'landscape', arenen:'landscape' };
 
 function setPrintOrientation(o){
   const el = document.getElementById('pagesize');
