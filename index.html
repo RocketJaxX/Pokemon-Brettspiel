@@ -675,25 +675,47 @@ table.typematrix .rowlab{color:#fff; font-weight:800; font-size:7.5px; padding:0
   background:radial-gradient(circle closest-side, rgba(255,255,255,0) 44%, var(--c) 100%) !important;
   box-shadow:inset 0 0 0 0.35mm rgba(0,0,0,.28);}
 .tk-circle{background:radial-gradient(circle closest-side, rgba(255,255,255,0) 46%, rgba(0,0,0,.10) 100%);}
-/* Rucksack */
-.rs-wrap{margin-top:5mm; border:0.6mm solid #1a120a; border-radius:6mm 6mm 3mm 3mm;
-  padding:3mm 3.5mm 3mm; background:linear-gradient(170deg,#f3e7cd,#e7d6b4);}
-.rs-title{font-family:'Fredoka'; font-weight:700; font-size:4.4mm; margin-bottom:2.5mm;}
-.rs-sub{font-family:'Nunito'; font-weight:600; font-size:2.5mm; color:#7a6d57;}
-.rs-body{display:flex; gap:3mm; align-items:flex-start;}
-.rs-pocket, .rs-main{border:0.45mm solid #a89772; border-radius:2.5mm; padding:2mm;
-  background:rgba(255,255,255,.55);}
-.rs-left, .rs-right{flex:0 0 56mm;}
-.rs-main{flex:1;}
-.rs-pocketlabel{font-size:2.6mm; font-weight:800; color:#5c5344; margin-bottom:1.5mm;}
-.rs-pocketsub{font-size:2.2mm; color:#8a7f6d; font-weight:600; margin-top:1.5mm;}
-.rs-grid{display:grid; gap:2mm;}
-.rs-grid2{grid-template-columns:repeat(2, 24mm);}
-.rs-grid3{grid-template-columns:repeat(3, 24mm);}
-.rs-slot{width:24mm; height:24mm; border-radius:50%; border:0.45mm dashed #9a8f78;
-  background:#fbf7ec; display:flex; align-items:center; justify-content:center; overflow:hidden;}
-.rs-ghost{width:74%; height:74%; opacity:.22; display:flex; align-items:center; justify-content:center;}
-.rs-ghost svg, .rs-ghost img{width:100%; height:100%; object-fit:contain;}
+/* ===== Rucksack als eigene Illustration (30.07.2026) =====
+   Vorher teilte sich der Rucksack die Seite mit dem Trainerpass; dabei liefen die 24mm-Chips
+   (dieselbe Größe wie die echten Chips im Pokeshop – die müssen ja genau in die Fächer passen)
+   in drei Spalten nebeneinander über den Kartenrand hinaus. Jetzt bekommt der Rucksack eine
+   eigene Seite mit reduziertem Seitenrand (200mm statt 196mm nutzbare Breite) und wird als
+   gezeichneter Rucksack dargestellt: eine Silhouette liegt hinter drei echten Taschen-Boxen
+   (Hauptfach + zwei Seitentaschen), Trageriemen und Schnallen sind rein dekorativ obendrauf.
+   Rechnung für die Breite: Seitentasche 56mm (2 Spalten à 24mm) + 3mm Lücke + Hauptfach 82mm
+   (3 Spalten à 24mm) + 3mm Lücke + Seitentasche 56mm = genau 200mm. */
+.tk-rucksackpage{padding-left:5mm; padding-right:5mm;}
+.bp-title{font-family:'Fredoka'; font-weight:700; font-size:5mm; text-align:center; margin-top:2mm;}
+.bp-sub{font-family:'Nunito'; font-weight:600; font-size:2.6mm; color:#7a6d57; text-align:center; margin-bottom:4mm;}
+.bp-frame{position:relative; width:200mm; margin:0 auto;}
+.bp-silhouette{position:absolute; left:2mm; right:2mm; top:14mm; bottom:0; z-index:0;
+  background:linear-gradient(165deg,#e8c583,#c99a54); border:1.3mm solid #1a120a;
+  border-radius:26mm 26mm 14mm 14mm; box-shadow:inset 0 0 0 2.2mm rgba(255,255,255,.16);}
+.bp-handle{position:absolute; left:50%; top:0; transform:translateX(-50%); z-index:1;
+  width:34mm; height:16mm; border:3mm solid #7a5a34; border-bottom:none; border-radius:17mm 17mm 0 0;}
+.bp-handle::before{content:''; position:absolute; inset:-1.3mm; border-radius:inherit;
+  border:1.3mm solid #1a120a; border-bottom:none; pointer-events:none;}
+.bp-strap{position:absolute; top:9mm; width:9mm; height:46mm; z-index:1; background:#8a6338;
+  border:0.9mm solid #1a120a; border-radius:2mm;}
+.bp-strap-l{left:71mm;} .bp-strap-r{right:71mm;}
+.bp-buckle{position:absolute; top:38mm; width:13mm; height:8mm; z-index:2; background:#e3b52a;
+  border:0.9mm solid #1a120a; border-radius:1.4mm; box-shadow:inset 0 0 0 1.6mm rgba(255,255,255,.25);}
+.bp-buckle-l{left:69mm;} .bp-buckle-r{right:69mm;}
+.bp-body{position:relative; z-index:1; display:flex; justify-content:center; gap:3mm; padding-top:52mm;}
+.bp-pocket, .bp-main{border:1mm solid #1a120a; padding:3mm; box-sizing:border-box;
+  box-shadow:inset 0 0 0 1.6mm rgba(255,255,255,.16);}
+.bp-pocket{width:56mm; margin-top:26mm; border-radius:8mm 8mm 20mm 20mm/6mm 6mm 26mm 26mm;
+  background:linear-gradient(165deg,#d7a45a,#b2793a);}
+.bp-main{width:82mm; border-radius:9mm; background:linear-gradient(165deg,#f0d9a8,#d4ab68);}
+.bp-label{font-size:2.7mm; font-weight:800; color:#4a3a1f; text-align:center; margin-bottom:1.5mm;}
+.bp-legend{font-size:2.1mm; color:#5c4526; font-weight:700; text-align:center; margin-top:1.5mm;}
+.bp-grid{display:grid; gap:2mm; justify-content:center;}
+.bp-grid2{grid-template-columns:repeat(2, 24mm);}
+.bp-grid3{grid-template-columns:repeat(3, 24mm);}
+.bp-slot{width:24mm; height:24mm; border-radius:50%; border:0.45mm dashed #6b4f28;
+  background:rgba(255,253,247,.88); display:flex; align-items:center; justify-content:center; overflow:hidden;}
+.bp-ghost{width:74%; height:74%; opacity:.28; display:flex; align-items:center; justify-content:center;}
+.bp-ghost svg, .bp-ghost img{width:100%; height:100%; object-fit:contain;}
 /* Item-Chips im Shop */
 #page-shop .chip.itemchip{flex-direction:column; gap:0.4mm;
   background:radial-gradient(circle closest-side, #fffdf7 52%, var(--c) 100%);
@@ -2555,24 +2577,24 @@ function shopCoinSVG(v){
     <text x="50" y="82" text-anchor="middle" font-family="Fredoka,sans-serif" font-weight="700" font-size="13" fill="#fff">₽</text>
   </svg>`;
 }
-function shopPotionSVG(bottle, splash){
-  return `<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
-    <rect x="16" y="4" width="8" height="5" rx="1" fill="#7a5a34"/>
-    <rect x="13" y="8" width="14" height="5" rx="2" fill="#a5763e"/>
-    <path d="M12 13 h16 v16 a5 5 0 0 1 -5 5 h-6 a5 5 0 0 1 -5 -5 Z" fill="${bottle}" stroke="#00000022" stroke-width="1.2"/>
-    <rect x="12" y="22" width="16" height="7" fill="${splash}" opacity=".9"/>
-    <ellipse cx="18" cy="18" rx="3.5" ry="5" fill="#ffffff" opacity=".35"/></svg>`;
-}
-const SHOP_REVIVE_SVG = `<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
-  <path d="M20 4 L24 15 L35 15 L26 22 L29 33 L20 26 L11 33 L14 22 L5 15 L16 15 Z"
-    fill="#ffd23f" stroke="#e0a91e" stroke-width="1.4" stroke-linejoin="round"/>
-  <circle cx="20" cy="20" r="4" fill="#fff" opacity=".8"/></svg>`;
+/* Echte Item-Sprites statt gezeichneter Symbole (Beschluss 30.07.2026). PokeWiki selbst ist aus
+   dieser Umgebung heraus nicht erreichbar (Netzwerkrichtlinie blockt die Domain schon auf
+   Proxy-Ebene, geprüft per curl: CONNECT scheitert mit 403, bevor die Seite überhaupt antwortet) –
+   damit war auch keine Legenden-Z-A-Sprite-Version zu bekommen. Stattdessen die offiziellen
+   Item-Icons aus dem offenen PokeAPI-Sprite-Repository (GitHub, erreichbar, Lizenz für
+   Fan-Projekte gedacht) – dieselbe Symbolik, die auch im Taschenmenü der Spiele verwendet wird. */
+const ITEM_IMG = {
+  trank:      'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/potion.png',
+  supertrank: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/super-potion.png',
+  beleber:    'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/revive.png',
+};
+const itemImgHTML = key => `<img src="${ITEM_IMG[key]}" loading="lazy" onerror="this.style.visibility='hidden'">`;
 
 const FLUTE_IMG = 'https://www.pokewiki.de/images/archive/2/2c/20240225204923%21Pok%C3%A9fl%C3%B6te_Artwork.png';
 const SHOP_ITEMS = [
-  {key:'trank', name:'Trank', eff:'Heilt 8 KP', price:2, col:'#ee6a4d', ico:shopPotionSVG('#ee6a4d','#c14a30')},
-  {key:'supertrank', name:'Supertrank', eff:'Heilt volle KP', price:4, col:'#5b7fd6', ico:shopPotionSVG('#5b7fd6','#3a56a8')},
-  {key:'beleber', name:'Beleber', eff:'Besiegtes Pokémon zurück<br>mit halben KP', price:5, col:'#e3b52a', ico:SHOP_REVIVE_SVG},
+  {key:'trank', name:'Trank', eff:'Heilt 8 KP', price:2, col:'#ee6a4d', ico:itemImgHTML('trank')},
+  {key:'supertrank', name:'Supertrank', eff:'Heilt volle KP', price:4, col:'#5b7fd6', ico:itemImgHTML('supertrank')},
+  {key:'beleber', name:'Beleber', eff:'Besiegtes Pokémon zurück<br>mit halben KP', price:5, col:'#e3b52a', ico:itemImgHTML('beleber')},
   {key:'flute', name:'Pokéflöte', eff:'Weckt ein schlafendes<br>Relaxo auf', price:8, col:'#7a5aad',
    ico:`<img src="${FLUTE_IMG}" loading="lazy" onerror="this.style.visibility='hidden'">`},
 ];
@@ -2863,8 +2885,8 @@ function rsSlots(fach){
   return RUCKSACK.filter(e=>e.fach===fach).map(e=>{
     let s='';
     for(let i=0;i<e.n;i++){
-      s += `<div class="rs-slot" title="${e.label}">
-              <div class="rs-ghost">${rsIcon(e)}</div></div>`;
+      s += `<div class="bp-slot" title="${e.label}">
+              <div class="bp-ghost">${rsIcon(e)}</div></div>`;
     }
     return s;
   }).join('');
@@ -2880,7 +2902,7 @@ function renderTrainerkarte(){
     <div class="tk-toolbar noprint">
       <h1>🎫 Trainerpass</h1>
       <button onclick="printPage('portrait')">🖨 Drucken (A4 hoch)</button>
-      <span class="hint">Seite 1: Pass mit Rucksack (pro Spieler ausdrucken). Seite 2: Orden- &amp; Legendären-Chips zum Ausschneiden — Durchmesser passt exakt auf die Kreise oben.</span>
+      <span class="hint">Seite 1: Trainerpass. Seite 2: Rucksack (beides pro Spieler ausdrucken). Seite 3: Orden- &amp; Legendären-Chips zum Ausschneiden — Durchmesser passt exakt auf die Kreise oben.</span>
     </div>
 
     <div class="tk-page">
@@ -2913,23 +2935,33 @@ function renderTrainerkarte(){
         </div>
       </div>
 
-      <div class="rs-wrap">
-        <div class="rs-title">🎒 RUCKSACK <span class="rs-sub">gekaufte Item-Chips hier ablegen · leere Felder = noch nicht im Besitz</span></div>
-        <div class="rs-body">
-          <div class="rs-pocket rs-left">
-            <div class="rs-pocketlabel">Seitentasche links</div>
-            <div class="rs-grid rs-grid2">${rsSlots('links')}</div>
-            <div class="rs-pocketsub">${rsLegende('links')}</div>
+    </div>
+
+    <div class="tk-page tk-rucksackpage">
+      <div class="bp-title">🎒 RUCKSACK</div>
+      <div class="bp-sub">gekaufte Item-Chips hier ablegen · leere Felder = noch nicht im Besitz</div>
+      <div class="bp-frame">
+        <div class="bp-silhouette"></div>
+        <div class="bp-handle"></div>
+        <div class="bp-strap bp-strap-l"></div>
+        <div class="bp-strap bp-strap-r"></div>
+        <div class="bp-buckle bp-buckle-l"></div>
+        <div class="bp-buckle bp-buckle-r"></div>
+        <div class="bp-body">
+          <div class="bp-pocket bp-left">
+            <div class="bp-label">Seitentasche links</div>
+            <div class="bp-grid bp-grid2">${rsSlots('links')}</div>
+            <div class="bp-legend">${rsLegende('links')}</div>
           </div>
-          <div class="rs-main">
-            <div class="rs-pocketlabel">Hauptfach</div>
-            <div class="rs-grid rs-grid3">${rsSlots('haupt')}</div>
-            <div class="rs-pocketsub">${rsLegende('haupt')}</div>
+          <div class="bp-main">
+            <div class="bp-label">Hauptfach</div>
+            <div class="bp-grid bp-grid3">${rsSlots('haupt')}</div>
+            <div class="bp-legend">${rsLegende('haupt')}</div>
           </div>
-          <div class="rs-pocket rs-right">
-            <div class="rs-pocketlabel">Seitentasche rechts</div>
-            <div class="rs-grid rs-grid2">${rsSlots('rechts')}</div>
-            <div class="rs-pocketsub">${rsLegende('rechts')}</div>
+          <div class="bp-pocket bp-right">
+            <div class="bp-label">Seitentasche rechts</div>
+            <div class="bp-grid bp-grid2">${rsSlots('rechts')}</div>
+            <div class="bp-legend">${rsLegende('rechts')}</div>
           </div>
         </div>
       </div>
@@ -3451,9 +3483,8 @@ function renderDoc(){
         (inkl. Rückkampf mit stärkeren Werten und einem zusätzlichen Pokémon), die Zusammenstellung selbst ist so bestätigt.</li>
       <li><span class="badge ok">erledigt</span> <b>Top-4-Teams abgenommen (28.07.2026)</b> – 3·3·4·4·5 Pokémon auf Lv 10, ohne Pokécenter dazwischen. Champion heißt Gary.</li>
       <li><span class="badge ok">erledigt</span> <b>Arenaleiter-Teams abgenommen (28.07.2026)</b> – Misty, Erika, Koga, Sabrina und Giovanni neu besetzt (siehe Änderungsprotokoll); Rocko, Major Bob und Pyro unverändert.</li>
-      <li><span class="badge open">Vorschlag</span> <b>Farm-Abwechslung:</b> Forschungsaufträge, Wetterkarte pro Runde. —
-        <s>Fundwurf bei jeder Niete</s> ist verworfen; stattdessen <b>Fundwurf nur bei W20 = 1</b> (umgesetzt, Kapitel 3).</li>
-      <li><span class="badge open">Vorschlag</span> <b>Chipgröße 24 mm</b> – von der KI gesetzt, nicht ausdrücklich beschlossen.</li>
+      <li><span class="badge ok">erledigt</span> <b>Farm-Abwechslung (30.07.2026):</b> Wetterkarte pro Runde verworfen – wäre eine weitere Instanz, die bei jedem Zug neu verrechnet werden müsste. Forschungsaufträge sind als Idee nicht vom Tisch, sondern nach „Mögliche Erweiterungen" verschoben. <s>Fundwurf bei jeder Niete</s> ist ebenfalls verworfen; stattdessen <b>Fundwurf nur bei W20 = 1</b> (umgesetzt, Kapitel 3).</li>
+      <li><span class="badge ok">erledigt</span> <b>Chipgröße 24 mm (30.07.2026, bestätigt):</b> bleibt, weil sie exakt der gedruckten Chipgröße im Pokeshop entspricht – Rucksackfach und Chip müssen ja zusammenpassen. Das eigentliche Problem war nicht die Größe, sondern der Platz: Der Rucksack teilte sich bisher die Seite mit dem Trainerpass, wodurch die rechte Seitentasche über den Kartenrand hinauslief. Der Rucksack hat jetzt eine eigene Seite mit eigens gezeichneter Rucksack-Illustration. Siehe Kapitel 8.</li>
     </ul>
     <h3>❓ Noch offen</h3>
     <ul>
@@ -3473,6 +3504,7 @@ function renderDoc(){
     <p class="note">Ideen für später – bewusst noch nicht ins Grundspiel übernommen, weil Umsetzung und Umfang noch offen sind.</p>
     <ul>
       <li><span class="badge open">Erweiterung</span> <b>Schillernde Pokémon:</b> Idee gefällt, Umsetzung (W20=20 + W6=6 als erster Vorschlag) noch nicht ausgereift – aus dem Farm-Abwechslung-Vorschlag hierher verschoben, damit später in Ruhe entschieden werden kann, ob und wie sie eingebaut werden.</li>
+      <li><span class="badge open">Erweiterung</span> <b>Forschungsaufträge:</b> aus dem Farm-Abwechslung-Vorschlag hierher verschoben (30.07.2026) – Idee für später, Umsetzung und Umfang noch offen.</li>
     </ul>
   </div>
 
@@ -3528,6 +3560,7 @@ function renderDoc(){
       <li><b>30.07.2026 (3)</b> – <b>Volvelle-Karte: Textboxen ohne harten Rand, kräftigerer Wolkeneffekt, Licht von oben rechts.</b> Auf der Volvelle-Vorderseite hatten Entwicklungen/Fähigkeiten, Siege/Level/Angriff/KP, Fangorte, Akt.-KP, Fangwurf, Sterne und Seltenheit noch den alten schwarzen Kasten aus der Zeit vor der Umstellung auf den Normalkarten – jetzt faden sie gleichmäßig entlang ihrer ganzen Kontur zum Hintergrund aus. Erst ein radialer Verlauf aus der Boxmitte, dann – auf Wunsch, weil das an geraden Kanten ungleichmäßig aussah – eine Gaussian-Blur direkt auf dem Umriss: Die Box bleibt innen voll deckend und wird nur am Rand selbst weich, gleich weit in jede Richtung, auch in den Ecken. Der äußere Kartenrand behält seinen schwarzen Strich, ebenso Artwork-Rahmen und die runden Fenster über der Scheibe – letztere sind Sichtfenster fürs Mechanik-Bastteil, keine Textboxen. Der Wolkenfilter (Normal- <b>und</b> Volvelle-Karten) bekam eine Kontrastanhebung statt nur mehr Deckkraft, sonst verschwimmt reine Deckkraft bei einer grauen Textur kaum sichtbar im Soft-Light-Modus. Der Licht-Verlauf sitzt jetzt oben rechts statt oben links, dort wo auf beiden Kartentypen das Energiesymbol liegt – der farbige Kreis dahinter kommt dadurch deutlicher zur Geltung.</li>
       <li><b>30.07.2026 (4)</b> – <b>Dieselbe Randweichzeichnung jetzt auch auf den Normalkarten.</b> Fangorte, Fangwurf, KP, Angriff, Siege, Entwicklungen/Fähigkeiten sowie die Fußzeilen-Chips Sterne und Seltenheit hatten dort noch den radialen CSS-Verlauf aus der Mitte. Ersetzt durch dieselbe Technik wie auf der Volvelle-Karte, nur in CSS statt SVG: Hinter jeder Box liegt ein <code>::before</code> mit einer eigenen, voll deckenden Fläche, die per <code>filter:blur()</code> ausschließlich an ihrem eigenen Umriss weichgezeichnet wird (<code>isolation:isolate</code> hält das dafür nötige negative <code>z-index</code> auf die jeweilige Box beschränkt). Damit faden beide Kartentypen jetzt identisch gleichmäßig aus.</li>
       <li><b>30.07.2026 (5)</b> – <b>Angriffswurf neu gestaffelt: 1 nix · 2 halb · 3–5 voll · 6 doppelt</b> (ersetzt 1 · 2–3 · 4–5 · 6 vom 28.07.2026). Verfehl- und Kritchance bleiben bei je 1/6 unverändert, die Halb-Zone schrumpft von 2 auf 1 Wurf zugunsten der Voll-Zone (jetzt 3/6 statt 2/6). Erwartungswert steigt dadurch von 5/6 auf 5,5/6 ANG – im Schnitt <b>+10 % Schaden</b> – bei zugleich leicht <b>geringerer</b> Streuung (Standardabweichung 0,62 → 0,61 ANG), weil der breitere Volltreffer-Bereich die Ausreißer nach unten seltener macht. Kämpfe laufen dadurch spürbar zügiger, ohne dass Glückstreffer oder Fehlschläge häufiger würden.</li>
+      <li><b>30.07.2026 (6)</b> – <b>Rucksack als eigene Illustration.</b> Die 24-mm-Fächer (dieselbe Größe wie die echten Pokeshop-Chips) liefen bisher über den Kartenrand hinaus, weil sich der Rucksack die Seite mit dem Trainerpass teilte. Der Rucksack bekommt jetzt eine eigene Seite und wird als gezeichneter Rucksack dargestellt – Silhouette mit Henkel, zwei Trageriemen samt Schnallen, ein Hauptfach vorn (Trank/Supertrank/Beleber/Pokéflöte) und zwei bauchige Seitentaschen (Superball links, Hyper-/Meisterball rechts). Chipgröße bleibt bei 24 mm, damit Fach und Chip weiter zueinander passen. <b>Item-Icons ersetzt:</b> Trank, Supertrank und Beleber zeigen jetzt echte Item-Sprites statt gezeichneter Symbole – sowohl im Rucksack als auch auf den Pokeshop-Chips selbst, da beide dieselbe Bildquelle teilen. Eine Legenden-Z-A-Version von PokeWiki war nicht zu bekommen: Die Domain ist aus dieser Arbeitsumgebung heraus gesperrt (die Netzwerkrichtlinie blockt schon den Verbindungsaufbau, geprüft per <code>curl</code>), betrifft also nicht nur diese Anfrage, sondern jeden Pokewiki-Zugriff von hier aus. Stattdessen die offiziellen Item-Icons aus dem offenen PokeAPI-Sprite-Repository (GitHub, dieselbe Symbolik wie im Taschenmenü der Spiele).</li>
     </ul>
   </div>`;
   groupDoneItemsInChapter14();
