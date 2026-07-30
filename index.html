@@ -280,18 +280,11 @@ table.typematrix .rowlab{color:#fff; font-weight:800; font-size:7.5px; padding:0
   background-size:100% 100%;}
 #page-cards.nocut .cutgrid{display:none;}
 
-/* Kartenfläche: Typfarbe + Lichtverlauf + feine Wolkenstruktur (feTurbulence als Data-URI).
-   Der Verlauf hellt oben links auf und dunkelt unten rechts ab, die Wolken liegen im
-   Soft-Light-Modus darüber – zusammen nimmt das der Fläche die Eintönigkeit, ohne dass
-   der weiße Text darauf an Kontrast verliert. */
+/* Kartenfläche: Hintergrund kommt 1:1 aus dem Volvelle-Rezept (cardBgSVG(), s. cardStyle()) –
+   Typfarbe, Wolkenfilter, heller Verlauf oben rechts und dunkler Verlauf unten rechts sind
+   bereits in der per Karte generierten SVG zusammengesetzt; hier nur noch die Einpassung. */
 #page-cards .card{width:63.5mm; height:88mm; position:relative; border-radius:2.4mm; overflow:hidden;
-  background-color:var(--bg1);
-  background-image:
-    url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='w'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.012' numOctaves='5' seed='11' result='n'/%3E%3CfeColorMatrix type='saturate' values='0' in='n' result='g'/%3E%3CfeComponentTransfer in='g'%3E%3CfeFuncR type='linear' slope='2.4' intercept='-0.7'/%3E%3CfeFuncG type='linear' slope='2.4' intercept='-0.7'/%3E%3CfeFuncB type='linear' slope='2.4' intercept='-0.7'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23w)' opacity='0.32'/%3E%3C/svg%3E"),
-    radial-gradient(ellipse 78% 52% at 76% 10%, rgba(255,255,255,.42), rgba(255,255,255,0) 72%),
-    linear-gradient(152deg, rgba(255,255,255,.20) 0%, rgba(255,255,255,0) 38%, rgba(0,0,0,.10) 68%, rgba(0,0,0,.26) 100%);
-  background-size:cover, auto, auto;
-  background-blend-mode:soft-light, normal, normal;}
+  background-size:100% 100%; background-repeat:no-repeat;}
 #page-cards .frame{position:absolute; inset:1.6mm; border:0.45mm solid #111; border-radius:1.6mm; pointer-events:none; z-index:5;}
 #page-cards .in{position:absolute; inset:1.6mm; padding:1.6mm 2.2mm; display:flex; flex-direction:column; gap:1mm;}
 #page-cards .head{display:flex; align-items:center; gap:1.4mm; min-height:6mm;}
@@ -2386,9 +2379,48 @@ const CARD_BALLS_ICON = (()=>{
   return [ BALL('#e6402e'), BALL('#2f6fc4'), BALL('#20242c') ];
 })();
 
+/* Kartenhintergrund 1:1 aus der Volvelle-Karte übernommen (Beschluss 30.07.2026: "sehr gut
+   generiert"), nur auf die Maße der Normalkarte (63.5×88mm statt 80×124mm) skaliert – dieselben
+   drei Ebenen in derselben Reihenfolge: Wolkenfilter (feTurbulence + Kontrastkurve, 32% Deckkraft,
+   Soft-Light) unter dem hellen Verlauf oben rechts (volLite) unter dem dunklen Verlauf unten
+   rechts (volDark). Weil Farbverläufe die Typfarbe direkt einschließen (anders als vorher, wo
+   CSS-Verläufe nur farblos gegen --bg1 geblendet wurden), entsteht die SVG dynamisch je Typfarbe –
+   gecacht, damit gleichfarbige Karten (gleicher Typ) dieselbe Daten-URI und damit denselben
+   decodierten Bitmap-Cache im Browser teilen, statt 151× dieselben Bytes neu zu erzeugen. */
+const CARD_BG_CACHE = {};
+function cardBgSVG(color){
+  if(CARD_BG_CACHE[color]) return CARD_BG_CACHE[color];
+  const W = 63.5, H = 88;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}">
+    <defs>
+      <radialGradient id="cl" cx="74%" cy="12%" r="72%">
+        <stop offset="0%" stop-color="#fff" stop-opacity="0.40"/>
+        <stop offset="100%" stop-color="#fff" stop-opacity="0"/>
+      </radialGradient>
+      <linearGradient id="cd" x1="0" y1="0" x2="0.6" y2="1">
+        <stop offset="45%" stop-color="#000" stop-opacity="0"/>
+        <stop offset="100%" stop-color="#000" stop-opacity="0.26"/>
+      </linearGradient>
+      <filter id="cw" x="0" y="0" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="5" seed="11" result="n"/>
+        <feColorMatrix type="saturate" values="0" in="n" result="g"/>
+        <feComponentTransfer in="g">
+          <feFuncR type="linear" slope="2.4" intercept="-0.7"/>
+          <feFuncG type="linear" slope="2.4" intercept="-0.7"/>
+          <feFuncB type="linear" slope="2.4" intercept="-0.7"/>
+        </feComponentTransfer>
+      </filter>
+    </defs>
+    <rect width="${W}" height="${H}" fill="${color}"/>
+    <rect width="${W}" height="${H}" filter="url(#cw)" opacity="0.32" style="mix-blend-mode:soft-light"/>
+    <rect width="${W}" height="${H}" fill="url(#cl)"/>
+    <rect width="${W}" height="${H}" fill="url(#cd)"/>
+  </svg>`;
+  return CARD_BG_CACHE[color] = `url('data:image/svg+xml,${encodeURIComponent(svg)}')`;
+}
 function cardStyle(m){
   const c = TYP[m.typen[0]] || '#A8A878';
-  return `style="--bg1:${c}" class="card"`;
+  return `style="background-image:${cardBgSVG(c)}" class="card"`;
 }
 /* Sterne immer fuenfstellig: erreichte in Gold, uebrige blass – die Wertigkeit
    ist damit auf einen Blick lesbar statt durch Abzaehlen (Beschluss 30.07.2026). */
@@ -3570,6 +3602,7 @@ function renderDoc(){
       <li><b>30.07.2026 (5)</b> – <b>Angriffswurf neu gestaffelt: 1 nix · 2 halb · 3–5 voll · 6 doppelt</b> (ersetzt 1 · 2–3 · 4–5 · 6 vom 28.07.2026). Verfehl- und Kritchance bleiben bei je 1/6 unverändert, die Halb-Zone schrumpft von 2 auf 1 Wurf zugunsten der Voll-Zone (jetzt 3/6 statt 2/6). Erwartungswert steigt dadurch von 5/6 auf 5,5/6 ANG – im Schnitt <b>+10 % Schaden</b> – bei zugleich leicht <b>geringerer</b> Streuung (Standardabweichung 0,62 → 0,61 ANG), weil der breitere Volltreffer-Bereich die Ausreißer nach unten seltener macht. Kämpfe laufen dadurch spürbar zügiger, ohne dass Glückstreffer oder Fehlschläge häufiger würden.</li>
       <li><b>30.07.2026 (6)</b> – <b>Rucksack als eigene Illustration.</b> Die 24-mm-Fächer (dieselbe Größe wie die echten Pokeshop-Chips) liefen bisher über den Kartenrand hinaus, weil sich der Rucksack die Seite mit dem Trainerpass teilte. Der Rucksack bekommt jetzt eine eigene Seite und wird als gezeichneter Rucksack dargestellt – Silhouette mit Henkel, zwei Trageriemen samt Schnallen, ein Hauptfach vorn (Trank/Supertrank/Beleber/Pokéflöte) und zwei bauchige Seitentaschen (Superball links, Hyper-/Meisterball rechts). Chipgröße bleibt bei 24 mm, damit Fach und Chip weiter zueinander passen. <b>Item-Icons ersetzt:</b> Trank, Supertrank und Beleber zeigen jetzt echte Item-Sprites statt gezeichneter Symbole – sowohl im Rucksack als auch auf den Pokeshop-Chips selbst, da beide dieselbe Bildquelle teilen. Eine Legenden-Z-A-Version von PokeWiki war nicht zu bekommen: Die Domain ist aus dieser Arbeitsumgebung heraus gesperrt (die Netzwerkrichtlinie blockt schon den Verbindungsaufbau, geprüft per <code>curl</code>), betrifft also nicht nur diese Anfrage, sondern jeden Pokewiki-Zugriff von hier aus. Stattdessen die offiziellen Item-Icons aus dem offenen PokeAPI-Sprite-Repository (GitHub, dieselbe Symbolik wie im Taschenmenü der Spiele).</li>
       <li><b>30.07.2026 (7)</b> – <b>Normalkarten: dunkle Flecken im Wolkeneffekt behoben, Schnittkanten vereinheitlicht.</b> Der Kontrast-Boost vom Vortag trieb einen Teil der Wolkentextur bis auf reines Schwarz bzw. Weiß (die Kurve <code>slope 2.4 / intercept −0.7</code> klippt schon ab ca. 29 % bzw. 79 % Ausgangshelligkeit) – auf der Volvelle-Karte fiel das kaum auf, weil die Wolke dort nur mit 32 % Deckkraft eingeblendet wird, auf der Normalkarte lag dieselbe Kurve aber ungebremst in voller Stärke im Hintergrundbild, wodurch harte dunkle Flecken entstanden. Jetzt bekommt auch die Normalkarte die 32-%-Deckkraft der Volvelle-Karte – exakt dieselben Einstellungen wie gewünscht. <b>Schnittkanten:</b> Bisher zeichnete jede Karte ihren eigenen gestrichelten Rahmen 0,4 mm in den 2-mm-Spalt zur Nachbarkarte hinein – zwei Karten hatten dadurch zwei leicht versetzte Linien mit Papier dazwischen, es musste zweimal geschnitten werden. Der Spalt entfällt jetzt vollständig (Karten liegen Kante an Kante), und über der ganzen 3×3-Fläche liegt ein einziges, 0,12 mm dünnes Liniengitter – jede Grenze zwischen zwei Karten ist dadurch buchstäblich dieselbe Linie, ein Schnitt reicht.</li>
+      <li><b>30.07.2026 (8)</b> – <b>Normalkarten-Hintergrund 1:1 aus der Volvelle-Karte übernommen.</b> Statt eigener, nur farblos gegen die Typfarbe geblendeter CSS-Verläufe generiert <code>cardBgSVG()</code> jetzt dieselbe SVG wie <code>volFrontCardSVG()</code> – Wolkenfilter, heller Verlauf oben rechts (<code>volLite</code>) und dunkler Verlauf unten rechts (<code>volDark</code>) mit identischen Werten, nur auf 63,5×88mm statt 80×124mm skaliert und mit der jeweiligen Typfarbe direkt eingefärbt. Die SVG wird je Typfarbe gecacht (nicht je Pokémon), damit gleichfarbige Karten dieselbe Daten-URI – und damit denselben decodierten Bitmap-Cache im Browser – teilen.</li>
     </ul>
   </div>`;
   groupDoneItemsInChapter14();
