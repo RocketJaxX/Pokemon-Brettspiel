@@ -2030,9 +2030,9 @@ function handbuchBloecke(){
       '<p>Bei jedem Angriff würfelst du den <b>W6</b>. Er sagt dir, wie gut der Angriff sitzt:</p>' +
       '<div class="hbdice">' +
       '<div><b>1</b>daneben<br>0 Schaden</div>' +
-      '<div><b>2–3</b>halber<br>Angriffswert</div>' +
-      '<div><b>4–5</b>voller<br>Angriffswert</div>' +
-      '<div><b>6</b>doppelter<br>Angriffswert</div>' +
+      '<div><b>2</b>Streiftreffer<br>halber Angriffswert</div>' +
+      '<div><b>3–5</b>voller<br>Angriffswert</div>' +
+      '<div><b>6</b>perfekter Treffer<br>doppelter Angriffswert</div>' +
       '</div>' +
       '<p>Den Angriffswert liest du auf der Kartenrückseite ab – in der Zeile, die zu deinem Level passt. ' +
       'Halbe Zahlen werden immer <b>aufgerundet</b>.</p>');
@@ -2046,7 +2046,7 @@ function handbuchBloecke(){
       'ausgewechselt werden</td></tr>' +
       '<tr><td>leeres Feld</td><td>Der Schaden zählt genau so, wie gewürfelt</td></tr></table>');
   add('<div class="hbbox"><b class="t">Merksatz</b>' +
-      '<p style="font-size:12pt;">„<b>1 nix · 2–3 halb · 4–5 voll · 6 doppelt</b> – und bist du stark dagegen, ' +
+      '<p style="font-size:12pt;">„<b>1 nix · 2 halb · 3–5 voll · 6 doppelt</b> – und bist du stark dagegen, ' +
       'zählt alles doppelt.“</p></div>');
   add('<div class="hbbox"><b class="t">Ein Beispiel</b>' +
       '<p>Dein Schiggy (Wasser) hat Angriff 3 und kämpft gegen ein Kleinstein (Gestein). Du würfelst eine <b>5</b> ' +
@@ -2150,7 +2150,7 @@ function handbuchBloecke(){
   add('<table class="hbt"><tr><th>Frage</th><th>Antwort</th></tr>' +
       '<tr><td>Wie weit komme ich pro Zug?</td><td>10 Zugpunkte, 1 ZP je Feld</td></tr>' +
       '<tr><td>Wann würfle ich den W20?</td><td>Beim Betreten von Gras, tiefem Wasser oder Höhle</td></tr>' +
-      '<tr><td>Wie viel Schaden mache ich?</td><td>W6: 1 nix · 2–3 halb · 4–5 voll · 6 doppelt</td></tr>' +
+      '<tr><td>Wie viel Schaden mache ich?</td><td>W6: 1 nix · 2 halb · 3–5 voll · 6 doppelt</td></tr>' +
       '<tr><td>Und mit Typvorteil?</td><td>Alles ×2. Bei Typnachteil ÷2, bei ✕ gar nichts</td></tr>' +
       '<tr><td>Wer fängt den Kampf an?</td><td>Immer der Spieler</td></tr>' +
       '<tr><td>Wann darf ich wechseln?</td><td>Wenn der Gegner ein neues Pokémon schickt, bei ✕ oder nach einem K.o.</td></tr>' +
@@ -3077,9 +3077,10 @@ function renderDoc(){
       <li>Beide Seiten wählen 1 aktives Pokémon (max. 6 im Team).</li>
       <li><b>Der Spieler beginnt immer.</b> — Beschluss 27.07.2026 (ersetzt die freie Wahl vom 23.07.2026)</li>
       <li>Abwechselnd angreifen. Jeder Angriff ist <b>ein W6-Wurf</b>:
-        <b>1</b> = daneben (0) · <b>2–3</b> = <b>halber</b> Angriffswert (aufgerundet) ·
-        <b>4–5</b> = <b>voller</b> Angriffswert · <b>6</b> = <b>doppelter</b> Angriffswert.
-        — Beschluss 28.07.2026 (ersetzt „W6 + Angriff“)</li>
+        <b>1</b> = daneben (0) · <b>2</b> = <b>halber</b> Angriffswert (Streiftreffer, aufgerundet) ·
+        <b>3–5</b> = <b>voller</b> Angriffswert · <b>6</b> = <b>doppelter</b> Angriffswert (perfekter Treffer).
+        — Beschluss 30.07.2026 (ersetzt 1 · 2–3 · 4–5 · 6 vom 28.07.2026: Erwartungswert steigt von
+        5/6 auf 5,5/6 ANG (≈ +10 % Schaden im Schnitt), Verfehl- und Kritchance bleiben unverändert bei je 1/6)</li>
       <li><b>Typvorteil:</b> stark („+“) = Gesamtschaden <b>×2</b> ·
         schwach („−“) = Gesamtschaden <b>÷2</b> (aufgerundet) · „✕“ = 0 Schaden, es muss gewechselt werden. Jedes Pokémon hat genau einen Typ.
         — Beschluss 28.07.2026; der Nebentyp entfiel am 30.07.2026.<!--
@@ -3090,7 +3091,7 @@ function renderDoc(){
     </ol>
     <p class="note"><b>Patt-Regel (28.07.2026):</b> Kann keine Seite die andere mehr treffen (✕ in beide
       Richtungen, kein Wechsel mehr möglich), gilt der Kampf für den Herausforderer als verloren (Rückzug).</p>
-    <p class="note">Merkhilfe für die Spieler: „<b>1 nix · 2–3 halb · 4–5 voll · 6 doppelt</b> –
+    <p class="note">Merkhilfe für die Spieler: „<b>1 nix · 2 halb · 3–5 voll · 6 doppelt</b> –
       und bist du stark dagegen, zählt alles doppelt.“</p>
     <h3>Level durch Siege</h3>
     <p>Zählt: Wild-, Trainer-NPC- und Arenasiege. Zählt <b>nicht</b>: Spieler-Duelle.</p>
@@ -3526,6 +3527,7 @@ function renderDoc(){
       <li><b>30.07.2026 (2)</b> – <b>Eigener Zoom je Reiter.</b> Der Browser-Zoom vergrößerte bisher auch die Kopfzeile und nahm damit genau den Platz weg, den man beim Heranzoomen gewinnen will. Jetzt sitzt der Zoom auf der Seite selbst, die Navigation bleibt in Originalgröße. Bedienung wie gewohnt über <b>Strg + / Strg −</b>, <b>Strg + Mausrad</b> und <b>Strg + 0</b> zum Zurücksetzen – diese Griffe werden abgefangen, bevor der Browser sie bekommt – oder über die kleine Leiste unten rechts. Jeder Reiter merkt sich seinen eigenen Faktor (13 Stufen von 50 % bis 300 %), gespeichert in einem eigenen localStorage-Schlüssel und daher <b>nicht</b> Teil des Spielstands: Ein exportiertes JSON oder eine weitergegebene HTML trägt die Zoomeinstellung dieses Geräts nicht mit. Umgesetzt mit CSS <code>zoom</code> statt <code>transform:scale</code>, damit das Layout wirklich mitwächst – Umbrüche, Scrollbereiche und Klickflächen stimmen weiter. Der Ausdruck bleibt in jedem Fall 1:1, der Bildschirmzoom kann Papiermaße also nicht verstellen. Ausgenommen ist das <b>Spielbrett</b>, das im eingebetteten Editor bereits einen eigenen Zoom mitbringt.</li>
       <li><b>30.07.2026 (3)</b> – <b>Volvelle-Karte: Textboxen ohne harten Rand, kräftigerer Wolkeneffekt, Licht von oben rechts.</b> Auf der Volvelle-Vorderseite hatten Entwicklungen/Fähigkeiten, Siege/Level/Angriff/KP, Fangorte, Akt.-KP, Fangwurf, Sterne und Seltenheit noch den alten schwarzen Kasten aus der Zeit vor der Umstellung auf den Normalkarten – jetzt faden sie gleichmäßig entlang ihrer ganzen Kontur zum Hintergrund aus. Erst ein radialer Verlauf aus der Boxmitte, dann – auf Wunsch, weil das an geraden Kanten ungleichmäßig aussah – eine Gaussian-Blur direkt auf dem Umriss: Die Box bleibt innen voll deckend und wird nur am Rand selbst weich, gleich weit in jede Richtung, auch in den Ecken. Der äußere Kartenrand behält seinen schwarzen Strich, ebenso Artwork-Rahmen und die runden Fenster über der Scheibe – letztere sind Sichtfenster fürs Mechanik-Bastteil, keine Textboxen. Der Wolkenfilter (Normal- <b>und</b> Volvelle-Karten) bekam eine Kontrastanhebung statt nur mehr Deckkraft, sonst verschwimmt reine Deckkraft bei einer grauen Textur kaum sichtbar im Soft-Light-Modus. Der Licht-Verlauf sitzt jetzt oben rechts statt oben links, dort wo auf beiden Kartentypen das Energiesymbol liegt – der farbige Kreis dahinter kommt dadurch deutlicher zur Geltung.</li>
       <li><b>30.07.2026 (4)</b> – <b>Dieselbe Randweichzeichnung jetzt auch auf den Normalkarten.</b> Fangorte, Fangwurf, KP, Angriff, Siege, Entwicklungen/Fähigkeiten sowie die Fußzeilen-Chips Sterne und Seltenheit hatten dort noch den radialen CSS-Verlauf aus der Mitte. Ersetzt durch dieselbe Technik wie auf der Volvelle-Karte, nur in CSS statt SVG: Hinter jeder Box liegt ein <code>::before</code> mit einer eigenen, voll deckenden Fläche, die per <code>filter:blur()</code> ausschließlich an ihrem eigenen Umriss weichgezeichnet wird (<code>isolation:isolate</code> hält das dafür nötige negative <code>z-index</code> auf die jeweilige Box beschränkt). Damit faden beide Kartentypen jetzt identisch gleichmäßig aus.</li>
+      <li><b>30.07.2026 (5)</b> – <b>Angriffswurf neu gestaffelt: 1 nix · 2 halb · 3–5 voll · 6 doppelt</b> (ersetzt 1 · 2–3 · 4–5 · 6 vom 28.07.2026). Verfehl- und Kritchance bleiben bei je 1/6 unverändert, die Halb-Zone schrumpft von 2 auf 1 Wurf zugunsten der Voll-Zone (jetzt 3/6 statt 2/6). Erwartungswert steigt dadurch von 5/6 auf 5,5/6 ANG – im Schnitt <b>+10 % Schaden</b> – bei zugleich leicht <b>geringerer</b> Streuung (Standardabweichung 0,62 → 0,61 ANG), weil der breitere Volltreffer-Bereich die Ausreißer nach unten seltener macht. Kämpfe laufen dadurch spürbar zügiger, ohne dass Glückstreffer oder Fehlschläge häufiger würden.</li>
     </ul>
   </div>`;
   groupDoneItemsInChapter14();
