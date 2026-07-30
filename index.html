@@ -483,7 +483,10 @@ table.typematrix .rowlab{color:#fff; font-weight:800; font-size:7.5px; padding:0
 <!-- Dauerhaftes Seiten-CSS. Bewusst NICHT in #pagesize, weil
      setPrintOrientation() dessen Inhalt komplett ersetzt. -->
 <style id="pagecss">
-.savehint{margin-left:10px; font-size:12px; color:#7bd88f; opacity:0; transition:opacity .3s;}
+/* Kurzmeldung nach "💾 HTML" – blendet sich ein und nach 6s wieder aus. Hiess bis 30.07.2026
+   ebenfalls .savehint und teilte sich die Klasse mit dem Dauerhinweis in der Kopfzeile; dessen
+   opacity:0 kam von hier und machte ihn unsichtbar. Eigene Klasse, damit das nicht wieder passiert. */
+.savetoast{margin-left:10px; font-size:12px; color:#7bd88f; opacity:0; transition:opacity .3s;}
 
 /* ===================== Spielanleitung (A4-Heft) ===================== */
 .hb-page{width:210mm; height:296.8mm; background:#fffdf6; color:#1a120a; margin:0 auto 14px;
@@ -667,15 +670,11 @@ table.typematrix .rowlab{color:#fff; font-weight:800; font-size:7.5px; padding:0
 .ar-foot{margin-top:auto; font-size:2.3mm; font-weight:700; color:#6b5f4c; padding-top:1mm;}
 @media print{ .ar-page{box-shadow:none; margin:0;} }
 
-/* ===== Trainerpass v2: ganze Seite mit Rucksack (27.07.2026) ===== */
-.tk-page{page-break-after:always;}
-.tk-page2{display:block; min-height:0; padding-top:12mm;}
-.tk-page2:last-child{page-break-after:auto;}
-/* Chips: nur der Rand traegt Farbe, nach innen transparent */
-.tk-chipimg{border:none !important;
-  background:radial-gradient(circle closest-side, rgba(255,255,255,0) 44%, var(--c) 100%) !important;
-  box-shadow:inset 0 0 0 0.35mm rgba(0,0,0,.28);}
-.tk-circle{background:radial-gradient(circle closest-side, rgba(255,255,255,0) 46%, rgba(0,0,0,.10) 100%);}
+/* ===== Trainerpass v2: ganze Seite mit Rucksack (27.07.2026) =====
+   Die Seiten- und Chip-Regeln dieses Blocks standen frueher hier und wurden dadurch vom
+   spaeteren Trainerpass-Block (gleiche Spezifitaet, weiter unten im Stylesheet) still
+   ueberschrieben – .tk-page2 und der Farbverlauf der leeren Kreise waren wirkungslos.
+   Sie stehen jetzt am Ende des Trainerpass-Blocks; hier bleibt nur der Rucksack. */
 /* ===== Rucksack als eigene Illustration (30.07.2026) =====
    Vorher teilte sich der Rucksack die Seite mit dem Trainerpass; dabei liefen die 24mm-Chips
    (dieselbe Größe wie die echten Chips im Pokeshop – die müssen ja genau in die Fächer passen)
@@ -879,14 +878,15 @@ table.kztable tr.hi td{background:#fdf3d4; font-weight:800;}
 
 /* ===== Trainerpass (neu aufgebaut 27.07.2026 – altes Stylesheet ging bei einer
    CSS-Ersetzung verloren; Maße so gewählt, dass Chip = Slot-Kreis) ===== */
-#page-trainerkarte{ --tk-circle: 13mm; }
+/* Chip-Durchmesser: gilt fuer die Chips auf Seite 3 UND die Kreise auf Seite 1, damit ein
+   ausgeschnittener Chip exakt auf sein Feld passt. Obergrenze ist die Ordenreihe: 8 Felder
+   a (Kreis + 3mm) muessen in die 188mm Innenbreite der Karte – ab 20,5mm Kreis wird es zu breit. */
+#page-trainerkarte{ --tk-circle: 17mm; }
 .tk-toolbar{display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-bottom:10px;}
 .tk-toolbar h1{font-size:20px; margin:0;}
 .tk-page{width:210mm; min-height:297mm; margin:0 auto; background:#fff; color:#1a120a;
   box-shadow:0 2px 12px rgba(0,0,0,.14); padding:8mm 7mm; box-sizing:border-box;
   display:flex; flex-direction:column; font-family:'Nunito';}
-.tk-half{display:flex; flex-direction:column;}
-.tk-cardhalf{flex:0 0 auto;}
 .tk-card{border:0.6mm solid #1a120a; border-radius:3mm; padding:3mm 3.5mm;
   display:flex; flex-direction:column; gap:2.4mm; background:linear-gradient(160deg,#fffdf7,#f4ecd8);}
 .tk-row{border-bottom:0.25mm dashed #c9bfa4; padding-bottom:2mm;}
@@ -896,14 +896,12 @@ table.kztable tr.hi td{background:#fdf3d4; font-weight:800;}
 .tk-title .tk-sub{display:block; font-size:3mm; letter-spacing:1.2mm; color:#8a7f6d; font-weight:600;}
 .tk-namefield{font-weight:800; font-size:3.6mm; display:flex; align-items:flex-end; gap:2mm; flex:1;}
 .tk-line{display:inline-block; flex:1; min-width:30mm; border-bottom:0.4mm solid #1a120a; height:4mm;}
-.tk-line.short{flex:0 0 9mm; min-width:9mm;}
 .tk-starterrow{display:flex; align-items:center; gap:2mm;}
 .tk-starterlabel{font-weight:800; font-size:3mm; color:#6b5f4c; writing-mode:vertical-rl; transform:rotate(180deg);}
 .tk-starter{width:13mm; text-align:center; font-size:2.4mm; font-weight:700;}
 .tk-starter img{width:11mm; height:11mm; object-fit:contain; display:block; margin:0 auto;
   border:0.3mm solid #c9bfa4; border-radius:50%; background:#fff;}
 .tk-rowlabel{font-family:'Fredoka'; font-weight:700; font-size:3.4mm; margin-bottom:1.4mm;}
-.tk-rowsub{font-family:'Nunito'; font-weight:600; font-size:2.5mm; color:#8a7f6d;}
 .tk-slots{display:flex; gap:2mm; justify-content:space-between;}
 .tk-slot{width:calc(var(--tk-circle) + 3mm); text-align:center;}
 .tk-circle{width:var(--tk-circle); height:var(--tk-circle); border-radius:50%;
@@ -917,27 +915,31 @@ table.kztable tr.hi td{background:#fdf3d4; font-weight:800;}
 .tk-dexcell{border:0.2mm solid #b9ae93; border-radius:0.6mm; font-size:1.9mm; text-align:center;
   line-height:3.4mm; height:3.4mm; color:#6b5f4c; background:#fff;}
 .tk-milestone{background:#f6d76b; border-color:#b8902a; font-weight:900; color:#4a3a10;}
-.tk-footrow{display:flex; gap:3mm; align-items:center;}
-.tk-footbox{flex:1; border:0.35mm solid #c9bfa4; border-radius:1.5mm; padding:1.4mm 2mm;
-  font-size:2.7mm; font-weight:700; display:flex; align-items:center; gap:1.5mm; background:#fff;}
-.tk-check{width:5mm; height:5mm; border:0.4mm solid #1a120a; border-radius:1mm; display:inline-block;}
-.tk-tally{gap:.8mm;}
-.tk-tray{font-weight:600;}
-.tk-cutline{border-top:0.4mm dashed #9a8f78; margin:5mm 0 4mm; text-align:center;}
-.tk-cutline span{position:relative; top:-2.2mm; background:#fff; padding:0 3mm;
-  font-size:2.6mm; color:#8a7f6d; font-weight:700;}
-.tk-chiphalf{flex:1;}
 .tk-chiphint{font-size:2.7mm; color:#6b5f4c; font-weight:700; margin-bottom:3mm;}
-.tk-chiprow{display:flex; gap:5mm; flex-wrap:wrap; margin-bottom:4mm;}
+.tk-chiprow{display:flex; gap:4mm; flex-wrap:wrap; margin-bottom:4mm;}
 .tk-chip{width:calc(var(--tk-circle) + 3mm); text-align:center;}
 .tk-chipimg{width:var(--tk-circle); height:var(--tk-circle); border-radius:50%;
-  border:0.5mm solid #1a120a; background:var(--c,#ddd); margin:0 auto;
-  display:flex; align-items:center; justify-content:center; overflow:hidden;}
+  margin:0 auto; display:flex; align-items:center; justify-content:center; overflow:hidden;}
 .tk-chipimg img{width:80%; height:80%; object-fit:contain;}
 .tk-chiplabel{font-size:2.3mm; font-weight:800; margin-top:.8mm;}
+
+/* --- Seiten- und Chip-Regeln aus dem v2-Umbau (27.07.2026), hierher verschoben, damit sie
+       nicht vom Block darueber ueberschrieben werden --- */
+.tk-page{page-break-after:always;}
+/* Der Chipbogen bleibt ein volles A4-Blatt wie die beiden Seiten davor – nur der
+   Seitenumbruch danach entfaellt, sonst kaeme eine leere Schlussseite aus dem Drucker. */
+.tk-page2:last-child{page-break-after:auto;}
+/* Chips: nur ein schmaler Rand traegt Farbe, nach innen laeuft sie transparent aus.
+   Der Verlauf beginnt bei 70% des Radius – das Icon fuellt 80% der Breite, seine Ecken
+   reichen bis 57% des Radius, die Farbe bleibt also ausserhalb des Icons. */
+.tk-chipimg{border:none !important;
+  background:radial-gradient(circle closest-side, rgba(255,255,255,0) 70%, var(--c) 100%) !important;
+  box-shadow:inset 0 0 0 0.35mm rgba(0,0,0,.28);}
+/* Leere Felder auf Seite 1 bekommen denselben Randverlauf, damit Feld und Chip gleich wirken */
+.tk-circle{background:radial-gradient(circle closest-side, rgba(0,0,0,0) 72%, rgba(0,0,0,.10) 100%), #eee9dc;}
 @media print{
   #page-trainerkarte .noprint{display:none !important;}
-  .tk-page{box-shadow:none; margin:0; padding:8mm 7mm; page-break-after:avoid;}
+  .tk-page{box-shadow:none; margin:0; padding:8mm 7mm;}
 }
 
 /* --- Arena-Layout v2 ganz am Ende, damit es die aelteren .ar-* Regeln ueberschreibt --- */
@@ -1006,7 +1008,7 @@ table.kztable tr.hi td{background:#fdf3d4; font-weight:800;}
   <button class="tab" data-page="home">📋 Pokémon-Tabelle</button>
   <button class="tab" data-page="gm">📕 Spielanleitung</button>
   <button class="tab" data-page="shop">🎁 Pokeshop</button>
-  <button class="tab" data-page="trainerkarte">🎫 Trainerkarte</button>
+  <button class="tab" data-page="trainerkarte">🎫 Trainerpass</button>
   <button class="tab" data-page="arenen">🏟 Arenen</button>
   <button class="tab" data-page="cards">🃏 Karten (Normal)</button>
   <button class="tab" data-page="volvelle">🎡 Karten (Volvelle)</button>
@@ -1018,7 +1020,7 @@ table.kztable tr.hi td{background:#fdf3d4; font-weight:800;}
   <button class="tab" onclick="document.getElementById('jsonImport').click()" title="JSON-Datei einspielen">⬆ JSON</button>
   <button class="tab" onclick="saveHTMLFile()" title="Diese Datei mitsamt aktuellem Datenstand speichern">💾 HTML</button>
   <input type="file" id="jsonImport" accept=".json,application/json" style="display:none" onchange="importJSONFile(this)">
-  <span id="savehint" class="savehint"></span>
+  <span id="saveToast" class="savetoast"></span>
   <button class="tab" onclick="resetAllData()" style="color:#f3c;">↺ Zurücksetzen</button>
 </nav>
 <main id="app">
@@ -1423,7 +1425,7 @@ function saveHTMLFile(){
   const d = new Date().toISOString().slice(0,10);
   downloadBlob(`kanto-spielsystem-${d}.html`, 'text/html', html);
   activatePage(activeName);
-  const hinweis = document.getElementById('savehint');
+  const hinweis = document.getElementById('saveToast');
   if(hinweis){
     hinweis.textContent = brettUebernommen
       ? '💾 Gespeichert – inklusive deiner Änderungen am Spielbrett.'
@@ -2881,7 +2883,7 @@ function shopSheetsHTML(){
 }
 
 
-/* ===================== Trainerkarte (A4 hoch: oben Karte, unten Chips) ===================== */
+/* ===================== Trainerpass (3× A4 hoch: Pass · Rucksack · Chipbogen) ===================== */
 function starterRowHTML(){
   return STARTER_NRS.map(nr=>{
     const m = state.mons[nr];
@@ -2889,16 +2891,19 @@ function starterRowHTML(){
   }).join('');
 }
 function ordenSlotHTML(a){
+  /* "max. Lv." statt des frueheren "ab Lv.": Der Orden hebt die Obergrenze (Max-Level =
+     2 + Anzahl Orden), er schaltet kein Startlevel frei. Seit die Formel nicht mehr in der
+     Zeilenueberschrift steht, ist diese Zeile der einzige Traeger der Regel auf dem Pass. */
   return `<div class="tk-slot">
-    <div class="tk-circle tk-slotimg-empty"><img class="tk-silhouette" src="${ORDEN_IMG[a.orden]}" loading="lazy" onerror="this.style.visibility='hidden'"></div>
+    <div class="tk-circle"><img class="tk-silhouette" src="${ORDEN_IMG[a.orden]}" loading="lazy" onerror="this.style.visibility='hidden'"></div>
     <div class="tk-slotlabel">${a.orden}</div>
-    <div class="tk-slotsub">ab Lv. ${2+a.nr}</div>
+    <div class="tk-slotsub">max. Lv. ${2+a.nr}</div>
   </div>`;
 }
 function legendSlotHTML(item){
   const m = state.mons[item.nr];
   return `<div class="tk-slot">
-    <div class="tk-circle tk-slotimg-empty"><img class="tk-silhouette" src="${IMG(item.nr)}" loading="lazy" onerror="this.style.visibility='hidden'"></div>
+    <div class="tk-circle"><img class="tk-silhouette" src="${IMG(item.nr)}" loading="lazy" onerror="this.style.visibility='hidden'"></div>
     <div class="tk-slotlabel">${m.name}</div>
     <div class="tk-slotsub">${item.cond}</div>
   </div>`;
@@ -2974,7 +2979,7 @@ function renderTrainerkarte(){
           </div>
         </div>
         <div class="tk-row tk-ordenrow">
-          <div class="tk-rowlabel">Arenaorden <span class="tk-rowsub">Max-Level = 2 + Anzahl Orden</span></div>
+          <div class="tk-rowlabel">Arenaorden</div>
           <div class="tk-slots">${ARENAS.map(ordenSlotHTML).join('')}</div>
         </div>
         <div class="tk-row tk-legendrow">
@@ -2982,14 +2987,8 @@ function renderTrainerkarte(){
           <div class="tk-slots tk-slots5">${LEGEND_CHIPS.map(legendSlotHTML).join('')}</div>
         </div>
         <div class="tk-row tk-dexrow">
-          <div class="tk-rowlabel">Pokédex <span class="tk-rowsub">gefangen abhaken · Feld 100 (gold) schaltet die Mew-Quest frei</span></div>
+          <div class="tk-rowlabel">Pokédex</div>
           <div class="tk-dexgrid">${dexGridHTML()}</div>
-        </div>
-        <div class="tk-row tk-footrow">
-          <div class="tk-footbox"><b>Siegesstraße</b><span class="tk-check"></span></div>
-          <div class="tk-footbox"><b>Top 4</b><span class="tk-check"></span></div>
-          <div class="tk-footbox tk-tally"><b>Duelle S:N</b><span class="tk-line short"></span>:<span class="tk-line short"></span></div>
-          <div class="tk-footbox tk-tally"><b>Pokédollar</b><span class="tk-line short"></span></div>
         </div>
       </div>
 
@@ -3463,13 +3462,13 @@ function renderDoc(){
   </div>
 
   <div class="dchapter" id="d13"><h2>13. Digitales System (diese HTML-Datei)</h2>
-    <p>Alle Materialien sind in <b>einer</b> selbstenthaltenen HTML-Datei zusammengeführt (Reiter: Beschlüsse, Pokémon-Tabelle, Spielanleitung, Pokeshop, Trainerkarte, Arenen, Karten Normal, Karten Volvelle, Spielbrett).</p>
+    <p>Alle Materialien sind in <b>einer</b> selbstenthaltenen HTML-Datei zusammengeführt (Reiter: Beschlüsse, Pokémon-Tabelle, Spielanleitung, Pokeshop, Trainerpass, Arenen, Karten Normal, Karten Volvelle, Spielbrett, Konzept).</p>
     <ul>
       <li><b>Datenfluss:</b> Sterne/Seltenheit/Klasse/Fähigkeiten/Fundorte eines Pokémon werden zentral gepflegt und wirken automatisch auf Kartenwerte, W20-Verteilung und Fangwurf-Anzeige.</li>
       <li><b>Würfelaugen-Verteilung:</b> wird bei jeder Änderung nach den Regeln aus Kapitel 7 komplett neu berechnet (nicht nachträglich verschoben).</li>
       <li><b>JSON-Austausch:</b> ⬇ JSON exportiert den kompletten Datenstand; ⬆ JSON spielt eine Datei ein (nur die enthaltenen Felder werden verändert – idealer Weg, um Änderungen aus einem KI-Chat zu übernehmen).</li>
       <li><b>HTML-Sicherung:</b> 💾 HTML speichert diese Datei inklusive des aktuellen Datenstands; beim erneuten Öffnen gewinnt automatisch der jüngere Stand (eingebettet vs. Browser-Speicher).</li>
-      <li><b>Druck:</b> Arenen A4 quer; Spielanleitung, Kartenset, Pokeshop und Trainerkarte A4 hoch; Ausrichtung wird beim Reiterwechsel automatisch gesetzt.</li>
+      <li><b>Druck:</b> Arenen A4 quer; Spielanleitung, Kartenset, Pokeshop und Trainerpass A4 hoch; Ausrichtung wird beim Reiterwechsel automatisch gesetzt.</li>
     </ul>
     <p class="note">Für andere Rollen-Chats: Diese Datei mit dem aktuellen Datenstand ist die Single Source of Truth. Änderungsvorschläge bitte als JSON-Diff zurückgeben (siehe Beispieldatei <code>kanto-daten-beispiel.json</code>), nicht als Fließtext-Beschreibung.</p>
   </div>
@@ -3492,7 +3491,7 @@ function renderDoc(){
       <li><span class="badge ok">erledigt</span> <b>Level wilder Pokémon = Zonenlevel</b> – dafür war das Zonenlevel von Anfang an gedacht.</li>
       <li><span class="badge ok">erledigt</span> <b>Pokéflöte:</b> 8 ₽, eine pro Spieler, dauerhaft – wird nicht verbraucht.</li>
       <li><span class="badge ok">erledigt</span> <b>Top 4:</b> <s>Items dürfen zwischen den Kämpfen eingesetzt werden</s> — ersetzt am 28.07.2026 durch die Liga-Heilregel (siehe unten).</li>
-      <li><span class="badge ok">erledigt</span> <b>Kampfsystem v3 „Typ schlägt Stärke“ (28.07.2026):</b> W6-Band (1 daneben · 2–3 halb · 4–5 voll · 6 doppelt), Typvorteil ×2 / Nachteil ÷2 / ✕ mit Zwangswechsel, Angriff = 2 + (Sterne−1)÷2 + Level÷3, Angriffs-Klasse einheitlich +1. KP-Formel und alle KP-Werte unverändert (Volvelle-KP-Scheibe bleibt gültig). Kalibriert per Simulation: Konter 97–99,7 % · Starter 75 % · Zufallsteam 80 %.</li>
+      <li><span class="badge ok">erledigt</span> <b>Kampfsystem v3 „Typ schlägt Stärke“ (28.07.2026):</b> W6-Band (<s>1 daneben · 2–3 halb · 4–5 voll · 6 doppelt</s> — seit 30.07.2026 <b>1 nix · 2 halb · 3–5 voll · 6 doppelt</b>), Typvorteil ×2 / Nachteil ÷2 / ✕ mit Zwangswechsel, Angriff = 2 + (Sterne−1)÷2 + Level÷3, Angriffs-Klasse einheitlich +1. KP-Formel und alle KP-Werte unverändert (Volvelle-KP-Scheibe bleibt gültig). Kalibriert per Simulation: Konter 97–99,7 % · Starter 75 % · Zufallsteam 80 %.</li>
       <li><span class="badge ok">erledigt</span> <b>Gratis-Wechsel (28.07.2026):</b> Bei jedem neuen gegnerischen Pokémon darf kostenlos gewechselt werden – ersetzt „bleibt stehen“ vom 26.07.2026, gilt überall (Arenen, Trainer, Liga).</li>
       <li><span class="badge ok">erledigt</span> <b>Liga-Heilregel (28.07.2026):</b> Nach jedem Liga-Kampf werden alle Überlebenden voll geheilt; Besiegte bleiben draußen, nur Beleber (halbe KP) holt sie zurück. Tränke/Supertränke im Kampf erlaubt.</li>
       <li><span class="badge ok">erledigt</span> <b>Patt-Regel (28.07.2026):</b> Kann keine Seite mehr treffen (beidseitig ✕), gilt der Kampf für den Herausforderer als verloren (Rückzug).</li>
@@ -3621,6 +3620,8 @@ function renderDoc(){
       <li><b>30.07.2026 (6)</b> – <b>Rucksack als eigene Illustration.</b> Die 24-mm-Fächer (dieselbe Größe wie die echten Pokeshop-Chips) liefen bisher über den Kartenrand hinaus, weil sich der Rucksack die Seite mit dem Trainerpass teilte. Der Rucksack bekommt jetzt eine eigene Seite und wird als gezeichneter Rucksack dargestellt – Silhouette mit Henkel, zwei Trageriemen samt Schnallen, ein Hauptfach vorn (Trank/Supertrank/Beleber/Pokéflöte) und zwei bauchige Seitentaschen (Superball links, Hyper-/Meisterball rechts). Chipgröße bleibt bei 24 mm, damit Fach und Chip weiter zueinander passen. <b>Item-Icons ersetzt:</b> Trank, Supertrank und Beleber zeigen jetzt echte Item-Sprites statt gezeichneter Symbole – sowohl im Rucksack als auch auf den Pokeshop-Chips selbst, da beide dieselbe Bildquelle teilen. Eine Legenden-Z-A-Version von PokeWiki war nicht zu bekommen: Die Domain ist aus dieser Arbeitsumgebung heraus gesperrt (die Netzwerkrichtlinie blockt schon den Verbindungsaufbau, geprüft per <code>curl</code>), betrifft also nicht nur diese Anfrage, sondern jeden Pokewiki-Zugriff von hier aus. Stattdessen die offiziellen Item-Icons aus dem offenen PokeAPI-Sprite-Repository (GitHub, dieselbe Symbolik wie im Taschenmenü der Spiele).</li>
       <li><b>30.07.2026 (7)</b> – <b>Normalkarten: dunkle Flecken im Wolkeneffekt behoben, Schnittkanten vereinheitlicht.</b> Der Kontrast-Boost vom Vortag trieb einen Teil der Wolkentextur bis auf reines Schwarz bzw. Weiß (die Kurve <code>slope 2.4 / intercept −0.7</code> klippt schon ab ca. 29 % bzw. 79 % Ausgangshelligkeit) – auf der Volvelle-Karte fiel das kaum auf, weil die Wolke dort nur mit 32 % Deckkraft eingeblendet wird, auf der Normalkarte lag dieselbe Kurve aber ungebremst in voller Stärke im Hintergrundbild, wodurch harte dunkle Flecken entstanden. Jetzt bekommt auch die Normalkarte die 32-%-Deckkraft der Volvelle-Karte – exakt dieselben Einstellungen wie gewünscht. <b>Schnittkanten:</b> Bisher zeichnete jede Karte ihren eigenen gestrichelten Rahmen 0,4 mm in den 2-mm-Spalt zur Nachbarkarte hinein – zwei Karten hatten dadurch zwei leicht versetzte Linien mit Papier dazwischen, es musste zweimal geschnitten werden. Der Spalt entfällt jetzt vollständig (Karten liegen Kante an Kante), und über der ganzen 3×3-Fläche liegt ein einziges, 0,12 mm dünnes Liniengitter – jede Grenze zwischen zwei Karten ist dadurch buchstäblich dieselbe Linie, ein Schnitt reicht.</li>
       <li><b>30.07.2026 (8)</b> – <b>Normalkarten-Hintergrund 1:1 aus der Volvelle-Karte übernommen.</b> Statt eigener, nur farblos gegen die Typfarbe geblendeter CSS-Verläufe generiert <code>cardBgSVG()</code> jetzt dieselbe SVG wie <code>volFrontCardSVG()</code> – Wolkenfilter, heller Verlauf oben rechts (<code>volLite</code>) und dunkler Verlauf unten rechts (<code>volDark</code>) mit identischen Werten, nur auf 63,5×88mm statt 80×124mm skaliert und mit der jeweiligen Typfarbe direkt eingefärbt. Die SVG wird je Typfarbe gecacht (nicht je Pokémon), damit gleichfarbige Karten dieselbe Daten-URI – und damit denselben decodierten Bitmap-Cache im Browser – teilen. <b>Nachgebessert am selben Tag:</b> Gleiche Parameter hießen noch nicht gleiches Aussehen – die Normalkarte wirkte deutlich ruhiger. Nachgemessen (Rauheit = mittlere Helligkeitsdifferenz benachbarter Pixel bei gleicher mm-Auflösung, Karteninhalt zum Messen ausgeblendet): Normalkarte 0,36 gegenüber Volvelle 0,74 – also nur die halbe Unruhe. Zwei Ursachen: (1) Die <code>&lt;g clip-path&gt;</code>-Gruppe der Volvelle ist nicht bloß Dekoration, sondern erzeugt eine <b>isolierte Gruppe</b> – dadurch blendet das Soft-Light des Wolken-Rechtecks nicht gegen die Typfarbe, sondern die Gruppe wird als Ganzes darübergelegt, was den Kontrast verdoppelt (0,36 → 0,71). (2) <code>baseFrequency</code> zählt in Nutzereinheiten, nicht in Millimetern: Die Volvelle bildet 80 Einheiten auf 70 mm ab, ihre Wolken sind physisch 17,5 mm groß; auf der Normalkarte entspricht 1 Einheit genau 1 mm, weshalb es dort 0,0571 statt 0,05 braucht. Danach stimmen beide Karten auf 1–3 % überein (Rauheit 0,748 zu 0,740, Streuung 21,0 zu 21,1).</li>
+      <li><b>30.07.2026 (9)</b> – <b>Trainerpass aufgeräumt und Chips vergrößert.</b> Die Fußzeile (Siegesstraße, Top 4, Duelle S:N, Pokédollar) ist entfallen – all das wird ohnehin nebenbei mitgezählt und stand nur als Platzfüller unter dem Pokédex. Ebenso entfallen die erklärenden Zusätze hinter „Arenaorden“ und „Pokédex“. Orden- und Legendären-Chips wachsen von 13 auf <b>17 mm</b> (Obergrenze wäre 20,5 mm: acht Ordenfelder à Kreis + 3 mm müssen in die 188 mm Innenbreite der Karte passen); Felder und Chips teilen sich weiterhin dieselbe Variable <code>--tk-circle</code>, ein ausgeschnittener Chip passt also nach wie vor exakt auf sein Feld. Der farbige Rand der Chips beginnt jetzt bei 70 % statt 44 % des Radius – das Icon füllt 80 % der Breite, seine Ecken reichen bis 57 % des Radius, die Farbe bleibt damit außerhalb des Icons. Nebenbei drei stille Kaskadenfehler behoben: Der v2-Block von 27.07. stand <i>vor</i> dem älteren Trainerpass-Block und wurde von diesem bei gleicher Spezifität überschrieben, wodurch der Randverlauf der leeren Felder wirkungslos war (die ebenfalls verdeckte Sonderformatierung des Chipbogens ist ersatzlos gestrichen – alle drei Blätter sehen jetzt gleich aus); außerdem setzte der <code>@media print</code>-Block <code>page-break-after:avoid</code> auf <code>.tk-page</code> und hob damit das <code>always</code> für den Seitenumbruch zwischen Pass, Rucksack und Chipbogen wieder auf. Reiter heißt jetzt überall „Trainerpass“ (hieß in der Kopfzeile noch „Trainerkarte“), und die Ordenfelder tragen „max. Lv. X“ statt „ab Lv. X“ – der Orden hebt die Obergrenze, er schaltet kein Startlevel frei.</li>
+      <li><b>30.07.2026 (10)</b> – <b>Speicher-Hinweis in der Kopfzeile war unsichtbar.</b> Zwei verschiedene Elemente teilten sich die Klasse <code>.savehint</code>: der Dauerhinweis „Änderungen werden automatisch lokal gespeichert“ (wird nach jedem Speichern zu „Gespeichert · Uhrzeit“) und die Kurzmeldung nach „💾 HTML“, die per JavaScript ein- und ausgeblendet wird und deshalb <code>opacity:0</code> als Ausgangswert braucht. Dieses <code>opacity:0</code> galt für beide – der Dauerhinweis war seit jeher unsichtbar und damit auch die einzige Rückmeldung, dass Änderungen an der Pokémon-Tabelle tatsächlich ankommen. Die Kurzmeldung heißt jetzt <code>.savetoast</code> / <code>#saveToast</code>; nebenbei sind die beiden nur durch Groß-/Kleinschreibung unterschiedenen IDs <code>saveHint</code> und <code>savehint</code> aufgelöst.</li>
     </ul>
   </div>`;
   groupDoneItemsInChapter14();
