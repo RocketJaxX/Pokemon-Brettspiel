@@ -34,18 +34,42 @@ nav.topnav .savehint{font-size:11px; color:#b0a68f; font-weight:700; padding:0 1
 .page{display:none; padding:14px;}
 .page.active{display:block;}
 
+/* ===== Reiter-Zoom =====
+   Bewusst "zoom" und nicht "transform:scale": zoom skaliert das LAYOUT mit, d.h. Umbrüche,
+   Scrollbereiche und Klickflächen stimmen weiter. Ein transform:scale würde den Inhalt nur
+   optisch dehnen, die Seite behielte ihre alte Kastengröße und der Inhalt liefe unter die
+   Nachbarelemente. Der Zoom sitzt auf .page – die Kopfzeile liegt außerhalb und bleibt
+   deshalb in Originalgröße, anders als beim Browser-Zoom.
+   --zf trägt denselben Faktor als Zahl; wer mit Viewport-Einheiten rechnet (100vh), muss
+   durch --zf teilen, weil vh von der Skalierung nicht erfasst wird und der Bereich sonst
+   um genau den Zoomfaktor zu hoch würde. */
+.zoombar{position:fixed; right:14px; bottom:14px; z-index:200; display:flex; align-items:center; gap:2px;
+  background:var(--ink); color:#e8e2d6; border-radius:999px; padding:3px; box-shadow:0 3px 12px rgba(0,0,0,.3);
+  opacity:.42; transition:opacity .15s;}
+.zoombar:hover{opacity:1;}
+.zoombar button{background:transparent; color:#e8e2d6; font-size:15px; font-weight:700; line-height:1;
+  width:26px; height:26px; border-radius:50%;}
+.zoombar button:hover{background:rgba(255,255,255,.14);}
+.zoombar button:disabled{opacity:.3; cursor:default; background:transparent;}
+.zoombar .zval{font-family:'Fredoka',sans-serif; font-size:12px; font-weight:600; min-width:46px; height:26px;
+  border-radius:13px; padding:0 4px;}
+
 @media print{
   nav.topnav{display:none;}
-  .page{padding:0;}
+  .page{padding:0; zoom:1 !important;}   /* Ausdruck immer 1:1 – der Bildschirmzoom darf Papiermaße nicht verändern */
   body{background:#fff;}
   .noprint{display:none !important;}
+  .zoombar{display:none !important;}
 }
 
 /* ===== Home: Pokémon-Tabelle ===== */
 .home-toolbar{margin-bottom:10px;}
 .home-toolbar h1{font-size:20px; margin-bottom:2px;}
 .home-toolbar .hint{font-size:12.5px; color:#5c5344; font-weight:700; max-width:900px;}
-.hometable-wrap{overflow:auto; max-height:calc(100vh - 140px); border:1px solid var(--line);
+/* Durch --zf geteilt, weil vh vom Reiter-Zoom nicht erfasst wird: ohne die Teilung wäre der
+   Scrollbereich bei 150 % genau 1,5-mal so hoch wie das Fenster und der untere Rand der
+   Tabelle läge unerreichbar unterhalb des sichtbaren Bereichs. */
+.hometable-wrap{overflow:auto; max-height:calc((100vh - 140px) / var(--zf, 1)); border:1px solid var(--line);
   border-radius:8px; background:#fff; scrollbar-color:#a89a7c #efe8d6; scrollbar-width:auto;}
 .hometable-wrap::-webkit-scrollbar{width:14px; height:14px;}
 .hometable-wrap::-webkit-scrollbar-track{background:#efe8d6;}
@@ -977,6 +1001,11 @@ table.kztable tr.hi td{background:#fdf3d4; font-weight:800;}
 <section class="page" id="page-board"></section>
 <section class="page" id="page-konzept"></section>
 </main>
+<div class="zoombar noprint" id="zoombar" hidden>
+  <button type="button" id="zoomOut" title="Verkleinern (Strg + −)">−</button>
+  <button type="button" class="zval" id="zoomVal" title="Auf 100 % zurücksetzen (Strg + 0)">100 %</button>
+  <button type="button" id="zoomIn" title="Vergrößern (Strg + +)">+</button>
+</div>
 <script>
 
 const TYP = { Normal:'#A8A878', Feuer:'#F08030', Wasser:'#6890F0', Pflanze:'#78C850',
@@ -3485,6 +3514,7 @@ function renderDoc(){
       <li><b>29.07.2026</b> – Beschlüsse-Reiter bereinigt: verwaistes Rückseite-Fragment zwischen Kapitel 11/12 eingegliedert, mehrere offene Punkte entschieden (Startkapital 5 ₽, Meisterball-Quest bei Prof. Eich, Arena-Teams, Siege bei Teamwechsel, Zugreihenfolge/Showmatch für 3 Spieler), neue Kategorie „Mögliche Erweiterungen", erledigte Punkte in Kapitel 14 je Kategorie einklappbar. Pokémon-Tabelle: Klasse und Typ 1/2 als editierbare Dropdown-Spalten. Spielanleitung druckt jetzt als fertige A4-quer-Broschüre (Bildschirmansicht bleibt unverändert die normale Seitenfolge).</li>
       <li><b>30.07.2026</b> – <b>Nebentyp entfällt, Geländefähigkeiten aus den VM-Daten.</b> Das <b>18-Typen-System bleibt vollständig</b> erhalten, samt Typtabelle und Immunitäten („✕"); jedes Pokémon trägt aber nur noch seinen <b>Haupttyp</b>. Damit gibt es genau eine Nachschlagestelle im Kampf, ohne die vertraute Tabelle zu vereinfachen. Als Haupttyp kommen 15 der 18 Typen vor (Stahl, Unlicht und Flug nie an erster Stelle): Wasser 29 · Normal 22 · Gift 14 · Pflanze, Feuer und Käfer je 12 · Elektro und Gestein je 9 · Boden und Psycho je 8 · Kampf 7 · Geist und Drache je 3 · Fee 2 · Eis 1. Weil damit die alte Ableitung der Geländefähigkeiten über den Nebentyp wegfiel, stehen sie jetzt fest je Pokémon aus den <b>Original-VM-Daten der ersten Generation</b> (PokeAPI-Rohdaten, Versionsgruppe Rot/Blau, Lernmethode Maschine): VM01 Zerschneider 27 · VM02 Fliegen 11 · VM03 Surfer 35 · VM04 Stärke → im Spiel Zertrümmerer 27. Auffälligster Unterschied zur bisherigen Annahme: <b>Glurak lernt in Generation 1 kein Fliegen</b> – die Typ-Ableitung hatte 19 Flieger ergeben, tatsächlich sind es 11. Fliegen ist damit deutlich seltener und als Abkürzung wertvoller. Zwischenstand: Für einen Tag lief das Spiel auf den sieben Energieklassen des Sammelkartenspiels; das wurde am selben Tag zugunsten des 18-Typen-Systems zurückgenommen, die VM-Zuordnung blieb.</li>
       <li><b>29.07.2026 (2)</b> – Broschüren-Falzlinie ohne Schriftzug, nur noch ein sehr feiner gestrichelter Strich. Dabei entdeckt und behoben: Ein zweites, fest codiertes <code>@page{margin:8mm}</code> in der Volvelle-CSS wirkte unbemerkt auf <b>jeden</b> Ausdruck der Datei (nicht nur Volvelle), weil sich <code>@page</code>-Regeln nicht auf einen Reiter beschränken lassen. Randlos geplante Drucke liefen dadurch je Blatt geringfügig über die Seite hinaus und erzeugten eine fast leere Folgeseite – u. a. beim Kartenset (68 statt 34 Seiten) und beim neuen Broschürenheft. Rand läuft jetzt über denselben dynamischen Kanal wie die Seitenausrichtung; nur Volvelle bekommt weiterhin 8mm, alle anderen 0.</li>
+      <li><b>30.07.2026 (2)</b> – <b>Eigener Zoom je Reiter.</b> Der Browser-Zoom vergrößerte bisher auch die Kopfzeile und nahm damit genau den Platz weg, den man beim Heranzoomen gewinnen will. Jetzt sitzt der Zoom auf der Seite selbst, die Navigation bleibt in Originalgröße. Bedienung wie gewohnt über <b>Strg + / Strg −</b>, <b>Strg + Mausrad</b> und <b>Strg + 0</b> zum Zurücksetzen – diese Griffe werden abgefangen, bevor der Browser sie bekommt – oder über die kleine Leiste unten rechts. Jeder Reiter merkt sich seinen eigenen Faktor (13 Stufen von 50 % bis 300 %), gespeichert in einem eigenen localStorage-Schlüssel und daher <b>nicht</b> Teil des Spielstands: Ein exportiertes JSON oder eine weitergegebene HTML trägt die Zoomeinstellung dieses Geräts nicht mit. Umgesetzt mit CSS <code>zoom</code> statt <code>transform:scale</code>, damit das Layout wirklich mitwächst – Umbrüche, Scrollbereiche und Klickflächen stimmen weiter. Der Ausdruck bleibt in jedem Fall 1:1, der Bildschirmzoom kann Papiermaße also nicht verstellen. Ausgenommen ist das <b>Spielbrett</b>, das im eingebetteten Editor bereits einen eigenen Zoom mitbringt.</li>
     </ul>
   </div>`;
   groupDoneItemsInChapter14();
@@ -4669,11 +4699,100 @@ function printPage(orientation){
   window.print();
 }
 
+/* ===================== Reiter-Zoom =====================
+   Der Browser-Zoom vergrößert die ganze Seite mitsamt Kopfzeile und frisst dadurch Platz,
+   den man beim Lesen der Karten oder der Tabelle eigentlich gewinnen will. Deshalb ein
+   eigener Zoom, der ausschließlich auf dem .page-Element sitzt: die Navigation liegt
+   außerhalb und bleibt in Originalgröße. Jeder Reiter merkt sich seinen eigenen Faktor –
+   Karten will man anders betrachten als die Tabelle.
+   Der Faktor liegt in einem EIGENEN localStorage-Schlüssel, nicht im Spielstand: Zoom ist
+   eine Ansichtseinstellung dieses Geräts und hätte in einem exportierten JSON oder in einer
+   weitergegebenen HTML nichts zu suchen. */
+const ZOOM_KEY = 'kanto-spielsystem-zoom';
+const ZOOM_STUFEN = [0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.1, 1.25, 1.5, 1.75, 2, 2.5, 3];
+/* Das Spielbrett bringt im eingebetteten Editor seinen eigenen Zoom mit; ein zweiter davor
+   geschalteter Zoom würde sich mit dessen Koordinatenrechnung beißen. */
+const ZOOM_AUS = new Set(['board']);
+let zoomState = {};
+try{ zoomState = JSON.parse(localStorage.getItem(ZOOM_KEY) || '{}') || {}; }catch(e){ zoomState = {}; }
+
+const zoomFaktor = name => (ZOOM_AUS.has(name) ? 1 : (zoomState[name] || 1));
+
+function setzeZoom(name, f){
+  f = Math.min(ZOOM_STUFEN[ZOOM_STUFEN.length-1], Math.max(ZOOM_STUFEN[0], f));
+  zoomState[name] = f;
+  try{ localStorage.setItem(ZOOM_KEY, JSON.stringify(zoomState)); }catch(e){}
+  wendeZoomAn(name);
+}
+
+function wendeZoomAn(name){
+  const seite = document.getElementById('page-'+name);
+  const bar   = document.getElementById('zoombar');
+  if(!seite || !bar) return;
+  const f = zoomFaktor(name);
+  if(ZOOM_AUS.has(name)){ bar.hidden = true; seite.style.zoom = ''; seite.style.removeProperty('--zf'); return; }
+  bar.hidden = false;
+  seite.style.zoom = f;
+  seite.style.setProperty('--zf', f);          // für Bereiche, die mit vh rechnen
+  document.getElementById('zoomVal').textContent = Math.round(f*100) + ' %';
+  document.getElementById('zoomOut').disabled = f <= ZOOM_STUFEN[0];
+  document.getElementById('zoomIn').disabled  = f >= ZOOM_STUFEN[ZOOM_STUFEN.length-1];
+}
+
+/* Springt zur nächsten Stufe in Richtung richtung (+1/−1). Über die Stufenliste statt über
+   eine feste Schrittweite, damit die Sprünge unten fein und oben grob sind. */
+function zoomSchritt(richtung){
+  const name = aktiverReiter();
+  if(!name || ZOOM_AUS.has(name)) return;
+  const f = zoomFaktor(name);
+  const i = ZOOM_STUFEN.findIndex(s => richtung > 0 ? s > f + 1e-6 : s < f - 1e-6);
+  if(richtung > 0) setzeZoom(name, i === -1 ? ZOOM_STUFEN[ZOOM_STUFEN.length-1] : ZOOM_STUFEN[i]);
+  else{
+    const kleiner = ZOOM_STUFEN.filter(s => s < f - 1e-6);
+    setzeZoom(name, kleiner.length ? kleiner[kleiner.length-1] : ZOOM_STUFEN[0]);
+  }
+}
+
+function aktiverReiter(){
+  const a = document.querySelector('.page.active');
+  return a ? a.id.replace('page-','') : null;
+}
+
+function initZoom(){
+  document.getElementById('zoomIn').addEventListener('click', ()=> zoomSchritt(+1));
+  document.getElementById('zoomOut').addEventListener('click', ()=> zoomSchritt(-1));
+  document.getElementById('zoomVal').addEventListener('click', ()=>{
+    const name = aktiverReiter(); if(name) setzeZoom(name, 1);
+  });
+
+  /* Strg/Cmd + Plus/Minus/0 abfangen: das ist der Griff, zu dem man von selbst greift, und
+     genau der würde sonst den Browser-Zoom auslösen und die Kopfzeile mitvergrößern.
+     Auf ausgenommenen Reitern bleibt die Tastenkombination bewusst beim Browser. */
+  document.addEventListener('keydown', e=>{
+    if(!(e.ctrlKey || e.metaKey) || e.altKey) return;
+    const name = aktiverReiter();
+    if(!name || ZOOM_AUS.has(name)) return;
+    if(e.key === '+' || e.key === '=' || e.code === 'NumpadAdd'){ e.preventDefault(); zoomSchritt(+1); }
+    else if(e.key === '-' || e.key === '_' || e.code === 'NumpadSubtract'){ e.preventDefault(); zoomSchritt(-1); }
+    else if(e.key === '0'){ e.preventDefault(); setzeZoom(name, 1); }
+  });
+
+  /* Strg + Mausrad ebenso. passive:false, weil preventDefault sonst wirkungslos bliebe. */
+  document.addEventListener('wheel', e=>{
+    if(!(e.ctrlKey || e.metaKey)) return;
+    const name = aktiverReiter();
+    if(!name || ZOOM_AUS.has(name)) return;
+    e.preventDefault();
+    zoomSchritt(e.deltaY < 0 ? +1 : -1);
+  }, {passive:false});
+}
+
 function activatePage(name){
   document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active', p.id === 'page-'+name));
   document.querySelectorAll('nav .tab').forEach(b=>b.classList.toggle('active', b.dataset.page === name));
   RENDERERS[name]();
   setPrintOrientation(PAGE_ORIENTATION[name] || 'portrait', PAGE_MARGIN[name]);
+  wendeZoomAn(name);
   try{ localStorage.setItem('kanto-spielsystem-lastpage', name); }catch(e){}
 }
 
@@ -4684,6 +4803,7 @@ window.addEventListener('beforeprint', ()=>{
 
 document.addEventListener('DOMContentLoaded', ()=>{
   initGlobalState();
+  initZoom();
   document.querySelectorAll('nav .tab[data-page]').forEach(btn=>{
     btn.addEventListener('click', ()=> activatePage(btn.dataset.page));
   });
