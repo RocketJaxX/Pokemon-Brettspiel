@@ -112,7 +112,7 @@ table.hometable select.sig-sel, table.hometable select.typ-sel{font-size:10.5px;
 table.hometable input[type=checkbox]{width:14px; height:14px; cursor:pointer;}
 
 
-/* ===== Spielleiter-Karte ===== */
+/* ===== Spielanleitung: Bildschirmansicht der Gebietstabellen ===== */
 .gm-toolbar h1{font-size:20px; margin-bottom:2px;}
 .gm-toolbar .hint{font-size:12.5px; color:#5c5344; font-weight:700; max-width:900px; margin-bottom:8px;}
 .gm-toolbar button{background:var(--rot); color:#fff; padding:8px 16px; font-size:13px;}
@@ -168,24 +168,12 @@ table.typematrix .rowlab{color:#fff; font-weight:800; font-size:7.5px; padding:0
 @media (max-width:1000px){
   #page-gm .gm-screen .starhead, #page-gm .gm-screen .arearow{grid-template-columns:110px 1fr 1fr 1fr 1fr;}
 }
-.gm-print{display:none;}
-
-/* ===== Druckvorlage GM: A4 quer -> 2x A5 (an der kurzen Kante gespiegelt duplex) ===== */
-.gm-print .sheet{width:297mm; height:209.9mm; margin:0 auto 14px; background:#fffdf6; position:relative;
-  box-shadow:0 2px 12px rgba(0,0,0,.15); display:flex;}
-.gm-print .sheetlab{position:absolute; bottom:1.2mm; right:3mm; font-size:6.5pt; color:#b0a68f; font-weight:800; z-index:2;}
-.gm-print .cut{position:absolute; left:148.5mm; top:0; bottom:0; border-left:0.35mm dashed #9a8f78; transform:translateX(-50%);}
-.gm-print .cut span{position:absolute; top:1mm; left:50%; transform:translateX(-50%); font-size:7.5pt;
-  color:#9a8f78; background:#fffdf6; padding:0 1px;}
-.gm-print .a5{width:148.5mm; height:209.9mm; position:relative; overflow:hidden;}
-.gm-print .a5in{padding:5mm 6mm 3mm;}
-
 /* ===== Druckvorlage Spielanleitung: A4 quer -> 2x A5, gefalzt (Beschluss 29.07.2026) =====
-   Eigener Namensraum (nicht .gm-print!): Die echten Handbuch-Klassen (u. a. table.typematrix,
-   .starhead, .arearow) tauchen auch in den (toten, nie aufgerufenen) .gm-print-Kartenregeln
-   auf – unter .gm-print gerendert, erbten sie versehentlich deren Schriftgrößen/-umbruchregeln
-   und wichen dadurch von der Höhenmessung (hbMeasure, misst nur unter .hb) ab, was Inhalte auf
-   die nächste Blattseite überlaufen ließ. */
+   Eigener Namensraum .hb-print: Die echten Handbuch-Klassen (u. a. table.typematrix, .starhead,
+   .arearow) tauchten frueher auch im alten .gm-print-Namensraum auf und erbten dort versehentlich
+   dessen Schriftgroessen und Umbruchregeln – sie wichen dadurch von der Hoehenmessung (hbMeasure,
+   misst nur unter .hb) ab und liefen auf die naechste Blattseite ueber. Der .gm-print-Block ist
+   am 30.07.2026 samt seiner nie aufgerufenen Aufbaufunktionen entfallen. */
 .hb-print{display:none;}
 .hb-print .sheet{width:297mm; height:209.9mm; margin:0 auto 14px; background:#fffdf6; position:relative;
   box-shadow:0 2px 12px rgba(0,0,0,.15); display:flex; overflow:hidden;}
@@ -197,57 +185,6 @@ table.typematrix .rowlab{color:#fff; font-weight:800; font-size:7.5px; padding:0
    Chromiums Druck-Paginierung bemisst Seitenumbrüche bei transformierten Boxen an der
    UNSKALIERTEN Größe, "zoom" skaliert dagegen auch das Layout. */
 .hb-print .hb-scalewrap{zoom:0.707143;}
-.gm-print h1{font-family:'Fredoka',sans-serif; font-size:13px; margin-bottom:2mm;}
-.gm-print .sub{font-size:8px; color:#8a7f6d; font-weight:800; margin:-1mm 0 2mm;}
-
-.gm-print table.typematrix{border-collapse:collapse; margin:0 auto; font-size:5.4px;}
-.gm-print table.typematrix th, .gm-print table.typematrix td{border:0.5px solid var(--line); text-align:center; vertical-align:middle;}
-.gm-print table.typematrix td{width:6.6mm; height:6.6mm; background:#f6f1e4;}
-.gm-print table.typematrix .corner{border:none; background:transparent; font-size:5.8px; color:#8a7f6d;
-  text-align:right; padding-right:2px; font-weight:800; width:15mm; line-height:1.4;}
-.gm-print table.typematrix .vert{writing-mode:vertical-rl; transform:rotate(180deg); color:#fff; font-weight:800;
-  font-size:5.4px; padding:3px 1px; border-radius:2px; margin:0.5px auto; letter-spacing:.3px;
-  min-height:12.5mm; display:flex; align-items:center; justify-content:center;}
-.gm-print table.typematrix .rowlab{color:#fff; font-weight:800; font-size:5.4px; padding:2.4px 3px; border-radius:2px;
-  margin:0.5px; text-align:left; letter-spacing:.3px;}
-.gm-print .c{width:4.4mm; height:4.4mm; font-size:9.5px;}
-.gm-print .legend{font-size:8px; margin-top:2.5mm;}
-.gm-print .legend .c{width:3.6mm; height:3.6mm; font-size:8px; margin-right:2px;}
-.gm-print .ruleul{font-size:8px; margin-left:3mm; line-height:1.5;}
-
-
-.gm-print .starhead{display:grid; grid-template-columns:17mm 31mm 31mm 31mm 14mm; gap:1mm;
-  font-family:'Fredoka',sans-serif; font-size:8px; margin-bottom:1mm;}
-.gm-print .starhead > div{background:var(--ink); color:var(--gold); border-radius:1.4mm; text-align:center;
-  padding:0.6mm 0; letter-spacing:0.3px;}
-.gm-print .starhead .sh0{color:#fff;}
-.gm-print .arearow{display:grid; grid-template-columns:17mm 31mm 31mm 31mm 14mm; gap:1mm;
-  margin-bottom:1mm; page-break-inside:avoid;}
-.gm-print .areahead{background:var(--tc); color:#fff; border-radius:1.6mm; padding:1mm 1.4mm;
-  display:flex; flex-direction:column; justify-content:center; gap:0.3mm; text-shadow:0 1px 2px rgba(0,0,0,.35);}
-.gm-print .aname{font-family:'Fredoka',sans-serif; font-size:7.8px; line-height:1.1;}
-.gm-print .terr{font-size:6.2px; font-weight:800;}
-.gm-print .niete{font-size:6.2px; font-weight:800; background:rgba(0,0,0,.3); border-radius:1mm;
-  padding:0.2mm 1mm; align-self:flex-start; white-space:nowrap;}
-.gm-print .scell{background:#fbf8ef; border:0.5px solid var(--line); border-radius:1.6mm;
-  display:grid; grid-template-columns:repeat(2,1fr); gap:0.5mm; align-items:start; justify-items:center;
-  align-content:center; padding:0.7mm 0.3mm;}
-.gm-print .dash{color:#cfc6b0; font-weight:800; font-size:8px; grid-column:1/-1;}
-.gm-print .mon{width:100%; text-align:center; display:flex; flex-direction:column; align-items:center;}
-.gm-print .mon img{width:5.2mm; height:5.2mm; object-fit:contain;}
-.gm-print .mon .rng{font-family:'Fredoka',sans-serif; font-size:7.2px; background:var(--ink); color:#fff;
-  border-radius:1mm; padding:0 1.4mm; margin-bottom:0.2mm; white-space:nowrap;}
-.gm-print .mon .mname{font-size:6.1px; font-weight:800; line-height:1.05; white-space:nowrap; max-width:none;}
-.gm-print .mon .meta{font-size:5.6px; font-weight:800; color:#8a7f6d;}
-.gm-print .mon .meta .kl{color:#111; font-size:6.4px;}
-
-.gm-print .qhead{font-size:8px; font-weight:800; color:#5c5344; margin:1mm 0 2mm; line-height:1.4;}
-.gm-print .questgrid{display:grid; grid-template-columns:1fr 1fr; gap:1.6mm;}
-.gm-print .questrow{display:flex; gap:1.6mm; align-items:center; border:0.5px solid var(--line);
-  border-radius:1.6mm; padding:1.2mm 1.6mm; background:#fbf8ef; font-size:8.4px;}
-.gm-print .questrow img{width:8.5mm; height:8.5mm; object-fit:contain;}
-.gm-print .questrow .qtxt{color:#5c5344; font-weight:700; font-size:7.2px; line-height:1.3;}
-
 @media print{
   #page-gm .gm-screen{display:none !important;}
   #page-gm .hb-print{display:block !important;}
@@ -670,51 +607,49 @@ table.typematrix .rowlab{color:#fff; font-weight:800; font-size:7.5px; padding:0
 .ar-foot{margin-top:auto; font-size:2.3mm; font-weight:700; color:#6b5f4c; padding-top:1mm;}
 @media print{ .ar-page{box-shadow:none; margin:0;} }
 
-/* ===== Trainerpass v2: ganze Seite mit Rucksack (27.07.2026) =====
-   Die Seiten- und Chip-Regeln dieses Blocks standen frueher hier und wurden dadurch vom
-   spaeteren Trainerpass-Block (gleiche Spezifitaet, weiter unten im Stylesheet) still
-   ueberschrieben – .tk-page2 und der Farbverlauf der leeren Kreise waren wirkungslos.
-   Sie stehen jetzt am Ende des Trainerpass-Blocks; hier bleibt nur der Rucksack. */
-/* ===== Rucksack als eigene Illustration (30.07.2026) =====
-   Vorher teilte sich der Rucksack die Seite mit dem Trainerpass; dabei liefen die 24mm-Chips
-   (dieselbe Größe wie die echten Chips im Pokeshop – die müssen ja genau in die Fächer passen)
-   in drei Spalten nebeneinander über den Kartenrand hinaus. Jetzt bekommt der Rucksack eine
-   eigene Seite mit reduziertem Seitenrand (200mm statt 196mm nutzbare Breite) und wird als
-   gezeichneter Rucksack dargestellt: eine Silhouette liegt hinter drei echten Taschen-Boxen
-   (Hauptfach + zwei Seitentaschen), Trageriemen und Schnallen sind rein dekorativ obendrauf.
-   Rechnung für die Breite: Seitentasche 56mm (2 Spalten à 24mm) + 3mm Lücke + Hauptfach 82mm
-   (3 Spalten à 24mm) + 3mm Lücke + Seitentasche 56mm = genau 200mm. */
-.tk-rucksackpage{padding-left:5mm; padding-right:5mm;}
-.bp-title{font-family:'Fredoka'; font-weight:700; font-size:5mm; text-align:center; margin-top:2mm;}
-.bp-sub{font-family:'Nunito'; font-weight:600; font-size:2.6mm; color:#7a6d57; text-align:center; margin-bottom:4mm;}
-.bp-frame{position:relative; width:200mm; margin:0 auto;}
-.bp-silhouette{position:absolute; left:2mm; right:2mm; top:14mm; bottom:0; z-index:0;
-  background:linear-gradient(165deg,#e8c583,#c99a54); border:1.3mm solid #1a120a;
-  border-radius:26mm 26mm 14mm 14mm; box-shadow:inset 0 0 0 2.2mm rgba(255,255,255,.16);}
-.bp-handle{position:absolute; left:50%; top:0; transform:translateX(-50%); z-index:1;
-  width:34mm; height:16mm; border:3mm solid #7a5a34; border-bottom:none; border-radius:17mm 17mm 0 0;}
-.bp-handle::before{content:''; position:absolute; inset:-1.3mm; border-radius:inherit;
-  border:1.3mm solid #1a120a; border-bottom:none; pointer-events:none;}
-.bp-strap{position:absolute; top:9mm; width:9mm; height:46mm; z-index:1; background:#8a6338;
-  border:0.9mm solid #1a120a; border-radius:2mm;}
-.bp-strap-l{left:71mm;} .bp-strap-r{right:71mm;}
-.bp-buckle{position:absolute; top:38mm; width:13mm; height:8mm; z-index:2; background:#e3b52a;
-  border:0.9mm solid #1a120a; border-radius:1.4mm; box-shadow:inset 0 0 0 1.6mm rgba(255,255,255,.25);}
-.bp-buckle-l{left:69mm;} .bp-buckle-r{right:69mm;}
-.bp-body{position:relative; z-index:1; display:flex; justify-content:center; gap:3mm; padding-top:52mm;}
-.bp-pocket, .bp-main{border:1mm solid #1a120a; padding:3mm; box-sizing:border-box;
-  box-shadow:inset 0 0 0 1.6mm rgba(255,255,255,.16);}
-.bp-pocket{width:56mm; margin-top:26mm; border-radius:8mm 8mm 20mm 20mm/6mm 6mm 26mm 26mm;
-  background:linear-gradient(165deg,#d7a45a,#b2793a);}
-.bp-main{width:82mm; border-radius:9mm; background:linear-gradient(165deg,#f0d9a8,#d4ab68);}
-.bp-label{font-size:2.7mm; font-weight:800; color:#4a3a1f; text-align:center; margin-bottom:1.5mm;}
+/* ===== Rucksack (neu gezeichnet 30.07.2026) =====
+   Sitzt jetzt wieder mit auf der Trainerpass-Seite, direkt unter der Passkarte. Henkel,
+   Trageriemen, Schnallen an den Seiten und die Ueberschrift darueber sind entfallen; uebrig
+   bleibt eine ruhige Tasche: ein Koerper mit Deckelklappe und Schnalle, darin drei Faecher.
+   Statt der frueheren drei 1mm-Rahmen tragen die Faecher nur noch eine feine Naht (0,3mm
+   gestrichelt) und eigene Farbflaechen – das ist die Haelfte der Linien und liest sich ruhiger.
+
+   Breitenrechnung, damit die 24mm-Chipfelder exakt hineinpassen (Innenbreite der Seite 196mm):
+     Tasche       196   − Rahmen 1,2 − Polster 2×2 = 190,8mm nutzbar
+     Seitentasche  52,5 = 2×24mm + 1,5mm Luecke + 2×1,5mm Polster
+     Hauptfach     78,0 = 3×24mm + 2×1,5mm Luecke + 2×1,5mm Polster
+     52,5 + 3 + 78 + 3 + 52,5 = 189mm  ->  1,8mm Luft, passt
+   Hoehe: Klappe 9mm + Hauptfach (4 Reihen à 24mm) ~118mm; zusammen mit der Passkarte
+   (~112mm) bleiben von den 281mm nutzbarer Seitenhoehe rund 40mm Reserve. */
+.bp-frame{width:100%; box-sizing:border-box; margin:4mm auto 0; padding:2mm;
+  background:linear-gradient(165deg,#e8c583,#c99a54);
+  border:0.6mm solid #1a120a; border-radius:9mm 9mm 5mm 5mm;
+  box-shadow:inset 0 0 0 0.9mm rgba(255,255,255,.20);}
+/* Deckelklappe mit zwei Schnallen: ersetzt den frueheren Henkel, schliesst die Tasche
+   nach oben ab und kostet nur 9mm Hoehe. */
+.bp-lid{height:9mm; margin-bottom:2mm; display:flex; align-items:center; justify-content:center;
+  gap:70mm; border-bottom:0.3mm dashed rgba(26,18,10,.42);}
+.bp-buckle{width:16mm; height:5mm; background:#e3b52a; border:0.4mm solid #1a120a;
+  border-radius:1.2mm; box-shadow:inset 0 0 0 0.9mm rgba(255,255,255,.30);}
+/* Alle drei Faecher gleich hoch (align-items:stretch ist die Vorgabe): Das Hauptfach gibt mit
+   seinen vier Reihen die Hoehe vor, die Seitentaschen ziehen mit – so bleibt unten in der
+   Tasche keine tote Flaeche stehen. Innerhalb eines Fachs: Beschriftung oben, Felder mittig,
+   Legende unten. */
+.bp-body{display:flex; justify-content:center; gap:3mm;}
+.bp-pocket, .bp-main{box-sizing:border-box; padding:2mm 1.5mm; border-radius:4mm;
+  box-shadow:inset 0 0 0 0.3mm rgba(26,18,10,.35);
+  display:flex; flex-direction:column;}
+.bp-pocket{width:52.5mm; border-radius:4mm 4mm 7mm 7mm;
+  background:linear-gradient(165deg,#dcae68,#bd8442);}
+.bp-main{width:78mm; background:linear-gradient(165deg,#f4e0b6,#dbb677);}
+.bp-label{font-size:2.6mm; font-weight:800; color:#4a3a1f; text-align:center; margin-bottom:1.5mm;}
 .bp-legend{font-size:2.1mm; color:#5c4526; font-weight:700; text-align:center; margin-top:1.5mm;}
-.bp-grid{display:grid; gap:2mm; justify-content:center;}
+.bp-grid{display:grid; gap:1.5mm; justify-content:center; margin:auto 0;}
 .bp-grid2{grid-template-columns:repeat(2, 24mm);}
 .bp-grid3{grid-template-columns:repeat(3, 24mm);}
-.bp-slot{width:24mm; height:24mm; border-radius:50%; border:0.45mm dashed #6b4f28;
-  background:rgba(255,253,247,.88); display:flex; align-items:center; justify-content:center; overflow:hidden;}
-.bp-ghost{width:74%; height:74%; opacity:.28; display:flex; align-items:center; justify-content:center;}
+.bp-slot{width:24mm; height:24mm; border-radius:50%; border:0.4mm dashed #6b4f28;
+  background:rgba(255,253,247,.9); display:flex; align-items:center; justify-content:center; overflow:hidden;}
+.bp-ghost{width:74%; height:74%; opacity:.26; display:flex; align-items:center; justify-content:center;}
 .bp-ghost svg, .bp-ghost img{width:100%; height:100%; object-fit:contain;}
 /* Item-Chips im Shop */
 #page-shop .chip.itemchip{flex-direction:column; gap:0.4mm;
@@ -881,7 +816,7 @@ table.kztable tr.hi td{background:#fdf3d4; font-weight:800;}
 /* Chip-Durchmesser: gilt fuer die Chips auf Seite 3 UND die Kreise auf Seite 1, damit ein
    ausgeschnittener Chip exakt auf sein Feld passt. Obergrenze ist die Ordenreihe: 8 Felder
    a (Kreis + 3mm) muessen in die 188mm Innenbreite der Karte – ab 20,5mm Kreis wird es zu breit. */
-#page-trainerkarte{ --tk-circle: 17mm; }
+#page-trainerpass{ --tk-circle: 17mm; }
 .tk-toolbar{display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-bottom:10px;}
 .tk-toolbar h1{font-size:20px; margin:0;}
 .tk-page{width:210mm; min-height:297mm; margin:0 auto; background:#fff; color:#1a120a;
@@ -938,7 +873,7 @@ table.kztable tr.hi td{background:#fdf3d4; font-weight:800;}
 /* Leere Felder auf Seite 1 bekommen denselben Randverlauf, damit Feld und Chip gleich wirken */
 .tk-circle{background:radial-gradient(circle closest-side, rgba(0,0,0,0) 72%, rgba(0,0,0,.10) 100%), #eee9dc;}
 @media print{
-  #page-trainerkarte .noprint{display:none !important;}
+  #page-trainerpass .noprint{display:none !important;}
   .tk-page{box-shadow:none; margin:0; padding:8mm 7mm;}
 }
 
@@ -1008,7 +943,7 @@ table.kztable tr.hi td{background:#fdf3d4; font-weight:800;}
   <button class="tab" data-page="home">📋 Pokémon-Tabelle</button>
   <button class="tab" data-page="gm">📕 Spielanleitung</button>
   <button class="tab" data-page="shop">🎁 Pokeshop</button>
-  <button class="tab" data-page="trainerkarte">🎫 Trainerpass</button>
+  <button class="tab" data-page="trainerpass">🎫 Trainerpass</button>
   <button class="tab" data-page="arenen">🏟 Arenen</button>
   <button class="tab" data-page="cards">🃏 Karten (Normal)</button>
   <button class="tab" data-page="volvelle">🎡 Karten (Volvelle)</button>
@@ -1028,7 +963,7 @@ table.kztable tr.hi td{background:#fdf3d4; font-weight:800;}
   <section class="page" id="page-gm"></section>
   <section class="page" id="page-cards"></section>
   <section class="page" id="page-shop"></section>
-<section class="page" id="page-trainerkarte"></section>
+<section class="page" id="page-trainerpass"></section>
   <section class="page" id="page-doc"></section>
   <section class="page" id="page-volvelle"></section>
 <section class="page" id="page-arenen"></section>
@@ -1065,6 +1000,9 @@ const ARENAS = [
   {nr:7, ort:'Zinnoberinsel', leiter:'Pyro', typ:'Feuer', orden:'Vulkanorden'},
   {nr:8, ort:'Vertania', leiter:'Giovanni', typ:'Boden', orden:'Erdorden'},
 ];
+/* cond = Freischaltbedingung. Steht seit 30.07.2026 nicht mehr auf dem Trainerpass (dort nur
+   noch der Name); die Angabe bleibt hier als Datenstand und deckt sich mit den Legendaeren-
+   Tabellen in der Spielanleitung und im Beschlussdokument. */
 const LEGEND_CHIPS = [
   {nr:144, cond:'5 Orden'},
   {nr:145, cond:'5 Orden'},
@@ -1628,7 +1566,7 @@ function renderHome(){
   host.innerHTML = `
     <div class="home-toolbar">
       <h1>Pokémon-Tabelle · Kanto</h1>
-      <div class="hint">Sterne, Klasse, Typ, Fähigkeiten und Fundorte hier ändern → Spielleiter-Karte und Kartenset aktualisieren sich automatisch. Jedes Pokémon hat genau <b>einen</b> Typ – der Nebentyp ist am 30.07.2026 entfallen, die 18er-Typtabelle gilt unverändert. 🗡 Zerschneider · 🪨 Zertrümmerer · 🌊 Surfen · 🪽 Fliegen sind aus den Original-VM-Daten gesetzt. Seltenheit wird live aus der Anzahl gesetzter Fundorte berechnet (1 = ★ selten · 2 = ◆ ungewöhnlich · 3+ = ● gewöhnlich). Tabelle lässt sich mit dem Scrollbalken unten, Shift+Mausrad oder Zwei-Finger-Wisch seitlich scrollen.</div>
+      <div class="hint">Sterne, Klasse, Typ, Fähigkeiten und Fundorte hier ändern → Spielanleitung und Kartenset aktualisieren sich automatisch. Jedes Pokémon hat genau <b>einen</b> Typ – der Nebentyp ist am 30.07.2026 entfallen, die 18er-Typtabelle gilt unverändert. 🗡 Zerschneider · 🪨 Zertrümmerer · 🌊 Surfen · 🪽 Fliegen sind aus den Original-VM-Daten gesetzt. Seltenheit wird live aus der Anzahl gesetzter Fundorte berechnet (1 = ★ selten · 2 = ◆ ungewöhnlich · 3+ = ● gewöhnlich). Tabelle lässt sich mit dem Scrollbalken unten, Shift+Mausrad oder Zwei-Finger-Wisch seitlich scrollen.</div>
     </div>
     <div class="hometable-wrap">
       <table class="hometable" style="width:${tableWidth}px">
@@ -1650,7 +1588,7 @@ function renderHome(){
 }
 
 
-/* ===================== Spielleiter-Karte ===================== */
+/* ============ Gebietstabellen (gemeinsame Bausteine fuer Bildschirm und Heft) ============ */
 function monsInArea(areaKey){
   return Object.values(state.mons)
     .filter(m=>!m.quest && m.orte.has(areaKey))
@@ -1740,161 +1678,12 @@ const TYPE_RULES_HTML = `<ul class="ruleul">
   <li><b>Patt:</b> kann keine Seite mehr treffen, gilt der Kampf für den Herausforderer als verloren (Rückzug)</li>
 </ul>`;
 
-function groupAreasByRegion(){
-  const regions = [];
-  state.areas.forEach(a=>{
-    let r = regions.find(r=>r.region===a.region);
-    if(!r){ r={region:a.region, areas:[]}; regions.push(r); }
-    r.areas.push(a);
-  });
-  return regions;
-}
 function starheadColsHTML(){
   let s = '';
   for(let i=1;i<=GM_STAR_COLS;i++) s += `<div>${'★'.repeat(i)}</div>`;
   return s;
 }
 
-function chunkAreasEven(arr, numChunks){
-  const n = arr.length;
-  const base = Math.floor(n/numChunks);
-  const rem = n - base*numChunks;
-  const sizes = Array(numChunks).fill(base);
-  for(let i=0;i<rem;i++) sizes[i]++;
-  const chunks = []; let idx = 0;
-  sizes.forEach(sz=>{ chunks.push(arr.slice(idx, idx+sz)); idx += sz; });
-  return chunks;
-}
-
-/* ===== Druckvorlage: A4 quer, 2× A5 nebeneinander, an der kurzen Kante gespiegelt duplex ===== */
-function a5AreaChunkHTML(chunk){
-  if(!chunk.length) return '<div class="a5"><div class="a5in"></div></div>';
-  const regionsInChunk = [...new Set(chunk.map(a=>a.region))];
-  return `<div class="a5"><div class="a5in">
-    <h1>${regionsInChunk.join(' / ')}</h1>
-    <div class="starhead"><div class="sh0">Gebiet</div>${starheadColsHTML()}</div>
-    ${chunk.map(areaRowHTML).join('')}
-  </div></div>`;
-}
-function a5CustomHTML(title, sub, inner){
-  return `<div class="a5"><div class="a5in">
-    ${title ? `<h1>${title}</h1>` : ''}
-    ${sub ? `<div class="sub">${sub}</div>` : ''}
-    ${inner}
-  </div></div>`;
-}
-function printSheetHTML(label, leftA5, rightA5){
-  return `<div class="sheet"><div class="sheetlab">${label}</div>${leftA5}${rightA5}<div class="cut"><span>✂</span></div></div>`;
-}
-
-function gmAreaEstH(area){
-  /* Fallback-Schätzung in mm: Zellen zeigen 2 Pokémon nebeneinander,
-     die Zeilenhöhe wächst also erst ab dem 3. Pokémon in einer Zelle */
-  const mons = monsInArea(area.key);
-  const per = {};
-  mons.forEach(m=>{ const c=Math.min(m.sterne,4); per[c]=(per[c]||0)+1; });
-  const maxCell = Math.max(1, ...Object.values(per));
-  return 4 + Math.ceil(maxCell/2)*14;
-}
-function gmMeasureAreaHeights(){
-  /* misst die REALEN Zeilenhöhen in einem unsichtbaren A5-Messcontainer –
-     robust gegen jede CSS-Änderung; Kalibrierung px→mm über ein 100-mm-Element */
-  const meas = document.createElement('div');
-  meas.className = 'gm-print';
-  meas.style.cssText = 'position:absolute; left:-9999px; top:0; visibility:hidden;';
-  meas.innerHTML = `<div class="a5" style="height:auto; overflow:visible;"><div class="a5in" id="gmMeasIn"></div></div>
-    <div id="gmCalib" style="height:100mm; width:10mm;"></div>`;
-  document.body.appendChild(meas);
-  const calib = meas.querySelector('#gmCalib').offsetHeight / 100;
-  if(!calib){ document.body.removeChild(meas); return null; }   // keine Layout-Engine → Fallback
-  const inn = meas.querySelector('#gmMeasIn');
-  inn.innerHTML = `<h1>Routen</h1><div class="starhead"><div class="sh0">Gebiet</div>${starheadColsHTML()}</div>`;
-  const head = inn.getBoundingClientRect().height / calib;
-  const rows = {};
-  state.areas.forEach(a=>{
-    inn.innerHTML = areaRowHTML(a);
-    rows[a.key] = inn.firstElementChild.getBoundingClientRect().height / calib + 1;  // + margin-bottom
-  });
-  document.body.removeChild(meas);
-  return {head, rows};
-}
-function partitionBalanced(items, hOf, usable){
-  /* teilt eine Sequenz in die MINIMALE Zahl zusammenhängender Teile, deren größter ≤ usable ist,
-     und balanciert die Teile dabei gleichmäßig (Min-Max-Partition per DP) */
-  const n = items.length; if(!n) return [];
-  const h = items.map(hOf);
-  const pre = [0]; h.forEach(v=>pre.push(pre[pre.length-1]+v));
-  const sum = (i,j)=>pre[j]-pre[i];
-  for(let k=1; k<=n; k++){
-    const dp = Array.from({length:k+1},()=>Array(n+1).fill(Infinity));
-    const cut = Array.from({length:k+1},()=>Array(n+1).fill(0));
-    dp[0][0] = 0;
-    for(let p=1;p<=k;p++) for(let j=p;j<=n;j++)
-      for(let i=p-1;i<j;i++){
-        const v = Math.max(dp[p-1][i], sum(i,j));
-        if(v < dp[p][j]){ dp[p][j]=v; cut[p][j]=i; }
-      }
-    if(dp[k][n] <= usable){
-      const parts=[]; let j=n;
-      for(let p=k;p>=1;p--){ const i=cut[p][j]; parts.unshift(items.slice(i,j)); j=i; }
-      return parts;
-    }
-  }
-  return [items];
-}
-function gmPackHalves(){
-  const meas = gmMeasureAreaHeights();
-  const usable = meas ? Math.max(140, 201.9 - meas.head - 1) : 180;
-  const rowH = a => meas ? meas.rows[a.key] : gmAreaEstH(a);
-
-  const routen = state.areas.filter(a=> (a.region||'').startsWith('Routen'));
-  const ORDER = {'Wald':0, 'Wasser':1, 'Höhle':2};
-  const weitere = state.areas.filter(a=> !(a.region||'').startsWith('Routen'))
-    .slice().sort((x,y)=>{
-      const ox = (ORDER[x.region] ?? 9), oy = (ORDER[y.region] ?? 9);
-      if(ox !== oy) return ox - oy;
-      return String(x.name||x.key).localeCompare(String(y.name||y.key), 'de');
-    });
-
-  const halves = [];
-  partitionBalanced(routen, rowH, usable).forEach(part=> halves.push({titel:'Routen', areas:part}));
-  if(halves.length % 2 === 1) halves.push(null);   // Blattgrenze: nächste Rubrik auf eigenem A5-Blatt
-  partitionBalanced(weitere, rowH, usable).forEach(part=> halves.push({titel:'Wald, Wasser, Höhle', areas:part}));
-  while(halves.length % 4 !== 0) halves.push(null);
-  return halves;
-}
-function a5HalfHTML(h){
-  if(!h) return '<div class="a5"><div class="a5in"></div></div>';
-  return `<div class="a5"><div class="a5in">
-    <h1>${h.titel}</h1>
-    <div class="starhead"><div class="sh0">Gebiet</div>${starheadColsHTML()}</div>
-    ${h.areas.map(areaRowHTML).join('')}
-  </div></div>`;
-}
-function buildGMPrintHTML(){
-  /* Duplex A4 quer, an der KURZEN Kante gespiegelt. Jede A5-Hälfte ist ein "Blatt":
-     Blatt links  = halves[4s]   (vorn) / halves[4s+1] (hinten)
-     Blatt rechts = halves[4s+2] (vorn) / halves[4s+3] (hinten)
-     → Vorderseite: [H0 | H2] · Rückseite (gespiegelt): [H3 | H1] */
-  const halves = gmPackHalves();
-  let out = '';
-  for(let s4=0; s4<halves.length; s4+=4){
-    const nr = s4/4 + 1;
-    out += printSheetHTML(`Spielleiter · Blatt ${nr} · Vorderseite`, a5HalfHTML(halves[s4]), a5HalfHTML(halves[s4+2]));
-    out += printSheetHTML(`Spielleiter · Blatt ${nr} · Rückseite (für Duplex gespiegelt)`, a5HalfHTML(halves[s4+3]), a5HalfHTML(halves[s4+1]));
-  }
-
-  const typenA5 = a5CustomHTML('Typen-Tabelle', 'Angreifer (Zeile) → Verteidiger (Spalte) · Wirkung auf den Gesamtschaden (nur Haupttyp)',
-    `<div class="matrix-wrap">${typeMatrixHTML()}</div>${TYPE_LEGEND_HTML}${TYPE_RULES_HTML}
-      <div style="margin-top:4px;font-size:10.5px;color:#8a7f6d;font-weight:700;">Randnotiz: „−“ halbiert den Gesamtschaden (aufgerundet) · „✕“ = 0 Schaden und Zwangswechsel · nur der Haupttyp zählt.</div>`);
-  const questA5 = a5CustomHTML('Quests &amp; Legendäre', 'Nicht wild fangbar (nie beim W20) · Legendäre fliehen nicht, max. 1 Fangversuch pro Sitzung', questListHTML());
-  const leerA5 = '<div class="a5"><div class="a5in"></div></div>';
-
-  out += printSheetHTML('Übersicht · Vorderseite', typenA5, leerA5);
-  out += printSheetHTML('Übersicht · Rückseite (für Duplex gespiegelt)', leerA5, questA5);
-
-  return `<div class="gm-print">${out}</div>`;
-}
 
 /* =====================================================================
    SPIELANLEITUNG (Reiter „Spielanleitung“) – A4-Heft
@@ -2901,11 +2690,12 @@ function ordenSlotHTML(a){
   </div>`;
 }
 function legendSlotHTML(item){
+  /* Nur der Name – die Freischaltbedingung (5 Orden, Top 4, Dex >= 100) ergibt sich im
+     Spielverlauf und steht in der Spielanleitung; auf dem Pass waere sie nur Beiwerk. */
   const m = state.mons[item.nr];
   return `<div class="tk-slot">
     <div class="tk-circle"><img class="tk-silhouette" src="${IMG(item.nr)}" loading="lazy" onerror="this.style.visibility='hidden'"></div>
     <div class="tk-slotlabel">${m.name}</div>
-    <div class="tk-slotsub">${item.cond}</div>
   </div>`;
 }
 function ordenChipHTML(a){
@@ -2959,13 +2749,13 @@ function rsLegende(fach){
     .map(e=>`${e.label} ×${e.n}`).join(' · ');
 }
 
-function renderTrainerkarte(){
-  const host = document.getElementById('page-trainerkarte');
+function renderTrainerpass(){
+  const host = document.getElementById('page-trainerpass');
   host.innerHTML = `
     <div class="tk-toolbar noprint">
       <h1>🎫 Trainerpass</h1>
       <button onclick="printPage('portrait')">🖨 Drucken (A4 hoch)</button>
-      <span class="hint">Seite 1: Trainerpass. Seite 2: Rucksack (beides pro Spieler ausdrucken). Seite 3: Orden- &amp; Legendären-Chips zum Ausschneiden — Durchmesser passt exakt auf die Kreise oben.</span>
+      <span class="hint">Seite 1: Trainerpass mit Rucksack (pro Spieler ausdrucken). Seite 2: Orden- &amp; Legendären-Chips zum Ausschneiden — Durchmesser passt exakt auf die Kreise oben.</span>
     </div>
 
     <div class="tk-page">
@@ -2992,18 +2782,8 @@ function renderTrainerkarte(){
         </div>
       </div>
 
-    </div>
-
-    <div class="tk-page tk-rucksackpage">
-      <div class="bp-title">🎒 RUCKSACK</div>
-      <div class="bp-sub">gekaufte Item-Chips hier ablegen · leere Felder = noch nicht im Besitz</div>
       <div class="bp-frame">
-        <div class="bp-silhouette"></div>
-        <div class="bp-handle"></div>
-        <div class="bp-strap bp-strap-l"></div>
-        <div class="bp-strap bp-strap-r"></div>
-        <div class="bp-buckle bp-buckle-l"></div>
-        <div class="bp-buckle bp-buckle-r"></div>
+        <div class="bp-lid"><span class="bp-buckle"></span><span class="bp-buckle"></span></div>
         <div class="bp-body">
           <div class="bp-pocket bp-left">
             <div class="bp-label">Seitentasche links</div>
@@ -3479,7 +3259,7 @@ function renderDoc(){
       <li><span class="badge ok">erledigt</span> <b>Zugsystem:</b> 10 Zugpunkte pro Runde (Kapitel 2).</li>
       <li><span class="badge ok">erledigt</span> <b>Duplikat-System:</b> 1 ₽ je Stern (Kapitel 3).</li>
       <li><span class="badge ok">erledigt</span> <b>Rückseiten-Design:</b> Pokéball, direkt in den 3D-Druckdateien hinterlegt (Kapitel 11).</li>
-      <li><span class="badge ok">erledigt</span> <b>Trainerpass:</b> ganze Seite mit Rucksack, Item-Chips 24 mm.</li>
+      <li><span class="badge ok">erledigt</span> <b>Trainerpass:</b> eine Seite mit Pass und Rucksack, Item-Chips 24 mm; zweite Seite Orden- und Legendären-Chips zum Ausschneiden.</li>
       <li><span class="badge ok">erledigt</span> <b>Spielbrett Kanto:</b> Außengebiete und sonstige Gebiete vollständig, 46 Zonen.</li>
       <li><span class="badge ok">erledigt</span> <b>Fangversuche:</b> Pokémon flieht nie; Ende erst bei eigener Niederlage oder rechnerischer Unmöglichkeit.</li>
       <li><span class="badge ok">erledigt</span> <b>Initiative:</b> Der Spieler beginnt immer.</li>
@@ -3622,6 +3402,8 @@ function renderDoc(){
       <li><b>30.07.2026 (8)</b> – <b>Normalkarten-Hintergrund 1:1 aus der Volvelle-Karte übernommen.</b> Statt eigener, nur farblos gegen die Typfarbe geblendeter CSS-Verläufe generiert <code>cardBgSVG()</code> jetzt dieselbe SVG wie <code>volFrontCardSVG()</code> – Wolkenfilter, heller Verlauf oben rechts (<code>volLite</code>) und dunkler Verlauf unten rechts (<code>volDark</code>) mit identischen Werten, nur auf 63,5×88mm statt 80×124mm skaliert und mit der jeweiligen Typfarbe direkt eingefärbt. Die SVG wird je Typfarbe gecacht (nicht je Pokémon), damit gleichfarbige Karten dieselbe Daten-URI – und damit denselben decodierten Bitmap-Cache im Browser – teilen. <b>Nachgebessert am selben Tag:</b> Gleiche Parameter hießen noch nicht gleiches Aussehen – die Normalkarte wirkte deutlich ruhiger. Nachgemessen (Rauheit = mittlere Helligkeitsdifferenz benachbarter Pixel bei gleicher mm-Auflösung, Karteninhalt zum Messen ausgeblendet): Normalkarte 0,36 gegenüber Volvelle 0,74 – also nur die halbe Unruhe. Zwei Ursachen: (1) Die <code>&lt;g clip-path&gt;</code>-Gruppe der Volvelle ist nicht bloß Dekoration, sondern erzeugt eine <b>isolierte Gruppe</b> – dadurch blendet das Soft-Light des Wolken-Rechtecks nicht gegen die Typfarbe, sondern die Gruppe wird als Ganzes darübergelegt, was den Kontrast verdoppelt (0,36 → 0,71). (2) <code>baseFrequency</code> zählt in Nutzereinheiten, nicht in Millimetern: Die Volvelle bildet 80 Einheiten auf 70 mm ab, ihre Wolken sind physisch 17,5 mm groß; auf der Normalkarte entspricht 1 Einheit genau 1 mm, weshalb es dort 0,0571 statt 0,05 braucht. Danach stimmen beide Karten auf 1–3 % überein (Rauheit 0,748 zu 0,740, Streuung 21,0 zu 21,1).</li>
       <li><b>30.07.2026 (9)</b> – <b>Trainerpass aufgeräumt und Chips vergrößert.</b> Die Fußzeile (Siegesstraße, Top 4, Duelle S:N, Pokédollar) ist entfallen – all das wird ohnehin nebenbei mitgezählt und stand nur als Platzfüller unter dem Pokédex. Ebenso entfallen die erklärenden Zusätze hinter „Arenaorden“ und „Pokédex“. Orden- und Legendären-Chips wachsen von 13 auf <b>17 mm</b> (Obergrenze wäre 20,5 mm: acht Ordenfelder à Kreis + 3 mm müssen in die 188 mm Innenbreite der Karte passen); Felder und Chips teilen sich weiterhin dieselbe Variable <code>--tk-circle</code>, ein ausgeschnittener Chip passt also nach wie vor exakt auf sein Feld. Der farbige Rand der Chips beginnt jetzt bei 70 % statt 44 % des Radius – das Icon füllt 80 % der Breite, seine Ecken reichen bis 57 % des Radius, die Farbe bleibt damit außerhalb des Icons. Nebenbei drei stille Kaskadenfehler behoben: Der v2-Block von 27.07. stand <i>vor</i> dem älteren Trainerpass-Block und wurde von diesem bei gleicher Spezifität überschrieben, wodurch der Randverlauf der leeren Felder wirkungslos war (die ebenfalls verdeckte Sonderformatierung des Chipbogens ist ersatzlos gestrichen – alle drei Blätter sehen jetzt gleich aus); außerdem setzte der <code>@media print</code>-Block <code>page-break-after:avoid</code> auf <code>.tk-page</code> und hob damit das <code>always</code> für den Seitenumbruch zwischen Pass, Rucksack und Chipbogen wieder auf. Reiter heißt jetzt überall „Trainerpass“ (hieß in der Kopfzeile noch „Trainerkarte“), und die Ordenfelder tragen „max. Lv. X“ statt „ab Lv. X“ – der Orden hebt die Obergrenze, er schaltet kein Startlevel frei.</li>
       <li><b>30.07.2026 (10)</b> – <b>Speicher-Hinweis in der Kopfzeile war unsichtbar.</b> Zwei verschiedene Elemente teilten sich die Klasse <code>.savehint</code>: der Dauerhinweis „Änderungen werden automatisch lokal gespeichert“ (wird nach jedem Speichern zu „Gespeichert · Uhrzeit“) und die Kurzmeldung nach „💾 HTML“, die per JavaScript ein- und ausgeblendet wird und deshalb <code>opacity:0</code> als Ausgangswert braucht. Dieses <code>opacity:0</code> galt für beide – der Dauerhinweis war seit jeher unsichtbar und damit auch die einzige Rückmeldung, dass Änderungen an der Pokémon-Tabelle tatsächlich ankommen. Die Kurzmeldung heißt jetzt <code>.savetoast</code> / <code>#saveToast</code>; nebenbei sind die beiden nur durch Groß-/Kleinschreibung unterschiedenen IDs <code>saveHint</code> und <code>savehint</code> aufgelöst.</li>
+      <li><b>30.07.2026 (11)</b> – <b>Trainerpass und Rucksack teilen sich wieder eine Seite, Rucksack neu gezeichnet.</b> Bei den Legendären steht nur noch der Name; die Freischaltbedingung (5 Orden, Top 4, Dex ≥ 100) ergibt sich im Spielverlauf und steht in der Spielanleitung. Der Rucksack hat Henkel, Trageriemen, Seitenschnallen und die Überschrift „🎒 RUCKSACK“ verloren und dafür eine Deckelklappe mit zwei Schnallen bekommen: Statt drei 1-mm-Rahmen tragen die Fächer nur noch eine 0,3-mm-Naht und eigene Farbflächen – halb so viele Linien, deutlich ruhiger. Alle drei Fächer sind jetzt gleich hoch (das Hauptfach mit seinen vier Reihen gibt die Höhe vor), damit unten in der Tasche keine tote Fläche stehen bleibt. <b>Beides passt zusammen auf ein Blatt:</b> Passkarte 117 mm + Rucksack 129 mm = 250 mm von 281 mm nutzbarer Seitenhöhe, also rund 31 mm Reserve. Die Breite war der Knackpunkt – sieben 24-mm-Chipspalten sind allein 168 mm; mit 1,5 mm statt 2 mm Feldabstand und schlankeren Fachpolstern kommt der Rucksack auf 189 mm und passt damit in die 196 mm Innenbreite der Seite, ohne dass der frühere Sonderrand von 5 mm nötig wäre. Der Reiter heißt jetzt auch intern <code>trainerpass</code> (Seiten-ID, Renderer, Zoom-Schlüssel).</li>
+      <li><b>30.07.2026 (12)</b> – <b>Aufgeräumt: alter Spielleiter-Druck entfernt.</b> Vor dem Anleitungsheft (28.07.2026) gab es eine eigene A5-Druckvorlage für die Gebietstabellen, überschrieben mit „Spielleiter · Blatt N“. Sie wurde durch das Heft ersetzt, blieb aber als Karteileiche liegen: 13 nie aufgerufene Funktionen (<code>buildGMPrintHTML</code>, <code>gmPackHalves</code>, <code>partitionBalanced</code>, <code>a5HalfHTML</code> und die übrigen Helfer) samt rund 60 Zeilen <code>.gm-print</code>-CSS – zusammen etwa 230 Zeilen. Das erklärt auch die frühere Notiz beim Handbuch-Namensraum: Genau diese toten Regeln hatten den Handbuch-Klassen ihre Schriftgrößen aufgedrängt. Ebenfalls entfallen: <code>vTypeIcon</code> und <code>top4Row</code>. Die beiden verbliebenen Überschriften „Spielleiter-Karte“ im Quelltext heißen jetzt nach dem, was darunter steht, und der Hinweis über der Pokémon-Tabelle verweist auf die Spielanleitung statt auf die abgeschaffte Spielleiter-Karte.</li>
     </ul>
   </div>`;
   groupDoneItemsInChapter14();
@@ -3791,11 +3573,6 @@ function volSmallDiscSVG(nr){
 }
 
 /* ---- Typsymbol: offizielles PokéWiki-Icon im Farbkreis (wie im Kartenset) ---- */
-function vTypeIcon(type,cx,cy,r){
-  const col = TYP[type];
-  return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${col}" stroke="#fff" stroke-width="0.55"/>
-    <image href="${TIMG(type)}" x="${cx-r*0.62}" y="${cy-r*0.62}" width="${r*1.24}" height="${r*1.24}" preserveAspectRatio="xMidYMid meet"/>`;
-}
 function vBallIcon(cx,cy,r,topColor,dark){
   return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="#fff" stroke="#1a120a" stroke-width="0.4"/>
     <path d="M ${cx-r} ${cy} A ${r} ${r} 0 0 1 ${cx+r} ${cy} Z" fill="${topColor}"/>
@@ -4215,17 +3992,6 @@ const TOP4 = [
 ];
 const TOP4_LV = 10;
 
-function top4Row(nr){
-  const m = state.mons[nr];
-  return `<div class="ar-row">
-    <div class="ar-mon"><img src="${IMG(nr)}" loading="lazy" onerror="this.style.visibility='hidden'">
-      <span>${m.name}</span></div>
-    <div class="ar-half ar-wide">
-      <div class="ar-stats">Lv ${TOP4_LV} · ATK ${computeANG(state,nr,TOP4_LV)}</div>
-      ${kpBoxes(computeKP(state,nr,TOP4_LV))}
-    </div>
-  </div>`;
-}
 function top4SpalteHTML(t, i){
   return `<div class="t4-col">
     <div class="t4-head" style="--c:${TYP[t.typ]}">
@@ -4799,8 +4565,8 @@ function renderKonzept(){
   kzRenderLive();
 }
 
-const RENDERERS = { home: renderHome, gm: renderGM, cards: renderCards, shop: renderShop, doc: renderDoc, volvelle: renderVolvelle, trainerkarte: renderTrainerkarte, board: renderBoard, arenen: renderArenen, konzept: renderKonzept };
-const PAGE_ORIENTATION = { home:'portrait', gm:'landscape', cards:'portrait', shop:'portrait', doc:'portrait', volvelle:'landscape', trainerkarte:'portrait', board:'landscape', arenen:'landscape', konzept:'portrait' };
+const RENDERERS = { home: renderHome, gm: renderGM, cards: renderCards, shop: renderShop, doc: renderDoc, volvelle: renderVolvelle, trainerpass: renderTrainerpass, board: renderBoard, arenen: renderArenen, konzept: renderKonzept };
+const PAGE_ORIENTATION = { home:'portrait', gm:'landscape', cards:'portrait', shop:'portrait', doc:'portrait', volvelle:'landscape', trainerpass:'portrait', board:'landscape', arenen:'landscape', konzept:'portrait' };
 /* Nur Volvelle braucht einen echten Papierrand (Scheiben dürfen nicht bis an die Kante) –
    alle anderen Reiter drucken randlos und übernehmen die 209.9mm/296.5mm-Feinabstimmung
    ihrer .sheet-Maße selbst. Beschluss 29.07.2026: früher stand dafür ein zweites, statisches
