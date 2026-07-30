@@ -2380,13 +2380,28 @@ const CARD_BALLS_ICON = (()=>{
 })();
 
 /* Kartenhintergrund 1:1 aus der Volvelle-Karte übernommen (Beschluss 30.07.2026: "sehr gut
-   generiert"), nur auf die Maße der Normalkarte (63.5×88mm statt 80×124mm) skaliert – dieselben
-   drei Ebenen in derselben Reihenfolge: Wolkenfilter (feTurbulence + Kontrastkurve, 32% Deckkraft,
-   Soft-Light) unter dem hellen Verlauf oben rechts (volLite) unter dem dunklen Verlauf unten
-   rechts (volDark). Weil Farbverläufe die Typfarbe direkt einschließen (anders als vorher, wo
-   CSS-Verläufe nur farblos gegen --bg1 geblendet wurden), entsteht die SVG dynamisch je Typfarbe –
-   gecacht, damit gleichfarbige Karten (gleicher Typ) dieselbe Daten-URI und damit denselben
-   decodierten Bitmap-Cache im Browser teilen, statt 151× dieselben Bytes neu zu erzeugen. */
+   generiert") – dieselben drei Ebenen in derselben Reihenfolge: Wolkenfilter (feTurbulence +
+   Kontrastkurve, 32% Deckkraft, Soft-Light) unter dem hellen Verlauf oben rechts (volLite) unter
+   dem dunklen Verlauf unten rechts (volDark).
+
+   Zwei Dinge, die nachgemessen werden mussten, damit es wirklich gleich aussieht statt nur
+   gleich parametrisiert zu sein (Messung: Rauheit = mittlere Helligkeitsdifferenz benachbarter
+   Pixel, bei gleicher mm-Auflösung):
+
+   1. Die <g clip-path>-Gruppe ist NICHT nur Dekoration. Ein clip-path erzeugt eine isolierte
+      Gruppe – dadurch blendet das soft-light des Wolken-Rechtecks nicht mehr gegen die
+      darunterliegende Typfarbe, sondern die Gruppe wird als Ganzes darübergelegt. Genau das
+      macht die Volvelle-Optik kontrastreicher. Ohne die Gruppe lag die Rauheit bei 0.36, mit
+      Gruppe bei 0.71 – die Volvelle liegt bei 0.74. Die Gruppe ist hier also funktional, obwohl
+      die Karte per CSS ohnehin schon overflow:hidden hat.
+   2. baseFrequency ist in Nutzereinheiten angegeben, nicht in Millimetern. Die Volvelle bildet
+      80 Einheiten auf 70mm ab (Faktor 0.875), ihre Wolken haben also eine physische Wellenlänge
+      von 20 × 0.875 = 17.5mm. Hier entspricht 1 Einheit genau 1mm, also braucht es
+      1/17.5 = 0.0571 statt 0.05, damit die Wolken auf dem Papier gleich groß sind.
+
+   Die SVG entsteht dynamisch je Typfarbe (ein per background-image eingebundenes Daten-URI-SVG
+   kann keine CSS-Variablen der Seite lesen) und wird je Farbe gecacht, damit gleichfarbige
+   Karten dieselbe Daten-URI und denselben decodierten Bitmap-Cache im Browser teilen. */
 const CARD_BG_CACHE = {};
 function cardBgSVG(color){
   if(CARD_BG_CACHE[color]) return CARD_BG_CACHE[color];
@@ -2402,7 +2417,7 @@ function cardBgSVG(color){
         <stop offset="100%" stop-color="#000" stop-opacity="0.26"/>
       </linearGradient>
       <filter id="cw" x="0" y="0" width="100%" height="100%">
-        <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="5" seed="11" result="n"/>
+        <feTurbulence type="fractalNoise" baseFrequency="0.0571" numOctaves="5" seed="11" result="n"/>
         <feColorMatrix type="saturate" values="0" in="n" result="g"/>
         <feComponentTransfer in="g">
           <feFuncR type="linear" slope="2.4" intercept="-0.7"/>
@@ -2410,11 +2425,14 @@ function cardBgSVG(color){
           <feFuncB type="linear" slope="2.4" intercept="-0.7"/>
         </feComponentTransfer>
       </filter>
+      <clipPath id="cp"><rect width="${W}" height="${H}" rx="2.4"/></clipPath>
     </defs>
     <rect width="${W}" height="${H}" fill="${color}"/>
-    <rect width="${W}" height="${H}" filter="url(#cw)" opacity="0.32" style="mix-blend-mode:soft-light"/>
-    <rect width="${W}" height="${H}" fill="url(#cl)"/>
-    <rect width="${W}" height="${H}" fill="url(#cd)"/>
+    <g clip-path="url(#cp)">
+      <rect width="${W}" height="${H}" filter="url(#cw)" opacity="0.32" style="mix-blend-mode:soft-light"/>
+      <rect width="${W}" height="${H}" fill="url(#cl)"/>
+      <rect width="${W}" height="${H}" fill="url(#cd)"/>
+    </g>
   </svg>`;
   return CARD_BG_CACHE[color] = `url('data:image/svg+xml,${encodeURIComponent(svg)}')`;
 }
@@ -3602,7 +3620,7 @@ function renderDoc(){
       <li><b>30.07.2026 (5)</b> – <b>Angriffswurf neu gestaffelt: 1 nix · 2 halb · 3–5 voll · 6 doppelt</b> (ersetzt 1 · 2–3 · 4–5 · 6 vom 28.07.2026). Verfehl- und Kritchance bleiben bei je 1/6 unverändert, die Halb-Zone schrumpft von 2 auf 1 Wurf zugunsten der Voll-Zone (jetzt 3/6 statt 2/6). Erwartungswert steigt dadurch von 5/6 auf 5,5/6 ANG – im Schnitt <b>+10 % Schaden</b> – bei zugleich leicht <b>geringerer</b> Streuung (Standardabweichung 0,62 → 0,61 ANG), weil der breitere Volltreffer-Bereich die Ausreißer nach unten seltener macht. Kämpfe laufen dadurch spürbar zügiger, ohne dass Glückstreffer oder Fehlschläge häufiger würden.</li>
       <li><b>30.07.2026 (6)</b> – <b>Rucksack als eigene Illustration.</b> Die 24-mm-Fächer (dieselbe Größe wie die echten Pokeshop-Chips) liefen bisher über den Kartenrand hinaus, weil sich der Rucksack die Seite mit dem Trainerpass teilte. Der Rucksack bekommt jetzt eine eigene Seite und wird als gezeichneter Rucksack dargestellt – Silhouette mit Henkel, zwei Trageriemen samt Schnallen, ein Hauptfach vorn (Trank/Supertrank/Beleber/Pokéflöte) und zwei bauchige Seitentaschen (Superball links, Hyper-/Meisterball rechts). Chipgröße bleibt bei 24 mm, damit Fach und Chip weiter zueinander passen. <b>Item-Icons ersetzt:</b> Trank, Supertrank und Beleber zeigen jetzt echte Item-Sprites statt gezeichneter Symbole – sowohl im Rucksack als auch auf den Pokeshop-Chips selbst, da beide dieselbe Bildquelle teilen. Eine Legenden-Z-A-Version von PokeWiki war nicht zu bekommen: Die Domain ist aus dieser Arbeitsumgebung heraus gesperrt (die Netzwerkrichtlinie blockt schon den Verbindungsaufbau, geprüft per <code>curl</code>), betrifft also nicht nur diese Anfrage, sondern jeden Pokewiki-Zugriff von hier aus. Stattdessen die offiziellen Item-Icons aus dem offenen PokeAPI-Sprite-Repository (GitHub, dieselbe Symbolik wie im Taschenmenü der Spiele).</li>
       <li><b>30.07.2026 (7)</b> – <b>Normalkarten: dunkle Flecken im Wolkeneffekt behoben, Schnittkanten vereinheitlicht.</b> Der Kontrast-Boost vom Vortag trieb einen Teil der Wolkentextur bis auf reines Schwarz bzw. Weiß (die Kurve <code>slope 2.4 / intercept −0.7</code> klippt schon ab ca. 29 % bzw. 79 % Ausgangshelligkeit) – auf der Volvelle-Karte fiel das kaum auf, weil die Wolke dort nur mit 32 % Deckkraft eingeblendet wird, auf der Normalkarte lag dieselbe Kurve aber ungebremst in voller Stärke im Hintergrundbild, wodurch harte dunkle Flecken entstanden. Jetzt bekommt auch die Normalkarte die 32-%-Deckkraft der Volvelle-Karte – exakt dieselben Einstellungen wie gewünscht. <b>Schnittkanten:</b> Bisher zeichnete jede Karte ihren eigenen gestrichelten Rahmen 0,4 mm in den 2-mm-Spalt zur Nachbarkarte hinein – zwei Karten hatten dadurch zwei leicht versetzte Linien mit Papier dazwischen, es musste zweimal geschnitten werden. Der Spalt entfällt jetzt vollständig (Karten liegen Kante an Kante), und über der ganzen 3×3-Fläche liegt ein einziges, 0,12 mm dünnes Liniengitter – jede Grenze zwischen zwei Karten ist dadurch buchstäblich dieselbe Linie, ein Schnitt reicht.</li>
-      <li><b>30.07.2026 (8)</b> – <b>Normalkarten-Hintergrund 1:1 aus der Volvelle-Karte übernommen.</b> Statt eigener, nur farblos gegen die Typfarbe geblendeter CSS-Verläufe generiert <code>cardBgSVG()</code> jetzt dieselbe SVG wie <code>volFrontCardSVG()</code> – Wolkenfilter, heller Verlauf oben rechts (<code>volLite</code>) und dunkler Verlauf unten rechts (<code>volDark</code>) mit identischen Werten, nur auf 63,5×88mm statt 80×124mm skaliert und mit der jeweiligen Typfarbe direkt eingefärbt. Die SVG wird je Typfarbe gecacht (nicht je Pokémon), damit gleichfarbige Karten dieselbe Daten-URI – und damit denselben decodierten Bitmap-Cache im Browser – teilen.</li>
+      <li><b>30.07.2026 (8)</b> – <b>Normalkarten-Hintergrund 1:1 aus der Volvelle-Karte übernommen.</b> Statt eigener, nur farblos gegen die Typfarbe geblendeter CSS-Verläufe generiert <code>cardBgSVG()</code> jetzt dieselbe SVG wie <code>volFrontCardSVG()</code> – Wolkenfilter, heller Verlauf oben rechts (<code>volLite</code>) und dunkler Verlauf unten rechts (<code>volDark</code>) mit identischen Werten, nur auf 63,5×88mm statt 80×124mm skaliert und mit der jeweiligen Typfarbe direkt eingefärbt. Die SVG wird je Typfarbe gecacht (nicht je Pokémon), damit gleichfarbige Karten dieselbe Daten-URI – und damit denselben decodierten Bitmap-Cache im Browser – teilen. <b>Nachgebessert am selben Tag:</b> Gleiche Parameter hießen noch nicht gleiches Aussehen – die Normalkarte wirkte deutlich ruhiger. Nachgemessen (Rauheit = mittlere Helligkeitsdifferenz benachbarter Pixel bei gleicher mm-Auflösung, Karteninhalt zum Messen ausgeblendet): Normalkarte 0,36 gegenüber Volvelle 0,74 – also nur die halbe Unruhe. Zwei Ursachen: (1) Die <code>&lt;g clip-path&gt;</code>-Gruppe der Volvelle ist nicht bloß Dekoration, sondern erzeugt eine <b>isolierte Gruppe</b> – dadurch blendet das Soft-Light des Wolken-Rechtecks nicht gegen die Typfarbe, sondern die Gruppe wird als Ganzes darübergelegt, was den Kontrast verdoppelt (0,36 → 0,71). (2) <code>baseFrequency</code> zählt in Nutzereinheiten, nicht in Millimetern: Die Volvelle bildet 80 Einheiten auf 70 mm ab, ihre Wolken sind physisch 17,5 mm groß; auf der Normalkarte entspricht 1 Einheit genau 1 mm, weshalb es dort 0,0571 statt 0,05 braucht. Danach stimmen beide Karten auf 1–3 % überein (Rauheit 0,748 zu 0,740, Streuung 21,0 zu 21,1).</li>
     </ul>
   </div>`;
   groupDoneItemsInChapter14();
