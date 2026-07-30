@@ -3515,7 +3515,7 @@ function renderDoc(){
       <li><b>30.07.2026</b> – <b>Nebentyp entfällt, Geländefähigkeiten aus den VM-Daten.</b> Das <b>18-Typen-System bleibt vollständig</b> erhalten, samt Typtabelle und Immunitäten („✕"); jedes Pokémon trägt aber nur noch seinen <b>Haupttyp</b>. Damit gibt es genau eine Nachschlagestelle im Kampf, ohne die vertraute Tabelle zu vereinfachen. Als Haupttyp kommen 15 der 18 Typen vor (Stahl, Unlicht und Flug nie an erster Stelle): Wasser 29 · Normal 22 · Gift 14 · Pflanze, Feuer und Käfer je 12 · Elektro und Gestein je 9 · Boden und Psycho je 8 · Kampf 7 · Geist und Drache je 3 · Fee 2 · Eis 1. Weil damit die alte Ableitung der Geländefähigkeiten über den Nebentyp wegfiel, stehen sie jetzt fest je Pokémon aus den <b>Original-VM-Daten der ersten Generation</b> (PokeAPI-Rohdaten, Versionsgruppe Rot/Blau, Lernmethode Maschine): VM01 Zerschneider 27 · VM02 Fliegen 11 · VM03 Surfer 35 · VM04 Stärke → im Spiel Zertrümmerer 27. Auffälligster Unterschied zur bisherigen Annahme: <b>Glurak lernt in Generation 1 kein Fliegen</b> – die Typ-Ableitung hatte 19 Flieger ergeben, tatsächlich sind es 11. Fliegen ist damit deutlich seltener und als Abkürzung wertvoller. Zwischenstand: Für einen Tag lief das Spiel auf den sieben Energieklassen des Sammelkartenspiels; das wurde am selben Tag zugunsten des 18-Typen-Systems zurückgenommen, die VM-Zuordnung blieb.</li>
       <li><b>29.07.2026 (2)</b> – Broschüren-Falzlinie ohne Schriftzug, nur noch ein sehr feiner gestrichelter Strich. Dabei entdeckt und behoben: Ein zweites, fest codiertes <code>@page{margin:8mm}</code> in der Volvelle-CSS wirkte unbemerkt auf <b>jeden</b> Ausdruck der Datei (nicht nur Volvelle), weil sich <code>@page</code>-Regeln nicht auf einen Reiter beschränken lassen. Randlos geplante Drucke liefen dadurch je Blatt geringfügig über die Seite hinaus und erzeugten eine fast leere Folgeseite – u. a. beim Kartenset (68 statt 34 Seiten) und beim neuen Broschürenheft. Rand läuft jetzt über denselben dynamischen Kanal wie die Seitenausrichtung; nur Volvelle bekommt weiterhin 8mm, alle anderen 0.</li>
       <li><b>30.07.2026 (2)</b> – <b>Eigener Zoom je Reiter.</b> Der Browser-Zoom vergrößerte bisher auch die Kopfzeile und nahm damit genau den Platz weg, den man beim Heranzoomen gewinnen will. Jetzt sitzt der Zoom auf der Seite selbst, die Navigation bleibt in Originalgröße. Bedienung wie gewohnt über <b>Strg + / Strg −</b>, <b>Strg + Mausrad</b> und <b>Strg + 0</b> zum Zurücksetzen – diese Griffe werden abgefangen, bevor der Browser sie bekommt – oder über die kleine Leiste unten rechts. Jeder Reiter merkt sich seinen eigenen Faktor (13 Stufen von 50 % bis 300 %), gespeichert in einem eigenen localStorage-Schlüssel und daher <b>nicht</b> Teil des Spielstands: Ein exportiertes JSON oder eine weitergegebene HTML trägt die Zoomeinstellung dieses Geräts nicht mit. Umgesetzt mit CSS <code>zoom</code> statt <code>transform:scale</code>, damit das Layout wirklich mitwächst – Umbrüche, Scrollbereiche und Klickflächen stimmen weiter. Der Ausdruck bleibt in jedem Fall 1:1, der Bildschirmzoom kann Papiermaße also nicht verstellen. Ausgenommen ist das <b>Spielbrett</b>, das im eingebetteten Editor bereits einen eigenen Zoom mitbringt.</li>
-      <li><b>30.07.2026 (3)</b> – <b>Volvelle-Karte: Textboxen ohne harten Rand, kräftigerer Wolkeneffekt, Licht von oben rechts.</b> Auf der Volvelle-Vorderseite hatten Entwicklungen/Fähigkeiten, Siege/Level/Angriff/KP, Fangorte, Akt.-KP, Fangwurf, Sterne und Seltenheit noch den alten schwarzen Kasten aus der Zeit vor der Umstellung auf den Normalkarten – jetzt fasen sie über einen radialen Verlauf zum Kartenrand hin aus, genau wie längst auf den Normalkarten. Der äußere Kartenrand behält seinen schwarzen Strich, ebenso Artwork-Rahmen und die runden Fenster über der Scheibe – letztere sind Sichtfenster fürs Mechanik-Bastteil, keine Textboxen. Der Wolkenfilter (Normal- <b>und</b> Volvelle-Karten) bekam eine Kontrastanhebung statt nur mehr Deckkraft, sonst verschwimmt reine Deckkraft bei einer grauen Textur kaum sichtbar im Soft-Light-Modus. Der Licht-Verlauf sitzt jetzt oben rechts statt oben links, dort wo auf beiden Kartentypen das Energiesymbol liegt – der farbige Kreis dahinter kommt dadurch deutlicher zur Geltung.</li>
+      <li><b>30.07.2026 (3)</b> – <b>Volvelle-Karte: Textboxen ohne harten Rand, kräftigerer Wolkeneffekt, Licht von oben rechts.</b> Auf der Volvelle-Vorderseite hatten Entwicklungen/Fähigkeiten, Siege/Level/Angriff/KP, Fangorte, Akt.-KP, Fangwurf, Sterne und Seltenheit noch den alten schwarzen Kasten aus der Zeit vor der Umstellung auf den Normalkarten – jetzt faden sie gleichmäßig entlang ihrer ganzen Kontur zum Hintergrund aus. Erst ein radialer Verlauf aus der Boxmitte, dann – auf Wunsch, weil das an geraden Kanten ungleichmäßig aussah – eine Gaussian-Blur direkt auf dem Umriss: Die Box bleibt innen voll deckend und wird nur am Rand selbst weich, gleich weit in jede Richtung, auch in den Ecken. Der äußere Kartenrand behält seinen schwarzen Strich, ebenso Artwork-Rahmen und die runden Fenster über der Scheibe – letztere sind Sichtfenster fürs Mechanik-Bastteil, keine Textboxen. Der Wolkenfilter (Normal- <b>und</b> Volvelle-Karten) bekam eine Kontrastanhebung statt nur mehr Deckkraft, sonst verschwimmt reine Deckkraft bei einer grauen Textur kaum sichtbar im Soft-Light-Modus. Der Licht-Verlauf sitzt jetzt oben rechts statt oben links, dort wo auf beiden Kartentypen das Energiesymbol liegt – der farbige Kreis dahinter kommt dadurch deutlicher zur Geltung.</li>
     </ul>
   </div>`;
   groupDoneItemsInChapter14();
@@ -3748,14 +3748,15 @@ function volFrontCardSVG(nr, distMap){
       </feComponentTransfer>
     </filter>
     <clipPath id="volClip${nr}"><path d="${outline}"/></clipPath>
-    <!-- Boxfade: weicher runder Schein statt harter Kante, gilt fuer alle Innenboxen der Karte
-         (Entwicklungen/Faehigkeiten, Siege/Level/Angriff/KP, Fangorte, Akt.-KP, Fangwurf, Sterne,
-         Seltenheit). Der aeussere Kartenrand (outline oben) behaelt seinen schwarzen Strich. -->
-    <radialGradient id="volBoxFade${nr}" cx="50%" cy="50%" r="72%">
-      <stop offset="0%" stop-color="#fff" stop-opacity="0.88"/>
-      <stop offset="55%" stop-color="#fff" stop-opacity="0.80"/>
-      <stop offset="100%" stop-color="#fff" stop-opacity="0"/>
-    </radialGradient>
+    <!-- Boxrand weichzeichnen statt Verlauf aus der Mitte: eine Gaussian-Blur auf der Kontur
+         selbst faedet gleichmaessig entlang des ganzen Umrisses aus (auch in den Ecken), waehrend
+         ein radialer Verlauf von einem Mittelpunkt aus rechnet und dadurch an geraden Kanten
+         schon vor dem Rand sichtbar abblasst. Gilt fuer alle Innenboxen der Karte (Entwicklungen/
+         Faehigkeiten, Siege/Level/Angriff/KP, Fangorte, Akt.-KP, Fangwurf, Sterne, Seltenheit).
+         Der aeussere Kartenrand (outline oben) behaelt seinen schwarzen Strich. -->
+    <filter id="volBoxFeather${nr}" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="0.55"/>
+    </filter>
   </defs>`;
   s+=`<path d="${outline}" fill="url(#volGrad${nr})" stroke="#1a120a" stroke-width="0.5"/>`;
   s+=`<g clip-path="url(#volClip${nr})">
@@ -3779,7 +3780,7 @@ function volFrontCardSVG(nr, distMap){
 
   /* ---- Evo-/Fähigkeiten-Leiste zwischen Artwork und Fensterspalte ---- */
   const gx=8, gw=64, gy=40.5, gh=17;
-  s+=`<rect x="${gx}" y="${gy}" width="${gw}" height="${gh}" rx="2.2" fill="url(#volBoxFade${nr})"/>`;
+  s+=`<rect x="${gx}" y="${gy}" width="${gw}" height="${gh}" rx="2.2" fill="rgba(255,255,255,.84)" filter="url(#volBoxFeather${nr})"/>`;
   const ABIL = [
     ['schneid','🗡','Zerschneider',2], ['surf','🌊','Surfen',3],
     ['zert','🪨','Zertrümmerer',4], ['fly','🪽','Fliegen',5]
@@ -3806,7 +3807,7 @@ function volFrontCardSVG(nr, distMap){
   /* ---- Fensterspalte links: Siege / Level / Angriff / KP (Max) ---- */
   const rows=[{label:'Siege',r:V_RING_R.Siege},{label:'Level',r:V_RING_R.Level},{label:'Angriff',r:V_RING_R.Angriff},{label:'KP (Max)',r:V_RING_R.KP}];
   const chipTop=V_BIG_CY+V_RING_R.Siege-3.2, chipBot=V_BIG_CY+V_RING_R.KP+3.2;
-  s+=`<rect x="8" y="${chipTop}" width="37.5" height="${chipBot-chipTop}" rx="2.2" fill="url(#volBoxFade${nr})"/>`;
+  s+=`<rect x="8" y="${chipTop}" width="37.5" height="${chipBot-chipTop}" rx="2.2" fill="rgba(255,255,255,.84)" filter="url(#volBoxFeather${nr})"/>`;
   rows.forEach(row=>{
     const wy=V_BIG_CY+row.r;
     s+=`<circle cx="${V_BIG_CX}" cy="${wy}" r="${V_WIN_R}" fill="#fff" stroke="#1a120a" stroke-width="0.45"/>`;
@@ -3815,13 +3816,13 @@ function volFrontCardSVG(nr, distMap){
 
   /* ---- Akt.-KP-Fenster (oberer Umlauf der kleinen Scheibe) ---- */
   const swy=V_SMALL_CY-V_SMALL_RING;
-  s+=`<rect x="8" y="${swy-3.1}" width="37.5" height="6.2" rx="1.6" fill="url(#volBoxFade${nr})"/>`;
+  s+=`<rect x="8" y="${swy-3.1}" width="37.5" height="6.2" rx="1.6" fill="rgba(255,255,255,.84)" filter="url(#volBoxFeather${nr})"/>`;
   s+=`<circle cx="${V_SMALL_CX}" cy="${swy}" r="${V_WIN_R}" fill="#fff" stroke="#1a120a" stroke-width="0.45"/>`;
   s+=`<text x="${V_SMALL_CX-V_WIN_R-1.9}" y="${swy}" text-anchor="end" dominant-baseline="central" font-family="Fredoka" font-weight="600" font-size="2.7" fill="#1a120a">Akt. KP</text>`;
 
   /* ---- Fangorte-Spalte rechts (Oberkante Fensterspalte bis Unterkante Akt.-KP) ---- */
   const fx=47.5, fw=72-fx, fy=chipTop, fy2=swy+3.1, fh=fy2-fy;
-  s+=`<rect x="${fx}" y="${fy}" width="${fw}" height="${fh}" rx="2.2" fill="url(#volBoxFade${nr})"/>`;
+  s+=`<rect x="${fx}" y="${fy}" width="${fw}" height="${fh}" rx="2.2" fill="rgba(255,255,255,.84)" filter="url(#volBoxFeather${nr})"/>`;
   if(m.quest){
     const info=m.questInfo||{};
     s+=`<text x="${fx+fw/2}" y="${fy+3.6}" text-anchor="middle" font-family="Fredoka" font-weight="700" font-size="2.1" fill="#1a120a">BESONDERER FUNDORT</text>`;
@@ -3857,7 +3858,7 @@ function volFrontCardSVG(nr, distMap){
     const t=SCHWELLE[m.sterne];
     const oben=[t,t-1,t-2].map(fangRange), unten=[t-1,t-2,t-3].map(fangRange);
     const ty=93.2, th=12.6;
-    s+=`<rect x="8" y="${ty}" width="64" height="${th}" rx="2.2" fill="url(#volBoxFade${nr})"/>`;
+    s+=`<rect x="8" y="${ty}" width="64" height="${th}" rx="2.2" fill="rgba(255,255,255,.84)" filter="url(#volBoxFeather${nr})"/>`;
     s+=`<text x="14.4" y="${ty+5.4}" text-anchor="middle" font-family="Fredoka" font-weight="700" font-size="2.6" fill="#1a120a">FANG</text>`;
     s+=`<text x="14.4" y="${ty+9.2}" text-anchor="middle" font-family="Fredoka" font-size="2.1" fill="#6b5f4c">🎲 W6</text>`;
     s+=`<line x1="20.8" y1="${ty+1.6}" x2="20.8" y2="${ty+th-1.6}" stroke="#cfc4a3" stroke-width="0.3"/>`;
@@ -3875,12 +3876,12 @@ function volFrontCardSVG(nr, distMap){
   const fbY=V_CARD_H-7.2, fbH=4.4;
   /* Immer fünf Sterne, nur die erreichten in Gold (Beschluss 30.07.2026) */
   const starsChipW = 2.6 + 5*3.15;
-  s+=`<rect x="8" y="${fbY}" width="${starsChipW}" height="${fbH}" rx="1.4" fill="url(#volBoxFade${nr})"/>`;
+  s+=`<rect x="8" y="${fbY}" width="${starsChipW}" height="${fbH}" rx="1.4" fill="rgba(255,255,255,.84)" filter="url(#volBoxFeather${nr})"/>`;
   s+=`<text x="${8+starsChipW/2}" y="${fbY+fbH/2-0.18}" text-anchor="middle" dominant-baseline="central" font-family="Nunito" font-weight="800" font-size="3.0" letter-spacing="0.3">`
    + `<tspan fill="#c8940f">${'★'.repeat(m.sterne)}</tspan>`
    + (m.sterne<5 ? `<tspan fill="rgba(90,78,52,.30)">${'★'.repeat(5-m.sterne)}</tspan>` : '') + `</text>`;
   const klTxt = klInfo.sym+' '+klInfo.lab, klChipW = 3.2 + klInfo.lab.length*1.75;
-  s+=`<rect x="${72-klChipW}" y="${fbY}" width="${klChipW}" height="${fbH}" rx="1.4" fill="url(#volBoxFade${nr})"/>`;
+  s+=`<rect x="${72-klChipW}" y="${fbY}" width="${klChipW}" height="${fbH}" rx="1.4" fill="rgba(255,255,255,.84)" filter="url(#volBoxFeather${nr})"/>`;
   s+=`<text x="${72-1.3}" y="${fbY+fbH/2}" text-anchor="end" dominant-baseline="central" font-family="Nunito" fill="#111"><tspan font-size="2.7">${klInfo.sym}</tspan><tspan dx="1.0" font-size="2.0" font-weight="900">${klInfo.lab}</tspan></text>`;
 
   const pw=(V_CARD_W*V_PRINT_SCALE).toFixed(3), ph=(V_CARD_H*V_PRINT_SCALE).toFixed(3);
