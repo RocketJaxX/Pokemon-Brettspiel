@@ -836,6 +836,12 @@ table.kztable tr.hi td{background:#fdf3d4; font-weight:800;}
 .tk-starter{width:13mm; text-align:center; font-size:2.4mm; font-weight:700;}
 .tk-starter img{width:11mm; height:11mm; object-fit:contain; display:block; margin:0 auto;
   border:0.3mm solid #c9bfa4; border-radius:50%; background:#fff;}
+/* Gewaehlter Starter dieses Passes farbig, die anderen beiden entsaettigt und blass –
+   so ist auf einen Blick klar, welchem Spieler der Pass gehoert. */
+.tk-starter.sel img{border:0.6mm solid var(--gold); box-shadow:0 0 0 0.5mm var(--gold2);}
+.tk-starter.sel{color:#1a120a;}
+.tk-starter.dim img{filter:grayscale(1) opacity(.4);}
+.tk-starter.dim{color:#b0a68f;}
 .tk-rowlabel{font-family:'Fredoka'; font-weight:700; font-size:3.4mm; margin-bottom:1.4mm;}
 .tk-slots{display:flex; gap:2mm; justify-content:space-between;}
 .tk-slot{width:calc(var(--tk-circle) + 3mm); text-align:center;}
@@ -1215,9 +1221,9 @@ function computeAreaDistribution(monsInArea){
 const LS_KEY = 'kanto-spielsystem-v1';
 
 function defaultShop(){
-  /* Grundmenge = 3 Spieler x volles Rucksackfach (Kapitel 8):
-     5 Superbälle · 3 Hyperbälle · 2 Meisterbälle · 5 Tränke · 3 Supertränke · 2 Beleber · 1 Pokéflöte */
-  return { super:15, hyper:9, master:6, coin1:30, coin2:15, coin5:15, trank:15, supertrank:9, beleber:6, flute:3 };
+  /* Grundmenge = 3 Spieler x voller Rucksack (siehe RUCKSACK, Mengen je Spieler):
+     6 Superbälle · 4 Hyperbälle · 2 Meisterbälle · 6 Tränke · 3 Supertränke · 2 Beleber · 1 Pokéflöte */
+  return { super:18, hyper:12, master:6, coin1:30, coin2:15, coin5:15, trank:18, supertrank:9, beleber:6, flute:3 };
 }
 function evtDef(title, body, foot, n){
   n = n||1; const out=[];
@@ -1396,6 +1402,12 @@ function applyPersisted(saved){
     Object.keys(saved.typen).forEach(nr=>{ if(state.mons[nr] && saved.typen[nr] && saved.typen[nr].length) state.mons[nr].typen = saved.typen[nr].slice(); });
   }
   if(saved.shop) Object.assign(state.shop, saved.shop);
+  /* Mengen-Erhöhung 31.07.2026 (Superbälle 15→18, Hyperbälle 9→12, Tränke 15→18 für 3 Spieler).
+     Ein bereits gespeicherter Stand trägt sonst die alten Zahlen und überschreibt den neuen
+     Standard. Nur anheben, wenn der Wert exakt der frühere Standard ist – hat der Nutzer die
+     Zahl selbst verstellt, bleibt seine Wahl unangetastet. */
+  const shopBump = { super:[15,18], hyper:[9,12], trank:[15,18] };
+  for(const k in shopBump){ const [alt,neu]=shopBump[k]; if(state.shop[k]===alt) state.shop[k]=neu; }
   if(saved.events) state.events = saved.events;
 }
 
@@ -2759,10 +2771,11 @@ function shopSheetsHTML(){
 
 
 /* ===================== Trainerpass (3× A4 hoch: Pass · Rucksack · Chipbogen) ===================== */
-function starterRowHTML(){
+function starterRowHTML(highlightNr){
   return STARTER_NRS.map(nr=>{
     const m = state.mons[nr];
-    return `<div class="tk-starter"><img src="${IMG(nr)}" loading="lazy" onerror="this.style.visibility='hidden'"><div>${m.name}</div></div>`;
+    const cls = nr===highlightNr ? ' sel' : ' dim';
+    return `<div class="tk-starter${cls}"><img src="${IMG(nr)}" loading="lazy" onerror="this.style.visibility='hidden'"><div>${m.name}</div></div>`;
   }).join('');
 }
 function ordenSlotHTML(a){
@@ -2806,11 +2819,13 @@ function dexGridHTML(){
   }
   return cells;
 }
+/* Mengen je Spieler (ein voller Rucksack). Der Pokeshop druckt davon drei Sätze (3 Spieler),
+   siehe defaultShop() – beide Stellen müssen zusammenpassen. */
 const RUCKSACK = [
-  {fach:'links',  key:'super',      label:'Superball',   n:5, art:'ball'},
-  {fach:'rechts', key:'hyper',      label:'Hyperball',   n:3, art:'ball'},
+  {fach:'links',  key:'super',      label:'Superball',   n:6, art:'ball'},
+  {fach:'rechts', key:'hyper',      label:'Hyperball',   n:4, art:'ball'},
   {fach:'rechts', key:'master',     label:'Meisterball', n:2, art:'ball'},
-  {fach:'haupt',  key:'trank',      label:'Trank',       n:5, art:'item'},
+  {fach:'haupt',  key:'trank',      label:'Trank',       n:6, art:'item'},
   {fach:'haupt',  key:'supertrank', label:'Supertrank',  n:3, art:'item'},
   {fach:'haupt',  key:'beleber',    label:'Beleber',     n:2, art:'item'},
   {fach:'haupt',  key:'flute',      label:'Pokéflöte',   n:1, art:'item'},
@@ -2835,15 +2850,10 @@ function rsLegende(fach){
     .map(e=>`${e.label} ×${e.n}`).join(' · ');
 }
 
-function renderTrainerpass(){
-  const host = document.getElementById('page-trainerpass');
-  host.innerHTML = `
-    <div class="tk-toolbar noprint">
-      <h1>🎫 Trainerpass</h1>
-      <button onclick="printPage('portrait')">🖨 Drucken (A4 hoch)</button>
-      <span class="hint">Seite 1: Trainerpass mit Rucksack (pro Spieler ausdrucken). Seite 2: Orden- &amp; Legendären-Chips zum Ausschneiden — Durchmesser passt exakt auf die Kreise oben.</span>
-    </div>
-
+/* Ein Pass-plus-Rucksack-Blatt fuer genau einen Spieler; der uebergebene Starter ist farbig,
+   die beiden anderen sind ausgegraut. Rucksack liegt auf demselben A4-Blatt wie der Pass. */
+function trainerpassSeiteHTML(starterNr){
+  return `
     <div class="tk-page">
       <div class="tk-card">
         <div class="tk-row tk-header">
@@ -2851,7 +2861,7 @@ function renderTrainerpass(){
           <div class="tk-namefield">Name: <span class="tk-line"></span></div>
           <div class="tk-starterrow">
             <div class="tk-starterlabel">Starter</div>
-            ${starterRowHTML()}
+            ${starterRowHTML(starterNr)}
           </div>
         </div>
         <div class="tk-row tk-ordenrow">
@@ -2888,8 +2898,21 @@ function renderTrainerpass(){
           </div>
         </div>
       </div>
-    </div>
+    </div>`;
+}
 
+function renderTrainerpass(){
+  const host = document.getElementById('page-trainerpass');
+  /* Ein Blatt je Starter: Bisasam-, Glumanda- und Schiggy-Spieler bekommen je einen eigenen
+     Pass samt Rucksack. Danach ein gemeinsamer Chip-Ausschneidebogen. */
+  const paesse = STARTER_NRS.map(trainerpassSeiteHTML).join('');
+  host.innerHTML = `
+    <div class="tk-toolbar noprint">
+      <h1>🎫 Trainerpass</h1>
+      <button onclick="printPage('portrait')">🖨 Drucken (A4 hoch)</button>
+      <span class="hint">Seiten 1–3: je ein Trainerpass mit Rucksack pro Spieler (Starter farbig, die anderen grau). Seite 4: Orden- &amp; Legendären-Chips zum Ausschneiden — Durchmesser passt exakt auf die Kreise oben.</span>
+    </div>
+    ${paesse}
     <div class="tk-page tk-page2">
       <div class="tk-chiphint">Zum Ausschneiden — Orden- und Legendären-Chips (Rückseite frei für Klebstoff/Klebepunkt)</div>
       <div class="tk-chiprow">${ARENAS.map(ordenChipHTML).join('')}</div>
@@ -3494,6 +3517,7 @@ function renderDoc(){
       <li><b>30.07.2026 (14)</b> – <b>Spielbrett: Texturen je Pinselfarbe.</b> Jede Geländefarbe kann jetzt eine hochgeladene Grafik bekommen, die auf jedem damit bemalten Feld anstelle der Farbe erscheint – im Pinsel-Werkzeug unter „Farbe … bearbeiten“ per <i>Textur hochladen</i>, mit Vorschau und <i>Entfernen</i>. Die Farbe bleibt dabei erhalten und dient als Rückfall, solange das Bild lädt und falls die Textur später wieder entfernt wird; die Deckkraft wirkt auf Textur und Farbe gleichermaßen. Kacheln speichern weiterhin nur die Paletten-Id, deshalb wechseln <b>alle</b> bereits bemalten Felder sofort mit. Drei Entscheidungen dahinter: (1) Gezeichnet wird als <b>Füllmuster</b>, das auf genau eine Kachel skaliert ist – jedes Feld zeigt dadurch ein vollständiges Bild, unabhängig von den Pixelmaßen der Datei, und eine Textur kostet einen einzigen Zeichenbefehl statt eines je Feld (bei 100×100 Feldern der Unterschied zwischen 1 und 10.000). (2) Hochgeladene Bilder werden auf <b>256 px</b> Kantenlänge heruntergerechnet und als WebP abgelegt: Der Autosave teilt sich den Speicher des Browsers mit dem übrigen Spielsystem, ein unverändertes Handyfoto würde ihn allein sprengen – 256 px genügen für eine 1-cm-Kachel selbst beim 300-dpi-Export (1 cm = 118 px). (3) Weil seither Bilder mitgespeichert werden, meldet der Autosave einen vollen Speicher jetzt sichtbar in der Statuszeile, statt nur in die Entwicklerkonsole zu schreiben – ein stumm fehlschlagender Autosave fällt sonst erst beim Datenverlust auf. Geprüft: Hochladen, Anzeige im Kachelraster (bei 528 % Zoom genau ein Bild je Feld), Farbfeld der Palette zeigt die Textur, Entfernen stellt die Farbe wieder her, Speicherung übersteht das Neuladen, und die Textur landet auch im PNG-Export. <b>Nebenbefund:</b> Der PNG-Export bricht beim aktuellen 100×100-cm-Brett mit „Export zu groß“ ab – 100 cm ergeben bei 300 dpi 11.811 px und überschreiten die eingebaute Grenze von 8.000 px. Das ist unabhängig von den Texturen und bestand schon vorher; JSON- und HTML-Export sind nicht betroffen.</li>
       <li><b>31.07.2026</b> – <b>Neues Spielbrett als Vorlage eingebettet.</b> Der überarbeitete Brettstand (4.431 bemalte Felder, 42 Gebäude/Events, 46 Zonen, 52 Verbindungen) ersetzt die alte Vorlage. Der Export enthielt zusätzlich 5.569 <b>leere</b> Kacheln – ohne Gelände, ohne Zone, ohne Rahmen –, die der Editor beim Speichern für jedes je berührte Feld anlegt. Das Format ist dünn besetzt, solche Felder entstehen beim Laden ohnehin von selbst; sie sind daher entfernt worden: 1.141 KB → 518 KB, bei <b>pixelgleichem</b> Ergebnis (beide Fassungen gerendert und die Zeichenfläche verglichen). <b>Wichtig zum Verständnis der Speicherung:</b> Die eingebettete Vorlage hat beim Start immer Vorrang vor der automatischen Sicherung im Browser – diese greift nur, wenn gar keine Vorlage eingebettet ist. Änderungen am Brett überleben also kein Neuladen und müssen über „Export als JSON“ gesichert werden.</li>
       <li><b>31.07.2026 (2)</b> – <b>Brettinhalt um 3 Felder nach oben und 2 nach rechts verschoben</b>, weil das Gelände unten am Rand anstieß. Umgesetzt als reine Koordinatenverschiebung über alle Bestandteile: Kacheln, Gebäude/Events, Zonentitel (die mit Kommastellen liegen) und Verbindungen. Vorher geprüft, dass die weichenden Bereiche leer sind – die obersten drei Reihen und die beiden rechten Spalten enthielten nichts, der Inhalt begann bei Reihe 6 und endete bei Spalte 91. Es ging also nichts verloren; danach automatisch kontrolliert, dass die Anzahl aller Elemente gleich blieb und nichts über den Brettrand ragt. Unten und oben sind jetzt je 3 Reihen frei.</li>
+      <li><b>31.07.2026 (3)</b> – <b>Drei Trainerpässe je Starter, drei Rucksäcke, höhere Item-Mengen.</b> Der Reiter „Trainerpass“ druckt jetzt <b>ein Blatt pro Spieler</b> (Bisasam-, Glumanda-, Schiggy-Spieler): Auf jedem ist der jeweilige Starter farbig, die anderen beiden ausgegraut, und der zugehörige Rucksack liegt auf demselben A4-Blatt. Danach folgt wie bisher der gemeinsame Orden-/Legendären-Chipbogen – insgesamt vier Seiten. Die <b>Startmengen je Spieler</b> steigen: Superbälle 5→6, Hyperbälle 3→4, Tränke 5→6 (Meisterball 2, Supertrank 3, Beleber 2, Pokéflöte 1 unverändert). Das ist an einer Stelle definiert (<code>RUCKSACK</code>, Mengen je Spieler); der Pokeshop druckt automatisch drei Sätze davon, also Superbälle 18, Hyperbälle 12, Tränke 18. Damit ein bereits gespeicherter Spielstand die alten Shop-Zahlen nicht festhält, hebt eine Migration sie beim Laden an – aber nur, wenn der Wert exakt der frühere Standard ist; eine selbst verstellte Menge bleibt unangetastet (geprüft: 15/9/15 → 18/12/18, eigenes 20 bleibt 20).</li>
     </ul>
   </div>`;
   groupDoneItemsInChapter14();
