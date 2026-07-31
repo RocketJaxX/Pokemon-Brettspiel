@@ -2508,10 +2508,94 @@ function eventBackCardHTML(){
   </div>`;
 }
 
-const SHOP_GEO = { ball:{perRow:5,rowH:35}, coin:{perRow:6,rowH:31}, item:{perRow:3,rowH:45}, event:{perRow:4,rowH:68} };
-const SHOP_LABEL_H = 10, SHOP_PAGE_H = 250;
+/* ===== Seitenaufteilung misst sich selbst (Beschluss 30.07.2026) =====
+   Vorher standen die Chips-pro-Reihe als feste Zahlen im Code – und zwei davon waren zu klein:
+   Bälle standen zu 5, Items sogar nur zu 3 je Reihe, obwohl bei 190mm nutzbarer Breite, 24mm
+   Chips und 5mm Abstand sechs hineinpassen. Je Reihe blieb also Platz für 1 bzw. 3 weitere
+   Chips ungenutzt, und weil auch die Reihenhöhen zu großzügig gesetzt waren (Items 45mm statt
+   der tatsächlichen 29mm), brachen die Seiten zusätzlich zu früh um.
 
-function paginateShop(groups, geo){
+   Statt die Zahlen nur zu korrigieren, werden sie jetzt gemessen: Ein unsichtbarer Probe-Bogen
+   mit je einem Chip pro Sorte wird kurz in die Seite gehängt, ausgemessen und wieder entfernt.
+   Gemessen wird alles, was den Umbruch bestimmt – nutzbare Breite, Chipmaße, Abstände,
+   Schnittrand (outline liegt außerhalb der Box und zählt in der Breite nicht mit, verbraucht auf
+   dem Papier aber Platz), Kopfzeilenhöhe und Seitenhöhe. Ändert sich später eine Chipgröße, ein
+   Abstand oder der Seitenrand im CSS, wandert der Zeilenumbruch automatisch mit; es muss keine
+   Zahl im Code nachgezogen werden. */
+const SHOP_PROBE = {
+  ball:  '<div class="chip ballchip"></div>',
+  coin:  '<div class="chip coinchip"></div>',
+  item:  '<div class="chip itemchip"></div>',
+  event: '<div class="ecard"></div>',
+};
+/* Rückfallwerte, falls beim Messen nichts sichtbar war (z.B. Reiter noch nicht aktiv):
+   die für die aktuellen Maße durchgerechneten Werte. */
+const SHOP_GEO_FALLBACK = {
+  ball:  {perRow:6, rowH:29}, coin:  {perRow:6, rowH:31},
+  item:  {perRow:6, rowH:29}, event: {perRow:4, rowH:67},
+};
+const SHOP_FALLBACK_LABEL_H = 10, SHOP_FALLBACK_PAGE_H = 250;
+
+function shopGeometrie(){
+  const host = document.getElementById('page-shop');
+  const geo = {}; let labelH = SHOP_FALLBACK_LABEL_H, pageH = SHOP_FALLBACK_PAGE_H;
+  const probe = document.createElement('div');
+  probe.setAttribute('aria-hidden', 'true');
+  probe.style.cssText = 'position:absolute; left:-99999px; top:0; visibility:hidden; pointer-events:none;';
+  probe.innerHTML = `<div class="sheet shopsheet">
+      <div class="sheet-head">Probe <small>Probe</small></div>
+      <div class="sheet-sub">Probe</div>
+      <div class="shopgrid">
+        <div class="group-label" data-p="label">Probe</div>
+        ${Object.entries(SHOP_PROBE).map(([k, h]) => `<div class="shoprow" data-p="${k}">${h}</div>`).join('')}
+      </div>
+    </div>`;
+  host.appendChild(probe);
+  try{
+    const grid = probe.querySelector('.shopgrid');
+    const lineal = document.createElement('div');
+    lineal.style.cssText = 'width:100mm; height:0;';
+    grid.appendChild(lineal);
+    const pxMM = lineal.getBoundingClientRect().width / 100;
+    lineal.remove();
+    if(pxMM > 0){
+      const mm  = px => px / pxMM;
+      const aus = (el, prop) => parseFloat(getComputedStyle(el)[prop]) || 0;
+      const nutzbar = mm(grid.getBoundingClientRect().width);
+
+      probe.querySelectorAll('.shoprow').forEach(row=>{
+        const el = row.firstElementChild;
+        if(!el) return;
+        const abstand = mm(aus(row, 'gap')) || 5;
+        const unten   = mm(aus(row, 'marginBottom'));
+        /* outline zählt in der Layoutbreite nicht mit, braucht auf dem Papier aber Platz –
+           sonst würde die äußerste Schnittlinie über den Seitenrand hinauslaufen. */
+        const schnitt = mm(aus(el, 'outlineWidth') + aus(el, 'outlineOffset'));
+        const r = el.getBoundingClientRect();
+        geo[row.dataset.p] = {
+          perRow: Math.max(1, Math.floor((nutzbar + abstand - 2*schnitt) / (mm(r.width) + abstand))),
+          rowH:   mm(r.height) + unten,
+        };
+      });
+
+      const label = probe.querySelector('[data-p="label"]');
+      labelH = mm(label.getBoundingClientRect().height + aus(label, 'marginTop') + aus(label, 'marginBottom'));
+
+      const bogen = probe.querySelector('.shopsheet');
+      const kopf  = probe.querySelector('.sheet-head');
+      const unter = probe.querySelector('.sheet-sub');
+      const innen = mm(bogen.getBoundingClientRect().height - aus(bogen,'paddingTop') - aus(bogen,'paddingBottom'));
+      const kopfH = mm(kopf.getBoundingClientRect().height + aus(kopf,'marginBottom'))
+                  + mm(unter.getBoundingClientRect().height + aus(unter,'marginBottom'));
+      pageH = innen - kopfH - 2;   // 2mm Reserve für den Schnittrand der letzten Reihe
+    }
+  } finally { probe.remove(); }
+  Object.keys(SHOP_GEO_FALLBACK).forEach(k=>{ if(!geo[k]) geo[k] = SHOP_GEO_FALLBACK[k]; });
+  if(!(pageH > 0)) pageH = SHOP_FALLBACK_PAGE_H;
+  return {geo, labelH, pageH};
+}
+
+function paginateShop(groups, geo, labelH, pageH){
   const pages = []; let cur = [], used = 0;
   const newPage = ()=>{ if(cur.length){ pages.push(cur); } cur = []; used = 0; };
   groups.forEach(g=>{
@@ -2519,12 +2603,12 @@ function paginateShop(groups, geo){
     for(let i=0; i<g.items.length; i+=geo.perRow) rows.push(g.items.slice(i, i+geo.perRow));
     let labelPending = g.label;
     rows.forEach(row=>{
-      const need = (labelPending ? SHOP_LABEL_H : 0) + geo.rowH;
-      if(used + need > SHOP_PAGE_H){
+      const need = (labelPending ? labelH : 0) + geo.rowH;
+      if(used + need > pageH){
         newPage();
         if(!labelPending) labelPending = g.label + ' <span class="count">Forts.</span>';
       }
-      if(labelPending){ cur.push({type:'label', html:labelPending}); used += SHOP_LABEL_H; labelPending = null; }
+      if(labelPending){ cur.push({type:'label', html:labelPending}); used += labelH; labelPending = null; }
       cur.push({type:'row', items:row}); used += geo.rowH;
     });
   });
@@ -2540,10 +2624,10 @@ function shopPageBody(page, side){
   }).join('');
 }
 
-function shopDuplex(groups, geoKey, title, small, subF, subB){
+function shopDuplex(groups, geoKey, title, small, subF, subB, mass){
   const nonEmpty = groups.filter(g=>g.items.length);
   if(!nonEmpty.length) return '';
-  const pages = paginateShop(nonEmpty, SHOP_GEO[geoKey]);
+  const pages = paginateShop(nonEmpty, mass.geo[geoKey], mass.labelH, mass.pageH);
   let out = '';
   pages.forEach(p=>{
     out += sheetWrap(title, small, subF, 'front', shopPageBody(p,'front'));
@@ -2552,7 +2636,7 @@ function shopDuplex(groups, geoKey, title, small, subF, subB){
   return out;
 }
 
-function ballSectionHTML(){
+function ballSectionHTML(mass){
   const groups = BALL_CFG.map(cfg=>{
     const n = state.shop[cfg.key], items = [];
     for(let i=0; i<n; i++){
@@ -2563,10 +2647,10 @@ function ballSectionHTML(){
   });
   return shopDuplex(groups, 'ball', 'Ball-Chips', 'runde Chips · 24 mm',
     'Startausrüstung pro Spieler laut Regelwerk.',
-    'Rückseite – Reihen für den Duplexdruck (lange Kante) gespiegelt.');
+    'Rückseite – Reihen für den Duplexdruck (lange Kante) gespiegelt.', mass);
 }
 
-function coinSectionHTML(){
+function coinSectionHTML(mass){
   const groups = [1,2,5].map(v=>{
     const n = state.shop['coin'+v], items = [];
     for(let i=0; i<n; i++){
@@ -2576,10 +2660,10 @@ function coinSectionHTML(){
     return {label:`${v} ₽ <span class="count">×${n}</span>`, items};
   });
   return shopDuplex(groups, 'coin', 'Pokédollar-Chips', 'Münzen · 26 mm',
-    '', 'Rückseite – Reihen für den Duplexdruck (lange Kante) gespiegelt.');
+    '', 'Rückseite – Reihen für den Duplexdruck (lange Kante) gespiegelt.', mass);
 }
 
-function itemSectionHTML(){
+function itemSectionHTML(mass){
   const groups = SHOP_ITEMS.map(it=>{
     const n = state.shop[it.key], items = [];
     const html = `<div class="chip itemchip" style="--c:${it.col}">
@@ -2591,10 +2675,10 @@ function itemSectionHTML(){
   });
   return shopDuplex(groups, 'item', 'Item-Chips', 'runde Chips · 24 mm',
     'Passen exakt in die Rucksack-Felder des Trainerpasses.',
-    'Rückseite – Reihen für den Duplexdruck (lange Kante) gespiegelt.');
+    'Rückseite – Reihen für den Duplexdruck (lange Kante) gespiegelt.', mass);
 }
 
-function eventSectionHTML(){
+function eventSectionHTML(mass){
   if(!state.events.length){
     return sheetWrap('Event-Karten','43 × 62 mm',
       'Noch keine Eventkarten – über den Knopf oben ergänzen (werden lokal gespeichert und mitgedruckt).','front','');
@@ -2603,7 +2687,7 @@ function eventSectionHTML(){
     items: state.events.map((ev,i)=>({front:eventCardHTML(ev,i), back:eventBackCardHTML()}))}];
   return shopDuplex(groups, 'event', 'Event-Karten', '43 × 62 mm',
     'Eigene Karten über den Knopf oben ergänzen – werden lokal gespeichert und mitgedruckt.',
-    'Einheitliche verdeckte Rückseite für alle Ereigniskarten.');
+    'Einheitliche verdeckte Rückseite für alle Ereigniskarten.', mass);
 }
 
 function addEventPrompt(){
@@ -2668,7 +2752,9 @@ function renderShop(){
 }
 
 function shopSheetsHTML(){
-  return ballSectionHTML() + coinSectionHTML() + itemSectionHTML() + eventSectionHTML();
+  /* Einmal messen, alle vier Abschnitte teilen sich das Ergebnis. */
+  const mass = shopGeometrie();
+  return ballSectionHTML(mass) + coinSectionHTML(mass) + itemSectionHTML(mass) + eventSectionHTML(mass);
 }
 
 
@@ -3403,6 +3489,7 @@ function renderDoc(){
       <li><b>30.07.2026 (9)</b> – <b>Trainerpass aufgeräumt und Chips vergrößert.</b> Die Fußzeile (Siegesstraße, Top 4, Duelle S:N, Pokédollar) ist entfallen – all das wird ohnehin nebenbei mitgezählt und stand nur als Platzfüller unter dem Pokédex. Ebenso entfallen die erklärenden Zusätze hinter „Arenaorden“ und „Pokédex“. Orden- und Legendären-Chips wachsen von 13 auf <b>17 mm</b> (Obergrenze wäre 20,5 mm: acht Ordenfelder à Kreis + 3 mm müssen in die 188 mm Innenbreite der Karte passen); Felder und Chips teilen sich weiterhin dieselbe Variable <code>--tk-circle</code>, ein ausgeschnittener Chip passt also nach wie vor exakt auf sein Feld. Der farbige Rand der Chips beginnt jetzt bei 70 % statt 44 % des Radius – das Icon füllt 80 % der Breite, seine Ecken reichen bis 57 % des Radius, die Farbe bleibt damit außerhalb des Icons. Nebenbei drei stille Kaskadenfehler behoben: Der v2-Block von 27.07. stand <i>vor</i> dem älteren Trainerpass-Block und wurde von diesem bei gleicher Spezifität überschrieben, wodurch der Randverlauf der leeren Felder wirkungslos war (die ebenfalls verdeckte Sonderformatierung des Chipbogens ist ersatzlos gestrichen – alle drei Blätter sehen jetzt gleich aus); außerdem setzte der <code>@media print</code>-Block <code>page-break-after:avoid</code> auf <code>.tk-page</code> und hob damit das <code>always</code> für den Seitenumbruch zwischen Pass, Rucksack und Chipbogen wieder auf. Reiter heißt jetzt überall „Trainerpass“ (hieß in der Kopfzeile noch „Trainerkarte“), und die Ordenfelder tragen „max. Lv. X“ statt „ab Lv. X“ – der Orden hebt die Obergrenze, er schaltet kein Startlevel frei.</li>
       <li><b>30.07.2026 (10)</b> – <b>Speicher-Hinweis in der Kopfzeile war unsichtbar.</b> Zwei verschiedene Elemente teilten sich die Klasse <code>.savehint</code>: der Dauerhinweis „Änderungen werden automatisch lokal gespeichert“ (wird nach jedem Speichern zu „Gespeichert · Uhrzeit“) und die Kurzmeldung nach „💾 HTML“, die per JavaScript ein- und ausgeblendet wird und deshalb <code>opacity:0</code> als Ausgangswert braucht. Dieses <code>opacity:0</code> galt für beide – der Dauerhinweis war seit jeher unsichtbar und damit auch die einzige Rückmeldung, dass Änderungen an der Pokémon-Tabelle tatsächlich ankommen. Die Kurzmeldung heißt jetzt <code>.savetoast</code> / <code>#saveToast</code>; nebenbei sind die beiden nur durch Groß-/Kleinschreibung unterschiedenen IDs <code>saveHint</code> und <code>savehint</code> aufgelöst.</li>
       <li><b>30.07.2026 (11)</b> – <b>Trainerpass und Rucksack teilen sich wieder eine Seite, Rucksack neu gezeichnet.</b> Bei den Legendären steht nur noch der Name; die Freischaltbedingung (5 Orden, Top 4, Dex ≥ 100) ergibt sich im Spielverlauf und steht in der Spielanleitung. Der Rucksack hat Henkel, Trageriemen, Seitenschnallen und die Überschrift „🎒 RUCKSACK“ verloren und dafür eine Deckelklappe mit zwei Schnallen bekommen: Statt drei 1-mm-Rahmen tragen die Fächer nur noch eine 0,3-mm-Naht und eigene Farbflächen – halb so viele Linien, deutlich ruhiger. Alle drei Fächer sind jetzt gleich hoch (das Hauptfach mit seinen vier Reihen gibt die Höhe vor), damit unten in der Tasche keine tote Fläche stehen bleibt. <b>Beides passt zusammen auf ein Blatt:</b> Passkarte 117 mm + Rucksack 129 mm = 250 mm von 281 mm nutzbarer Seitenhöhe, also rund 31 mm Reserve. Die Breite war der Knackpunkt – sieben 24-mm-Chipspalten sind allein 168 mm; mit 1,5 mm statt 2 mm Feldabstand und schlankeren Fachpolstern kommt der Rucksack auf 189 mm und passt damit in die 196 mm Innenbreite der Seite, ohne dass der frühere Sonderrand von 5 mm nötig wäre. Der Reiter heißt jetzt auch intern <code>trainerpass</code> (Seiten-ID, Renderer, Zoom-Schlüssel).</li>
+      <li><b>30.07.2026 (12)</b> – <b>Pokeshop: Zeilenumbruch misst sich jetzt selbst.</b> Wie viele Chips in eine Zeile passen, stand bisher als feste Zahl im Code – und zwei Werte waren zu klein: Bälle standen zu <b>5</b>, Items sogar nur zu <b>3</b> je Zeile, obwohl bei 190 mm nutzbarer Breite, 24 mm Chips und 5 mm Abstand <b>6</b> hineinpassen. Je Zeile blieb also Platz für einen bzw. drei weitere Chips leer. Auch die Zeilenhöhen waren zu großzügig (Items 45 mm statt der tatsächlichen 29 mm), wodurch die Bögen zusätzlich zu früh umbrachen. Nachgemessen im Browser: nutzbare Breite 190 mm, Abstand 5 mm, Schnittrand 1,36 mm je Seite. Statt die Zahlen nur zu korrigieren, werden sie jetzt <b>gemessen</b>: Vor jedem Aufbau wird ein unsichtbarer Probe-Bogen mit je einem Chip pro Sorte kurz in die Seite gehängt, ausgemessen und wieder entfernt. Daraus ergeben sich Chips je Zeile, Zeilenhöhe, Höhe der Gruppenüberschrift und nutzbare Seitenhöhe. Ändert später jemand eine Chipgröße, einen Abstand, den Seitenrand oder die Kopfzeile im CSS, wandert der Umbruch automatisch mit – es muss keine Zahl im Code nachgezogen werden (nachgewiesen: 18 mm → 8 je Zeile, 24 mm → 6, 30 mm → 5, 40 mm → 4, 60 mm → 2). Ergebnis jetzt 6 · 6 · 6 · 4 Chips je Zeile für Bälle, Münzen, Items und Eventkarten; kein Bogen läuft über (16 Bögen = 16 Druckseiten). Der <code>outline</code> der Schnittlinie zählt bewusst mit, obwohl er in der Layoutbreite nicht auftaucht – er liegt außerhalb der Box, braucht auf dem Papier aber Platz. Teilzeilen am Ende einer Gruppe bleiben bestehen: Superbälle und Hyperbälle gehören nicht in dieselbe Zeile.</li>
       <li><b>30.07.2026 (12)</b> – <b>Aufgeräumt: alter Spielleiter-Druck entfernt.</b> Vor dem Anleitungsheft (28.07.2026) gab es eine eigene A5-Druckvorlage für die Gebietstabellen, überschrieben mit „Spielleiter · Blatt N“. Sie wurde durch das Heft ersetzt, blieb aber als Karteileiche liegen: 13 nie aufgerufene Funktionen (<code>buildGMPrintHTML</code>, <code>gmPackHalves</code>, <code>partitionBalanced</code>, <code>a5HalfHTML</code> und die übrigen Helfer) samt rund 60 Zeilen <code>.gm-print</code>-CSS – zusammen etwa 230 Zeilen. Das erklärt auch die frühere Notiz beim Handbuch-Namensraum: Genau diese toten Regeln hatten den Handbuch-Klassen ihre Schriftgrößen aufgedrängt. Ebenfalls entfallen: <code>vTypeIcon</code> und <code>top4Row</code>. Die beiden verbliebenen Überschriften „Spielleiter-Karte“ im Quelltext heißen jetzt nach dem, was darunter steht, und der Hinweis über der Pokémon-Tabelle verweist auf die Spielanleitung statt auf die abgeschaffte Spielleiter-Karte.</li>
     </ul>
   </div>`;
