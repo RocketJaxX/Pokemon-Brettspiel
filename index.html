@@ -323,6 +323,7 @@ table.typematrix .rowlab{color:#fff; font-weight:800; font-size:7.5px; padding:0
 .shop-toolbar button{background:var(--rot); color:#fff; padding:8px 16px; font-size:13px;}
 .shop-toolbar .hint{font-size:11px; color:#8a7f6d; font-weight:700; width:100%;}
 .shop-config{display:flex; gap:12px; flex-wrap:wrap; margin-bottom:14px;}
+#page-shop p.hint{font-size:11px; color:#8a7f6d; font-weight:700; margin:-8px 0 14px;}
 .cfgbox{background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:8px 12px;
   display:flex; flex-direction:column; gap:5px; font-size:12px;}
 .cfgbox b{font-family:'Fredoka',sans-serif; font-size:13px; margin-bottom:2px;}
@@ -460,8 +461,6 @@ table.typematrix .rowlab{color:#fff; font-weight:800; font-size:7.5px; padding:0
   text-transform:uppercase; opacity:.7;}
 #page-quest .q-title{font-family:'Fredoka',sans-serif; font-weight:700; font-size:9.5pt; line-height:1.08; margin-top:0.8mm;}
 #page-quest .q-geber{padding:0.8mm 2.8mm 0; font-size:5.8pt; font-weight:800; opacity:.72;}
-#page-quest .q-ausl{margin:1.4mm 2.8mm 0; padding:0.8mm 1.4mm; font-size:5.6pt; font-weight:800;
-  background:rgba(0,0,0,.09); border-radius:1mm;}
 #page-quest .q-body{padding:1.8mm 2.8mm; font-size:7.2pt; font-weight:700; line-height:1.26; flex:1;}
 #page-quest .q-foot{margin-top:auto; padding:1.6mm 2.8mm; background:rgba(0,0,0,.14);
   font-size:5.4pt; font-weight:800; display:flex; flex-direction:column; gap:0.5mm;}
@@ -1830,11 +1829,9 @@ function hbPreisTabelle(){
     ['Pokéball', 'gratis', 'Fangwurf – unbegrenzt vorrätig, du brauchst keinen Chip dafür'],
     ['Superball', '3 ₽', 'Fangwurf +1'],
     ['Hyperball', '5 ₽', 'Fangwurf +2'],
-    ['Meisterball', '20 ₽', 'fängt sofort, ohne Wurf'],
     ['Trank', '2 ₽', 'heilt 8 KP'],
     ['Supertrank', '4 ₽', 'heilt alle KP'],
     ['Beleber', '5 ₽', 'holt ein besiegtes Pokémon mit halben KP zurück'],
-    ['Pokéflöte', '8 ₽', 'weckt das schlafende Relaxo – geht nie kaputt'],
   ].map(r=>'<tr><td><b>' + r[0] + '</b></td><td>' + r[1] + '</td><td>' + r[2] + '</td></tr>').join('');
   return '<table class="hbt"><tr><th>Gegenstand</th><th>Preis</th><th>Wirkung</th></tr>' + zeilen + '</table>';
 }
@@ -2037,9 +2034,11 @@ function handbuchBloecke(){
       '<li>Hauptfach: <b>5 Tränke · 3 Supertränke · 2 Beleber · 1 Pokéflöte</b></li>' +
       '<li>Normale Pokébälle brauchen keinen Platz – die hast du immer dabei.</li></ul>' +
       '<p>Ist ein Fach voll und du findest noch etwas, tauschst du den Fund gegen Pokédollar ein.</p>');
-  add('<div class="hbtip">Die beiden <b>Meisterbälle</b> sind etwas ganz Besonderes: Einen kannst du im Shop ' +
-      'kaufen, den zweiten bekommst du in einer Quest. Hebt sie euch für <b>Mewtu und Mew</b> auf – ohne ' +
-      'Meisterball sind die beiden praktisch nicht zu fangen.</div>');
+  add('<div class="hbtip">Die beiden <b>Meisterbälle</b> und die <b>Pokéflöte</b> stehen nicht in der ' +
+      'Preisliste – sie sind zu wichtig, um sie einfach zu kaufen. Du bekommst sie als Belohnung: den ersten ' +
+      'Meisterball für 50 Pokédex-Einträge bei Prof. Eich, den zweiten für alle 8 Orden (Auftrag 16); die ' +
+      'Pokéflöte für den Pokémon-Turm in Lavandia (Auftrag 9). Hebt euch die Meisterbälle für <b>Mewtu und ' +
+      'Mew</b> auf – ohne sie sind die beiden praktisch nicht zu fangen.</div>');
 
   kap('9 · Arenen und Orden');
   add('<p>In acht Städten wartet ein <b>Arenaleiter</b>. Wer ihn besiegt, bekommt einen <b>Orden</b> – und ' +
@@ -2568,7 +2567,7 @@ const SHOP_ITEMS = [
   {key:'trank', name:'Trank', eff:'Heilt 8 KP', price:2, col:'#8a63c9', ico:itemImgHTML('trank')},
   {key:'supertrank', name:'Supertrank', eff:'Heilt volle KP', price:4, col:'#e0872e', ico:itemImgHTML('supertrank')},
   {key:'beleber', name:'Beleber', eff:'Besiegtes Pokémon zurück<br>mit halben KP', price:5, col:'#e3b52a', ico:itemImgHTML('beleber')},
-  {key:'flute', name:'Pokéflöte', eff:'Weckt ein schlafendes<br>Relaxo auf', price:8, col:'#7a5aad',
+  {key:'flute', name:'Pokéflöte', eff:'Weckt ein schlafendes<br>Relaxo auf', price:null, col:'#7a5aad',
    ico:`<img src="${FLUTE_IMG}" loading="lazy" onerror="this.style.visibility='hidden'">`},
 ];
 
@@ -2791,7 +2790,7 @@ function itemSectionHTML(mass){
     const html = `<div class="chip itemchip" style="--c:${it.col}">
       <div class="itc-ico">${it.ico}</div>
       <div class="itc-name">${it.name}</div>
-      <div class="itc-price">${it.price} ₽</div></div>`;
+      <div class="itc-price">${it.price ? it.price+' ₽' : 'Quest'}</div></div>`;
     for(let i=0; i<n; i++) items.push({front:html, back:html});
     return {label:`${it.name} <span class="count">×${n}</span>`, items};
   });
@@ -2845,7 +2844,7 @@ function renderShop(){
       <div class="cfgbox"><b>Bälle</b>
         ${shopNumberInput('super','Superbälle')}
         ${shopNumberInput('hyper','Hyperbälle')}
-        ${shopNumberInput('master','Meisterbälle')}
+        ${shopNumberInput('master','Meisterbälle (Quest)')}
       </div>
       <div class="cfgbox"><b>Münzen</b>
         ${shopNumberInput('coin1','1 ₽')}
@@ -2856,9 +2855,11 @@ function renderShop(){
         ${shopNumberInput('trank','Trank')}
         ${shopNumberInput('supertrank','Supertrank')}
         ${shopNumberInput('beleber','Beleber')}
-        ${shopNumberInput('flute','Pokéflöte')}
+        ${shopNumberInput('flute','Pokéflöte (Quest)')}
       </div>
     </div>
+    <p class="hint noprint">Meisterball und Pokéflöte sind keine Kaufware mehr, sondern Quest-Belohnungen
+      (siehe Reiter „Questreihe") – hier wird nur noch die Druckmenge der Chips festgelegt.</p>
     <button class="noprint addeventbtn" onclick="addEventPrompt()">➕ Neue Eventkarte hinzufügen</button>
     <div id="shopSheets">${shopSheetsHTML()}</div>`;
 
@@ -2893,82 +2894,83 @@ function shopSheetsHTML(){
    Buchhaltung: Jede Karte traegt ihre eigene Bedingung. */
 const QUEST_HAUPT = [
   {nr:1, titel:'Der Pokédex', geber:'Prof. Eich · Alabastia', ico:'📓',
-   ausl:'Zu Spielbeginn aufdecken.',
    auf:'Fange <b>3 verschiedene</b> Pokémon.',
    lohn:'3 ₽ · 1 Trank'},
   {nr:2, titel:'Durch den Wald', geber:'Käfersammler · Vertania-Wald', ico:'🌿',
-   ausl:'Sobald Auftrag 1 erfüllt ist.',
-   auf:'Fange ein <b>Käfer-Pokémon</b> im Vertania-Wald.',
+   auf:'Besiege ein <b>Käfer-Pokémon</b> im Vertania-Wald.',
    lohn:'2 Superbälle'},
   {nr:3, titel:'Der erste Orden', geber:'Rocko · Marmoria', ico:'🥇',
-   ausl:'Sobald Auftrag 2 erfüllt ist.',
    auf:'Gewinne den <b>Felsorden</b> in Marmoria.',
    lohn:'5 ₽ · 1 Trank'},
   {nr:4, titel:'Erste Entwicklung', geber:'Prof. Eich', ico:'✨',
-   ausl:'Sobald Auftrag 3 erfüllt ist.',
    auf:'Lass ein Pokémon zum <b>ersten Mal entwickeln</b>.',
    lohn:'1 Trank · 3 ₽'},
   {nr:5, titel:'Fossilien im Mondberg', geber:'Museum · Marmoria', ico:'🦴',
-   ausl:'Ab 1 Orden.',
    auf:'Erreiche die <b>Fossilien-Ausgrabung im Mondberg</b> und bring den Fund ins Museum. <b>Wähle</b> eines der beiden Fossilien.',
    lohn:'Amonitas <b>oder</b> Kabuto (Lv 1 ins Team). Das andere bekommst du später.'},
   {nr:6, titel:'Bills Leuchtturm', geber:'Bill · Route 25', ico:'🔦',
-   ausl:'Ab 2 Orden.',
    auf:'Erreiche den Leuchtturm auf <b>Route 25</b>.',
    lohn:'1 Hyperball · 3 ₽'},
   {nr:7, titel:'Schatten über Prismania', geber:'Team Rocket', ico:'🕶',
-   ausl:'Ab 3 Orden.',
    auf:'Besiege <b>3 wilde Pokémon</b> auf den Routen 5–8.',
    lohn:'5 ₽'},
   {nr:8, titel:'Der Felstunnel', geber:'Wanderer · Route 10', ico:'🔦',
-   ausl:'Ab 3 Orden.',
-   auf:'Fange ein Pokémon im <b>Felstunnel</b> und bring dein Team auf <b>4 Pokémon</b>.',
+   auf:'Erreiche den <b>Felstunnel</b> und bring dein Team auf <b>4 Pokémon</b>.',
    lohn:'1 Superball · 3 ₽'},
   {nr:9, titel:'Der Pokémon-Turm', geber:'Mr. Fuji · Lavandia', ico:'👻',
-   ausl:'Ab 4 Orden.',
-   auf:'Fange ein <b>Geist-Pokémon</b> im Pokémon-Turm.',
+   auf:'Besiege ein <b>Geist-Pokémon</b> im Pokémon-Turm.',
    lohn:'<b>Pokéflöte</b> (geschenkt)'},
   {nr:10, titel:'Der Schläfer', geber:'Anwohner · Route 11/16', ico:'🎵',
-   ausl:'Sobald Auftrag 9 erfüllt ist.',
    auf:'Wecke <b>Relaxo</b> mit der Pokéflöte und fange es.',
    lohn:'1 Hyperball'},
   {nr:11, titel:'Safari-Abenteuer', geber:'Safari-Aufseher · Fuchsania', ico:'🏕',
-   ausl:'Ab 5 Orden.',
-   auf:'Fange <b>2 Pokémon</b> in der Safari-Zone.',
+   auf:'Besiege <b>2 Pokémon</b> in der Safari-Zone.',
    lohn:'1 Hyperball · 3 ₽'},
   {nr:12, titel:'Das stille Kraftwerk', geber:'Techniker · Route 10', ico:'⚡',
-   ausl:'Ab 5 Orden.',
-   auf:'Fange <b>2 Elektro-Pokémon</b>.',
+   auf:'Besiege <b>2 Elektro-Pokémon</b>.',
    lohn:'1 Beleber · Zapdos ist jetzt in Reichweite'},
   {nr:13, titel:'Die Villa auf Zinnober', geber:'Verlassenes Herrenhaus', ico:'🏝',
-   ausl:'Ab 6 Orden.',
    auf:'Erreiche <b>Zinnoberinsel</b> (ein Pokémon mit Surfer nötig).',
    lohn:'5 ₽ · 1 Supertrank'},
   {nr:14, titel:'Meister der Typen', geber:'Arenaleiter-Rat', ico:'⚔',
-   ausl:'Ab 7 Orden.',
    auf:'Besiege <b>3 Pokémon mit Typvorteil</b> („+“ in der Typtabelle).',
    lohn:'1 Supertrank · 5 ₽'},
   {nr:15, titel:'Das zweite Fossil', geber:'Ausgrabung · Siegesstraße', ico:'⛏',
-   ausl:'Ab 8 Orden.',
    auf:'Erreiche die <b>Fossilien-Ausgrabung an der Siegesstraße</b>.',
    lohn:'Das <b>andere</b> Fossil aus Auftrag 5 (Lv 1 ins Team)'},
   {nr:16, titel:'Der Weg zur Liga', geber:'Prof. Eich', ico:'🏆',
-   ausl:'Ab 8 Orden.',
    auf:'Bringe <b>3 Pokémon auf Level 8</b>.',
-   lohn:'1 Beleber · 1 Supertrank'},
+   lohn:'1 Beleber · 1 Supertrank · 1 Meisterball'},
 ];
 
 /* Nebenaufträge: ein GEMEINSAMER, verdeckter Stapel (wie die Ereigniskarten). Wer ein
    Pokécenter betritt, darf einen ziehen; es ist immer nur einer offen. Sie sind freiwillig
    und belohnen genau das, was man beim Spielen ohnehin tut – dadurch entsteht Abwechslung,
-   ohne dass jemand vom Hauptstrang abkommt. */
+   ohne dass jemand vom Hauptstrang abkommt.
+   Grundsatz (Beschluss 02.08.2026): keine Aufgabe verlangt einen FRISCHEN Fang eines
+   bestimmten Typs/Gebiets – wer den Pool schon leergefangen hat, säße sonst fest. Stattdessen
+   entweder ein Kampf (jederzeit möglich, kein Fang nötig) oder ein Zustand, der nur wachsen
+   kann (Pokédex-Bestand, Teamgröße, Level). */
 const QUEST_NEBEN = [
   {nr:1, titel:'Typenkenner', ico:'🧭', auf:'Habe <b>4 verschiedene Typen</b> gleichzeitig im Team.', lohn:'3 ₽'},
   {nr:2, titel:'Sammlerstück', ico:'📗', auf:'Bringe deinen Pokédex auf <b>15 Einträge</b>.', lohn:'1 Superball · 3 ₽'},
-  {nr:3, titel:'Gewässerkunde', ico:'🌊', auf:'Fange <b>3 Wasser-Pokémon</b>.', lohn:'1 Superball'},
-  {nr:4, titel:'Bergsteiger', ico:'🪨', auf:'Fange <b>3 Pokémon in Höhlen</b>.', lohn:'1 Trank · 2 ₽'},
+  {nr:3, titel:'Gewässerkunde', ico:'🌊', auf:'Habe <b>3 Wasser-Pokémon</b> im Pokédex.', lohn:'1 Superball'},
+  {nr:4, titel:'Bergsteiger', ico:'🪨', auf:'Besiege <b>3 Pokémon in Höhlen</b>.', lohn:'1 Trank · 2 ₽'},
   {nr:5, titel:'Wegbereiter', ico:'🗡', auf:'Habe je ein Pokémon mit <b>Zerschneider</b> und <b>Surfer</b>.', lohn:'5 ₽'},
   {nr:6, titel:'Ausdauer', ico:'💪', auf:'Bringe ein Pokémon auf <b>Level 6</b>.', lohn:'1 Supertrank'},
+  {nr:7, titel:'Feuerprobe', ico:'🔥', auf:'Habe <b>3 Feuer-Pokémon</b> im Pokédex.', lohn:'1 Trank · 2 ₽'},
+  {nr:8, titel:'Grüner Daumen', ico:'🌱', auf:'Habe <b>3 Pflanzen-Pokémon</b> im Pokédex.', lohn:'1 Trank · 2 ₽'},
+  {nr:9, titel:'Giftmischer', ico:'☠', auf:'Habe <b>3 Gift-Pokémon</b> im Pokédex.', lohn:'1 Superball'},
+  {nr:10, titel:'Steinsammler', ico:'🪨', auf:'Habe <b>2 Gestein-Pokémon</b> im Pokédex.', lohn:'2 ₽'},
+  {nr:11, titel:'Denksportler', ico:'🔮', auf:'Habe <b>2 Psycho-Pokémon</b> im Pokédex.', lohn:'1 Trank'},
+  {nr:12, titel:'Ringkämpfer', ico:'🥊', auf:'Habe <b>2 Kampf-Pokémon</b> im Pokédex.', lohn:'1 Superball'},
+  {nr:13, titel:'Krabbeltierforscher', ico:'🐛', auf:'Habe <b>3 Käfer-Pokémon</b> im Pokédex.', lohn:'2 ₽'},
+  {nr:14, titel:'Spitzenklasse I', ico:'⭐', auf:'Habe <b>1 Pokémon</b> mit <b>⭐⭐⭐⭐⭐</b>.', lohn:'3 ₽'},
+  {nr:15, titel:'Spitzenklasse II', ico:'🌟', auf:'Habe <b>3 Pokémon</b> mit <b>⭐⭐⭐⭐⭐</b>.', lohn:'1 Hyperball · 3 ₽'},
+  {nr:16, titel:'Jäger des Seltenen I', ico:'💎', auf:'Habe <b>1 Pokémon</b> der Seltenheit <b>★</b>.', lohn:'3 ₽'},
+  {nr:17, titel:'Jäger des Seltenen II', ico:'👑', auf:'Habe <b>3 Pokémon</b> der Seltenheit <b>★</b>.', lohn:'1 Hyperball · 5 ₽'},
+  {nr:18, titel:'Volles Haus', ico:'🐾', auf:'Habe <b>6 Pokémon</b> gleichzeitig im Team.', lohn:'1 Supertrank · 3 ₽'},
+  {nr:19, titel:'Kämpferherz', ico:'🥋', auf:'Gewinne <b>3 Kämpfe</b> gegen andere Spieler.', lohn:'1 Beleber'},
 ];
 
 function questCardHTML(q, art){
@@ -2977,7 +2979,6 @@ function questCardHTML(q, art){
     <div class="q-ico">${q.ico}</div>
     <div class="q-head"><div class="q-eyebrow">${kopf}</div><div class="q-title">${q.titel}</div></div>
     ${q.geber ? `<div class="q-geber">${q.geber}</div>` : ''}
-    ${q.ausl ? `<div class="q-ausl">${q.ausl}</div>` : ''}
     <div class="q-body">${q.auf}</div>
     <div class="q-foot"><span>BELOHNUNG</span><span class="q-lohn">${q.lohn}</span></div>
   </div>`;
@@ -3014,13 +3015,13 @@ function questBoegen(karten, art, titel, hinweis){
 
 function questUebersichtHTML(){
   const zeile = q => `<tr><td class="q-nr">${q.nr}</td><td><b>${q.titel}</b><div class="q-tgeber">${q.geber||''}</div></td>
-    <td>${q.ausl||'Zieht man am Pokécenter.'}</td><td>${q.auf}</td><td>${q.lohn}</td></tr>`;
+    <td>${q.auf}</td><td>${q.lohn}</td></tr>`;
   return `
     <h2>Hauptstrang · „Die Kanto-Chronik"</h2>
-    <table class="q-table"><tr><th>Nr</th><th>Auftrag</th><th>Wird aktiv</th><th>Aufgabe</th><th>Belohnung</th></tr>
+    <table class="q-table"><tr><th>Nr</th><th>Auftrag</th><th>Aufgabe</th><th>Belohnung</th></tr>
       ${QUEST_HAUPT.map(zeile).join('')}</table>
     <h2>Nebenaufträge · Aushänge im Pokécenter</h2>
-    <table class="q-table"><tr><th>Nr</th><th>Aushang</th><th>Wird aktiv</th><th>Aufgabe</th><th>Belohnung</th></tr>
+    <table class="q-table"><tr><th>Nr</th><th>Aushang</th><th>Aufgabe</th><th>Belohnung</th></tr>
       ${QUEST_NEBEN.map(zeile).join('')}</table>`;
 }
 
@@ -3539,8 +3540,10 @@ function renderDoc(){
       <tr><td>Hyperball</td><td>5 ₽</td><td>Fangwurf +2</td></tr>
       <tr><td>Trank</td><td>2 ₽</td><td>heilt 8 KP</td></tr>
       <tr><td>Supertrank</td><td>4 ₽</td><td>heilt volle KP</td></tr>
-      <tr><td>Beleber</td><td>5 ₽</td><td>besiegtes Pokémon zurück, halbe KP</td></tr>
-      <tr><td>Meisterball</td><td>20 ₽</td><td>automatischer Fang</td></tr></table>
+      <tr><td>Beleber</td><td>5 ₽</td><td>besiegtes Pokémon zurück, halbe KP</td></tr></table>
+    <p class="note">Meisterball und Pokéflöte stehen bewusst <b>nicht</b> in dieser Preisliste – seit
+      02.08.2026 sind beide ausschließlich Quest-Belohnung, nicht mehr im Pokeshop käuflich (siehe
+      „Feste Bezugswege" unten).</p>
     <p><b>Einsatz im Kampf (Beschluss 28.07.2026):</b> Tränke und Supertränke dürfen im eigenen Zug
       zusätzlich zum Angriff eingesetzt werden (kostet keinen Angriff). Beleber wirken nur außerhalb eines
       laufenden Kampfes – in der Liga: zwischen den Kämpfen. Die Beleber-Obergrenze (2) ist zugleich der
@@ -3554,25 +3557,38 @@ function renderDoc(){
       <li>Hauptfach: <b>5 Tränke · 3 Supertränke · 2 Beleber · 1 Pokéflöte</b></li>
       <li>Pokébälle brauchen kein Feld – sie sind unbegrenzt verfügbar.</li>
     </ul>
-    <h3>Feste Bezugswege (Beschluss 27.07.2026)</h3>
-    <p>Zwei Items kommen bewusst <b>nicht</b> über Ereigniskarten ins Spiel, damit ihre Anzahl je Spieler
-      exakt planbar bleibt:</p>
+    <h3>Feste Bezugswege (Beschluss 27.07.2026, überarbeitet 02.08.2026)</h3>
+    <p>Meisterball und Pokéflöte kommen bewusst <b>weder über Ereigniskarten noch über den Pokeshop</b>
+      ins Spiel, sondern ausschließlich als Quest-Belohnung – damit ihre Anzahl je Spieler exakt planbar
+      bleibt <b>und</b> kein Spieler sie sich vor dem Zeitpunkt beschaffen kann, an dem die Questreihe sie
+      eigentlich vorsieht (siehe „Warum kein Shop-Kauf mehr" unten):</p>
     <ul>
-      <li><b>Meisterball – 2 je Spieler:</b> einer ist im Pokeshop käuflich (20 ₽), einer stammt aus der
-        Pokédex-Quest bei Prof. Eich (siehe unten). Damit reicht es für Mew und Mewtu, und kein Zufall kann
-        die Zahl verschieben.</li>
-      <li><b>Pokéflöte – 1 je Spieler:</b> ausschließlich über den Pokeshop (8 ₽). Sie wird nicht verbraucht
-        und bleibt das ganze Spiel über im Rucksack.</li>
+      <li><b>Meisterball – 2 je Spieler:</b> einer aus der Pokédex-Quest bei Prof. Eich (50 Einträge,
+        siehe unten), einer aus <b>Auftrag 16</b> „Der Weg zur Liga" (alle 8 Orden). Damit reicht es für
+        Mew und Mewtu, und kein Zufall kann die Zahl verschieben.</li>
+      <li><b>Pokéflöte – 1 je Spieler:</b> Belohnung aus <b>Auftrag 9</b> „Der Pokémon-Turm" (ab 4 Orden,
+        Lavandia). Sie wird nicht verbraucht und bleibt das ganze Spiel über im Rucksack.</li>
     </ul>
-    <p>Die <b>Pokéflöte</b> (8 ₽) weckt ein schlafendes Relaxo und öffnet damit die Engstellen auf Route 12 und Route 16. Sie wird <b>nicht verbraucht</b> – eine pro Spieler genügt für das ganze Spiel.</p>
+    <p>Die <b>Pokéflöte</b> weckt ein schlafendes Relaxo und öffnet damit die Engstelle auf Route 11/16
+      (Auftrag 10, unmittelbar nach Auftrag 9). Sie wird <b>nicht verbraucht</b> – eine pro Spieler genügt
+      für das ganze Spiel.</p>
+    <p class="note"><b>Warum kein Shop-Kauf mehr (Beschluss 02.08.2026):</b> Bis 01.08.2026 war die
+      Pokéflöte zusätzlich für 8 ₽ im Pokeshop käuflich, der Meisterball zusätzlich für 20 ₽. Das
+      erzeugte eine stille Falle: Wer sich früh im Spiel eine Pokéflöte kaufte und damit Relaxo fing,
+      hatte die Aufgabe von Auftrag 10 bereits erledigt, <b>bevor</b> die Karte überhaupt aufgedeckt
+      wurde – Auftrag 9/10 liefen dann leer oder wurden unlösbar seltsam. Jetzt gibt es für beide Items
+      <b>genau einen</b> Bezugsweg, exakt an der Stelle der Questreihe, an der sie gebraucht werden. Die
+      Chips werden weiterhin im Pokeshop <b>gedruckt</b> (physische Spielmarke nötig), nur eben nicht mehr
+      dort <b>gekauft</b>.</p>
     <h3>Meisterball-Quest: Pokédex-Auftrag (Beschluss 29.07.2026)</h3>
-    <p>Der zweite Meisterball kommt über eine <b>globale Quest</b>, die <b>Prof. Eich</b> stellt (nicht an
+    <p>Der erste Meisterball kommt über eine <b>globale Quest</b>, die <b>Prof. Eich</b> stellt (nicht an
       einen Shop oder Ort gebunden): Sobald ein Spieler <b>50 verschiedene Pokémon im Pokédex</b> stehen
       hat (gefangen und/oder durch Entwicklung erhalten), kann er bei Prof. Eich vorbeischauen und bekommt
       dafür einen Meisterball. Jeder Spieler löst die Quest für sich selbst ein, sobald er die 50 erreicht.</p>
     <ul>
       <li>Startausrüstung pro Spieler: 5 Pokébälle + 1 Trank, 0 ₽.</li>
-      <li>Meisterball: 4 Stück insgesamt – 1× Pokédex-Quest bei Prof. Eich (50 Pokémon), 3× kaufbar für je 20 ₽ in drei verschiedenen Shops (je einmal, dann dort vergriffen).</li>
+      <li>Meisterball: 2 Stück insgesamt je Spieler – 1× Pokédex-Quest bei Prof. Eich (50 Pokémon),
+        1× Auftrag 16 „Der Weg zur Liga" (alle 8 Orden).</li>
       <li>Pokécenter: gratis Vollheilung, kostet eine Hauptaktion.</li>
       <li>Pokédollar-Einkommen: Trainersiege 2 ₽, Arenasiege 5 ₽ (Stufe 1), Quest-Belohnungen variabel.</li>
     </ul>
@@ -3754,7 +3770,7 @@ function renderDoc(){
       <li><span class="badge ok">erledigt</span> <s><b>Nebentyp-Darstellung:</b> Haupttyp groß, Nebentyp klein daneben</s> — gegenstandslos, seit am 30.07.2026 der Nebentyp entfallen ist.</li>
       <li><span class="badge ok">erledigt</span> <b>Fundwurf bei W20 = 1</b> inkl. Ereigniskarten mit Itemfunden und Sonder-Bonbons.</li>
       <li><span class="badge ok">erledigt</span> <b>Meisterball-Quest (29.07.2026):</b> Globale Quest bei Prof. Eich – 50 Pokémon im Pokédex geben einen Meisterball. Siehe Kapitel 8.</li>
-      <li><span class="badge open">offen</span> <b>Meisterball-Shop-Zuordnung</b> auf der Brettkarte markieren (aus Kapitel 10 hierher verschoben).</li>
+      <li><span class="badge ok">erledigt</span> <s><b>Meisterball-Shop-Zuordnung</b> auf der Brettkarte markieren</s> — gegenstandslos, seit der Meisterball (02.08.2026) nicht mehr im Pokeshop verkauft wird, sondern ausschließlich als Quest-Belohnung kommt (Kapitel 8).</li>
     </ul>
     <h3>💡 Vorschlag – wartet auf deine Abnahme</h3>
     <ul>
@@ -3843,12 +3859,14 @@ function renderDoc(){
         Auftrag sitzt bewusst an der <b>Siegesstraße</b>, dem letzten Gebiet vor der Liga – so
         bleibt das zweite Fossil eine späte Belohnung und die erste Wahl behält über die halbe
         Partie hinweg Gewicht.</li>
-      <li>Die <b>Pokéflöte</b> ist Belohnung von Auftrag 9 (Pokémon-Turm) statt nur Ladenware – das
-        entspricht der Vorlage und macht Auftrag 10 (Relaxo) erst möglich. Im Pokeshop bleibt sie
-        zusätzlich für 8 ₽ kaufbar, wer die Quest auslässt.</li>
+      <li>Die <b>Pokéflöte</b> ist ausschließlich Belohnung von Auftrag 9 (Pokémon-Turm) – seit
+        02.08.2026 <b>nicht mehr</b> zusätzlich im Pokeshop kaufbar (siehe Kapitel 8, „Warum kein
+        Shop-Kauf mehr"). Das macht Auftrag 10 (Relaxo) erst möglich, ohne dass ein Spieler ihn durch
+        einen früheren Shop-Kauf versehentlich schon vorwegnimmt.</li>
       <li>Die <b>Meisterball-Quest</b> (50 Pokédex-Einträge bei Prof. Eich) bleibt unverändert
         daneben bestehen und wurde bewusst <b>nicht</b> in die Reihe gezogen, um sie nicht zu
-        verdoppeln.</li>
+        verdoppeln. Seit 02.08.2026 liefert zusätzlich <b>Auftrag 16</b> (alle 8 Orden) den zweiten
+        Meisterball – auch der Meisterball ist damit nicht mehr im Pokeshop kaufbar.</li>
     </ul>
 
     <h3>Kartenformat</h3>
@@ -3884,28 +3902,82 @@ function renderDoc(){
       Rundungs-Einkerbungen dort, wo vier Kartenecken aufeinandertreffen, sind eine gewollte Folge
       dieser Technik (dasselbe Prinzip wie schon bei den Pokémon-Normalkarten) und kein Fehler.</p>
 
+    <h3>Grundsatz: keine Aufgabe kann durch Vorarbeit unlösbar werden (Beschluss 02.08.2026)</h3>
+    <p>„Fange ein Pokémon vom Typ X" oder „Fange N Pokémon auf Route Y" klingt harmlos, kann aber
+      <b>unlösbar</b> werden: Hat ein Spieler bis zum Ziehen der Karte den fangbaren Bestand des
+      Typs oder Gebiets schon vollständig im Pokédex, bringt ein weiterer Fang dort nur noch Geld
+      (Doppelfang-Regel, Kapitel 3) statt eines neuen Team-Mitglieds – die Aufgabe ist dann faktisch
+      nicht mehr im ursprünglichen Sinn erfüllbar. Betroffen waren vor allem <b>Nebenaufträge</b>
+      (gemeinsamer Stapel, zu jedem Zeitpunkt der Partie ziehbar) und einzelne Hauptaufträge mit
+      Typ- oder Gebietsbindung. Zwei Ersatzmuster, beide ohne neue Mechanik:</p>
+    <ul>
+      <li><b>Besiegen statt Fangen:</b> Ein Kampf findet immer statt, unabhängig vom Pokédex-Stand –
+        nur der anschließende <i>Fang</i> kann durch Dubletten wertlos werden, der <i>Sieg</i> nicht.
+        Betroffen: Auftrag 2 (Käfer-Pokémon), 8 (Felstunnel, jetzt „Erreiche" statt „Fange"), 9
+        (Geist-Pokémon), 11 (Safari-Zone), 12 (Elektro-Pokémon) sowie Nebenauftrag „Bergsteiger".</li>
+      <li><b>Zustand statt Ereignis:</b> Aufgaben, die einen <b>Bestand</b> prüfen (Pokédex-Einträge,
+        Teamgröße, Level, Sterne, Seltenheit) statt eines frischen Fangs, können nur <i>schon erfüllt
+        sein</i> oder <i>noch offen</i> – nie unlösbar, weil der Bestand nur wächst. Neues Muster für
+        Nebenaufträge: „Habe N Pokémon vom Typ X im Pokédex" (ersetzt „Fange N vom Typ X").</li>
+    </ul>
+    <p class="note">Auftrag 1 („Fange 3 verschiedene Pokémon") bleibt bewusst beim Fangen – er wird
+      zu Spielbeginn aufgedeckt, bevor überhaupt etwas gefangen sein kann, und ist genau als
+      Einstieg in die Fangmechanik gedacht.</p>
+
+    <h3>Auslöser-Anzeige entfernt (Beschluss 02.08.2026)</h3>
+    <p>Jede Hauptquest-Karte trug bisher eine Zeile „Ab N Orden" bzw. „Sobald Auftrag X erfüllt
+      ist" – sowohl auf der Karte als auch in der Übersichtstabelle. Das ist redundant: Der
+      Hauptstrang ist ein <b>persönlicher, sortierter Stapel</b>, bei dem immer nur die oberste
+      Karte offen liegt; die nächste wird erst umgedreht, wenn die aktuelle abgeschlossen ist. Die
+      Reihenfolge allein regelt damit bereits, wann eine Aufgabe „aktiv" wird – eine zusätzliche
+      Ordensschwelle wird von keiner Spielregel geprüft oder erzwungen und stand nur als
+      unverbindlicher Kontext da. Ersatzlos gestrichen, auf Karte und in der Tabelle.</p>
+
+    <h3>Nebenaufträge grundlegend überarbeitet (Beschluss 02.08.2026)</h3>
+    <p>Von <b>6 auf 19</b> Aushänge erweitert. Zwei bestehende wurden auf das „Besiegen/Zustand"-Muster
+      umgestellt (siehe oben), 13 neue kamen hinzu, in drei Gruppen:</p>
+    <ul>
+      <li><b>Typ-Pokédex (7 Karten):</b> „Habe N Pokémon vom Typ X im Pokédex" für Feuer, Pflanze,
+        Gift, Gestein, Psycho, Kampf und Käfer – Schwelle grob an der Typhäufigkeit in Kanto
+        orientiert (Kapitel 6: Wasser 29 · Gift 14 · Pflanze/Feuer/Käfer je 12 · Gestein/Psycho/Kampf
+        7–9), damit keine Karte unrealistisch hohe Stückzahlen verlangt.</li>
+      <li><b>Sterne &amp; Seltenheit (4 Karten):</b> „Spitzenklasse I/II" (1 bzw. 3 Pokémon mit
+        ⭐⭐⭐⭐⭐) und „Jäger des Seltenen I/II" (1 bzw. 3 Pokémon der Seltenheit ★) – zwei
+        Vorschläge aus der Feedback-Runde, je in einer leichten und einer schwereren Stufe.</li>
+      <li><b>Sonstige (2 Karten):</b> „Volles Haus" (6 Pokémon gleichzeitig im Team) und
+        „Kämpferherz" (3 Siege gegen andere Spieler) – deckt Teamgröße und Spieler-Duelle ab, beides
+        bisher ohne eigene Nebenquest.</li>
+    </ul>
+    <p class="note">Druckfolge bleibt automatisch: <code>questBoegen()</code> paginiert nach
+      Array-Länge, 19 Karten ergeben 2 Bögen (16 + 3) statt bisher 1 – keine Codeänderung nötig.</p>
+
     <h3>Offene Punkte zur Questreihe</h3>
     <ul>
-      <li><span class="badge open">offen</span> <b>Spieltest der Auslöser:</b> Die Ordensschwellen
-        (1/2/3/4/5/6/8) sind aus der Kanto-Reihenfolge abgeleitet, aber noch nicht am Tisch
-        geprüft. Auch liegen Auftrag 15 und 16 beide bei 8 Orden – ob sich das staut, muss der
-        Test zeigen. Falls sich Aufträge stauen, die Schwellen entzerren.</li>
+      <li><span class="badge ok">erledigt</span> <s><b>Spieltest der Auslöser:</b> Ordensschwellen je
+        Auftrag am Tisch prüfen</s> — gegenstandslos, seit die „Ab N Orden"-Anzeige (02.08.2026) ganz
+        entfallen ist: Der Stapel deckt Karten ohnehin streng der Reihe nach auf, eine zusätzliche
+        Schwellenanzeige war redundant (siehe unten, „Auslöser-Anzeige entfernt"). Dass Auftrag 15 und
+        16 inhaltlich beide erst spät (Siegesstraße bzw. 8 Orden) greifen, ist unproblematisch, weil
+        keine der beiden Karten vor Erledigung der jeweils vorherigen überhaupt sichtbar wird.</li>
       <li><span class="badge open">offen</span> <b>Die drei neuen Aufträge (31.07.2026)</b> –
         „Erste Entwicklung" (4), „Der Felstunnel" (8) und „Meister der Typen" (14) – sind noch
         ungetestet. Besonders „Meister der Typen" setzt voraus, dass die Spieler Typvorteile beim
         Kämpfen mitzählen; ob das am Tisch als Buchführung stört, muss sich zeigen.</li>
       <li><span class="badge open">offen</span> <b>Belohnungshöhe kalibrieren:</b> Die Summe aller
-        Quest-Belohnungen (rund 21 ₽, 2 Superbälle, 3 Hyperbälle, 2 Tränke, 2 Supertränke,
-        2 Beleber, 1 Pokéflöte) ist bewusst zurückhaltend gesetzt. Ob das die Wirtschaft aus dem
-        Gleichgewicht bringt, muss ein Testlauf zeigen.</li>
+        Hauptquest-Belohnungen (rund 21 ₽, 2 Superbälle, 3 Hyperbälle, 2 Tränke, 2 Supertränke,
+        2 Beleber, 1 Pokéflöte, seit 02.08.2026 zusätzlich 1 Meisterball aus Auftrag 16) ist bewusst
+        zurückhaltend gesetzt. Ob das die Wirtschaft aus dem Gleichgewicht bringt, muss ein Testlauf
+        zeigen – der Meisterball hat dabei keinen ₽-Gegenwert, war aber vorher für 20 ₽ käuflich und
+        fällt der Wirtschaft damit als Ausgabe weg.</li>
       <li><span class="badge open">offen</span> <b>Ortsbindung prüfen:</b> Aufträge nennen Orte
         (Mondberg, Route 25, Pokémon-Turm, Safari-Zone, Zinnoberinsel). Ob alle auf dem aktuellen
         Spielbrett eindeutig erreichbar und beschriftet sind, ist noch abzugleichen.</li>
       <li><span class="badge open">offen</span> <b>Auftrag 13 setzt Surfer voraus.</b> Wer bis
         6 Orden kein Pokémon mit Surfer hat, hängt fest. Entweder als bewusste Hürde stehen lassen
         oder eine Ausweichbedingung ergänzen.</li>
-      <li><span class="badge open">offen</span> <b>Mehr Nebenaufträge?</b> Sechs Aushänge sind für
-        eine volle Partie womöglich zu wenig. Aufstocken ist billig – erst nach dem Test.</li>
+      <li><span class="badge ok">erledigt</span> <b>Mehr Nebenaufträge (02.08.2026):</b> Von 6 auf
+        19 Aushänge erweitert (siehe „Nebenaufträge grundlegend überarbeitet" unten) – sollte für eine
+        volle Partie reichen, bleibt aber ein Punkt für den Praxistest.</li>
       <li><span class="badge open">offen</span> <b>Ablage auf dem Trainerpass:</b> Aktuell liegen
         die offenen Quests neben dem Pass. Ein eigenes Feld auf dem Pass wäre denkbar, kostet dort
         aber Platz.</li>
@@ -3985,6 +4057,7 @@ function renderDoc(){
       <li><b>02.08.2026 (2)</b> – <b>Ereigniskarten: 16 statt 12 je Bogen.</b> Analog zu den Questkarten vom 31.07. kostete die Bogenüberschrift des Pokeshops (<code>sheetWrap()</code>) rund 20 mm Bauhöhe – genau der Platz, der für eine vierte Kartenreihe fehlte. Titel, Format und Vorder-/Rückseiten-Hinweis stehen jetzt als absolut gesetzte Fußzeile im unteren Seitenrand und kosten damit keine Bauhöhe mehr; die Messung in <code>shopGeometrie()</code> wurde entsprechend umgestellt (misst jetzt die Fußzeilenhöhe statt Kopf- und Untertitel). Die Umstellung gilt für alle vier Pokeshop-Bögen, wirkt sich aber nur bei den Ereigniskarten auf die Reihenzahl aus (3 → 4 Reihen à 4 Karten); Bälle, Münzen und Items hatten schon vorher Luft übrig. Nachgemessen: nutzbare Bogenhöhe wächst von 251 auf 264 mm, vier Reihen (248 mm) passen mit Reserve, keine Karte überdeckt die Fußzeile.</li>
       <li><b>02.08.2026 (3)</b> – <b>Legendäre: Begegnung über W20 = 1 statt einer undefinierten Freischaltung.</b> Bisher stand nur, <i>wann</i> ein ortsgebundener Legendärer (Arktos, Zapdos, Lavados, Mewtu) verfügbar wird (Orden/Top 4), aber nicht, <i>wie</i> der Spieler ihn am Tisch tatsächlich findet. Gelöst über die schon vorhandene Ereignis-Mechanik: In den vier Gebieten bringt eine gewürfelte 1 – sobald die Bedingung erfüllt ist – den Legendären an Stelle der sonst dort üblichen Ereigniskarte; vorher bleibt die 1 dort normal die Ereigniskarte. Kostenlos umsetzbar, weil die 1 immer schon zum Niete-Korridor gehört und nie an ein reguläres Pokémon vergeben wird – keine der 46 Gebietstabellen musste neu berechnet werden. <b>Mew</b> bleibt ohne Gebiets-Fundort außen vor (eigenes Tischevent ab Pokédex ≥ 100). Umgesetzt: <code>MONS_RAW</code>-Fangort der vier Legendären trägt jetzt den Zusatz „· W20=1"; Karten- und Volvelle-Fußzeile zeigen für sie „bei W20 = 1 im Gebiet" statt „nicht per W20 auffindbar"; Kapitel 3 und die Spielanleitung (Kapitel 5 „Wilde Pokémon finden" bzw. Kapitel 10 „Ereigniskarten") beschreiben den Ablauf.</li>
       <li><b>02.08.2026 (4)</b> – <b>Fossilien-Fundort: fester Platz auf dem Brett statt eines beliebigen Fangs.</b> „Fange ein Pokémon im Mondberg und bring das Fossil ins Museum" (Auftrag 5) und „Durchsuche die Siegesstraße und fange dort ein Pokémon" (Auftrag 15) verlangten bisher einen normalen Pokémon-Fang, obwohl die Belohnung ein <i>Fossil</i> ist – thematisch unpassend, ein Fossil wird nicht gefangen. Beide Quests laufen jetzt über das bereits etablierte Muster „Erreiche eine bestimmte Stelle" (wie Auftrag 6 „Bills Leuchtturm" oder Auftrag 13 „Die Villa auf Zinnober"), keine neue Mechanik nötig. Umgesetzt im <b>Karteneditor</b>: Die Events-Palette hat jetzt einen dritten Eintrag <b>„Fossil"</b> (Farbe Gold/Amber #c9a227, damit er sich von der Höhlenfarbe abhebt) neben „Trainer" und „Quest"; je eine Fossil-Markierung sitzt fest auf einer Höhlenkachel im Mondberg (Auftrag 5, Kachel 41/21) und an der Siegesstraße (Auftrag 15, Kachel 9/15) – beide auf bisher unbelegten Feldern platziert, keine Kollision mit vorhandenen Gebäuden/Barrieren. Quest-Auftragstexte entsprechend angepasst (Catch-Anforderung entfällt).</li>
+      <li><b>02.08.2026 (5)</b> – <b>Fange-Aufgaben durch Besiegen/Zustand ersetzt, Nebenaufträge 6 → 19, Auslöser-Anzeige entfernt, Meisterball/Pokéflöte nur noch Quest-Belohnung.</b> Vier Punkte, ein Anlass: „Fange ein Pokémon vom Typ X" bzw. „auf Route Y" konnte unlösbar werden, sobald ein Spieler den fangbaren Bestand dort schon komplett im Pokédex hatte (weitere Fänge sind dann nur noch Dubletten, siehe Kapitel 3). <b>(1) Hauptquests:</b> Aufträge 2, 9, 11, 12 von „Fangen" auf „Besiegen" umgestellt (ein Kampf findet immer statt, unabhängig vom Pokédex-Stand), Auftrag 8 von „Fange … im Felstunnel" auf „Erreiche den Felstunnel" (Team-auf-4-Bedingung bleibt, aber ohne Orts-Fang-Kopplung). Auftrag 1 bleibt bewusst beim Fangen (Tutorial, Spielbeginn, kein Risiko). <b>(2) Nebenaufträge:</b> „Gewässerkunde" und „Bergsteiger" ebenso umgestellt (Besiegen bzw. Pokédex-Bestand); 13 neue Aushänge ergänzt – 7× „Habe N Pokémon vom Typ X im Pokédex" (Feuer, Pflanze, Gift, Gestein, Psycho, Kampf, Käfer), 4× Sterne/Seltenheit-Besitz („Spitzenklasse I/II", „Jäger des Seltenen I/II"), 2× Sonstiges („Volles Haus" für Teamgröße 6, „Kämpferherz" für 3 Spielerduell-Siege). Stapel wächst von 6 auf 19 Karten, Druckbogen passt sich automatisch an (2 Bögen statt 1, keine Codeänderung). <b>(3) Auslöser-Anzeige:</b> „Ab N Orden"/„Sobald Auftrag X erfüllt ist" ersatzlos von Karte und Übersichtstabelle entfernt – der persönliche Kartenstapel deckt ohnehin nur die jeweils nächste Karte auf, die Schwelle wurde von keiner Regel geprüft und war reiner Kontext. <b>(4) Meisterball/Pokéflöte:</b> Bis dahin zusätzlich im Pokeshop kaufbar (Pokéflöte 8 ₽, Meisterball 20 ₽) – wer früh kaufte, hatte Auftrag 9/10 (Pokémon-Turm/Relaxo) teils schon erledigt, bevor die Karten aufgedeckt wurden. Beide Items kommen jetzt <b>ausschließlich</b> als Quest-Belohnung: Pokéflöte aus Auftrag 9, der zweite Meisterball (neben der bestehenden 50-Pokédex-Quest bei Prof. Eich) neu aus Auftrag 16 „Der Weg zur Liga" (alle 8 Orden). Die Chips werden weiterhin im Pokeshop gedruckt, nur nicht mehr dort gekauft; Preistabellen in Spielanleitung und Beschlüssen entsprechend bereinigt.</li>
     </ul>
   </div>`;
   groupDoneItemsInChapter14();
