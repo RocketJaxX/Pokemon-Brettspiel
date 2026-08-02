@@ -364,10 +364,19 @@ table.typematrix .rowlab{color:#fff; font-weight:800; font-size:7.5px; padding:0
 #page-shop .icard .ic-price{position:absolute; right:3mm; bottom:2.6mm; font-family:'Fredoka'; font-weight:700;
   font-size:10.5pt; color:#fff; background:var(--gold2); padding:0.6mm 3mm; border-radius:20px; box-shadow:0 1px 0 #b98a15;}
 
-#page-shop .ecard{width:43mm; height:62mm; border-radius:3mm; overflow:hidden; position:relative;
-  outline:0.3mm dashed #7a86b0; outline-offset:1.1mm; color:#f4f2ff; display:flex; flex-direction:column;
-  background:radial-gradient(120% 90% at 30% 8%, #4a3f7a 0%, #2b2450 55%, #201b3d 100%); border:0.5mm solid #171334;}
-#page-shop.nocut .ecard{outline:none;}
+/* Wie bei den Questkarten: Kante an Kante, Schnittlinie nur rechts/unten (links/oben nur an der
+   ersten Spalte bzw. Reihe), Zierrahmen als inset-Schatten. Ein Schnitt trennt zwei Karten. */
+#page-shop .ecard{width:43mm; height:62mm; overflow:hidden; position:relative;
+  color:#f4f2ff; display:flex; flex-direction:column;
+  background:radial-gradient(120% 90% at 30% 8%, #4a3f7a 0%, #2b2450 55%, #201b3d 100%);
+  box-shadow:inset 0 0 0 0.5mm #171334;
+  border-right:0.12mm dashed #7a86b0; border-bottom:0.12mm dashed #7a86b0;}
+#page-shop .ecard:first-child{border-left:0.12mm dashed #7a86b0;}
+#page-shop .shoprow-event:first-of-type .ecard{border-top:0.12mm dashed #7a86b0;}
+#page-shop.nocut .ecard{border-color:transparent;}
+/* Nur die Ereigniskarten-Reihen ruecken zusammen – die runden Chips brauchen ihren Abstand,
+   zwei Kreise koennen sich keine Schnittkante teilen. */
+#page-shop .shoprow-event{gap:0; margin-bottom:0;}
 #page-shop .ecard .e-decor{position:absolute; width:34mm; color:#fff; opacity:.07; pointer-events:none; z-index:0;}
 #page-shop .ecard .e-decor.d1{top:-9mm; right:-10mm; transform:rotate(18deg);}
 #page-shop .ecard .e-decor.d2{bottom:-10mm; left:-11mm; transform:rotate(-14deg);}
@@ -427,15 +436,21 @@ table.typematrix .rowlab{color:#fff; font-weight:800; font-size:7.5px; padding:0
 #page-quest .q-sheetlab{position:absolute; left:10mm; right:10mm; bottom:3mm; text-align:center;
   font-size:7.5pt; color:#8a7f6d; font-weight:700;}
 #page-quest .q-sheetlab b{color:#5c5344;}
-#page-quest .q-row{display:flex; gap:5mm; margin-bottom:5mm;}
+/* Karten liegen Kante an Kante, damit zwei Nachbarn sich EINEN Schnitt teilen. Die Schnittlinie
+   liegt deshalb als border nur rechts und unten auf der Karte, links bzw. oben ergaenzt sie nur
+   die erste Spalte/Reihe – so wird jede Grenze genau einmal gezeichnet statt doppelt.
+   Der Zierrahmen der Karte wandert dafuer auf einen inset-Schatten, der keine Kante belegt. */
+#page-quest .q-row{display:flex; gap:0; margin-bottom:0;}
 #page-quest .q-row.back{flex-direction:row-reverse; justify-content:flex-start;}
 
-#page-quest .q-card{width:43mm; height:62mm; border-radius:3mm; overflow:hidden; position:relative;
-  outline:0.3mm dashed #b8a878; outline-offset:1.1mm; display:flex; flex-direction:column;}
-#page-quest.nocut .q-card{outline:none;}
-#page-quest .q-card.haupt{color:#3a2c14; border:0.5mm solid #6b5326;
+#page-quest .q-card{width:43mm; height:62mm; position:relative; display:flex; flex-direction:column;
+  border-right:0.12mm dashed #9a8f78; border-bottom:0.12mm dashed #9a8f78;}
+#page-quest .q-card:first-child{border-left:0.12mm dashed #9a8f78;}
+#page-quest .q-row:first-of-type .q-card{border-top:0.12mm dashed #9a8f78;}
+#page-quest.nocut .q-card{border-color:transparent;}
+#page-quest .q-card.haupt{color:#3a2c14; box-shadow:inset 0 0 0 0.5mm #6b5326;
   background:radial-gradient(120% 90% at 30% 8%, #fdf3d8 0%, #f0dfae 55%, #e3cd8e 100%);}
-#page-quest .q-card.neben{color:#1d3328; border:0.5mm solid #2f5a45; outline-color:#7ba892;
+#page-quest .q-card.neben{color:#1d3328; box-shadow:inset 0 0 0 0.5mm #2f5a45;
   background:radial-gradient(120% 90% at 30% 8%, #e6f5ec 0%, #c9e6d5 55%, #b0d8c1 100%);}
 #page-quest .q-ico{position:absolute; top:2mm; right:2.4mm; font-size:7pt; opacity:.85; z-index:2;}
 #page-quest .q-head{padding:2.6mm 2.8mm 0;}
@@ -2636,7 +2651,7 @@ function shopGeometrie(){
       <div class="sheet-sub">Probe</div>
       <div class="shopgrid">
         <div class="group-label" data-p="label">Probe</div>
-        ${Object.entries(SHOP_PROBE).map(([k, h]) => `<div class="shoprow" data-p="${k}">${h}</div>`).join('')}
+        ${Object.entries(SHOP_PROBE).map(([k, h]) => `<div class="shoprow shoprow-${k}" data-p="${k}">${h}</div>`).join('')}
       </div>
     </div>`;
   host.appendChild(probe);
@@ -2705,11 +2720,11 @@ function paginateShop(groups, geo, labelH, pageH){
   return pages;
 }
 
-function shopPageBody(page, side){
+function shopPageBody(page, side, geoKey){
   return page.map(b=>{
     if(b.type==='label') return `<div class="group-label">${b.html}</div>`;
     const items = side==='back' ? [...b.items].reverse() : b.items;
-    return `<div class="shoprow${side==='back'?' back':''}">${items.map(it=> side==='back' ? it.back : it.front).join('')}</div>`;
+    return `<div class="shoprow shoprow-${geoKey}${side==='back'?' back':''}">${items.map(it=> side==='back' ? it.back : it.front).join('')}</div>`;
   }).join('');
 }
 
@@ -2719,8 +2734,8 @@ function shopDuplex(groups, geoKey, title, small, subF, subB, mass){
   const pages = paginateShop(nonEmpty, mass.geo[geoKey], mass.labelH, mass.pageH);
   let out = '';
   pages.forEach(p=>{
-    out += sheetWrap(title, small, subF, 'front', shopPageBody(p,'front'));
-    out += sheetWrap(title, small, subB, 'back',  shopPageBody(p,'back'));
+    out += sheetWrap(title, small, subF, 'front', shopPageBody(p,'front', geoKey));
+    out += sheetWrap(title, small, subB, 'back',  shopPageBody(p,'back', geoKey));
   });
   return out;
 }
@@ -2871,43 +2886,55 @@ const QUEST_HAUPT = [
    ausl:'Sobald Auftrag 2 erfüllt ist.',
    auf:'Gewinne den <b>Felsorden</b> in Marmoria.',
    lohn:'5 ₽ · 1 Trank'},
-  {nr:4, titel:'Fossilien im Mondberg', geber:'Museum · Marmoria', ico:'🦴',
+  {nr:4, titel:'Erste Entwicklung', geber:'Prof. Eich', ico:'✨',
+   ausl:'Sobald Auftrag 3 erfüllt ist.',
+   auf:'Lass ein Pokémon zum <b>ersten Mal entwickeln</b>.',
+   lohn:'1 Trank · 3 ₽'},
+  {nr:5, titel:'Fossilien im Mondberg', geber:'Museum · Marmoria', ico:'🦴',
    ausl:'Ab 1 Orden.',
    auf:'Fange ein Pokémon <b>im Mondberg</b> und bring das Fossil ins Museum. <b>Wähle</b> eines der beiden Fossilien.',
    lohn:'Amonitas <b>oder</b> Kabuto (Lv 1 ins Team). Das andere bekommst du später.'},
-  {nr:5, titel:'Bills Leuchtturm', geber:'Bill · Route 25', ico:'🔦',
+  {nr:6, titel:'Bills Leuchtturm', geber:'Bill · Route 25', ico:'🔦',
    ausl:'Ab 2 Orden.',
    auf:'Erreiche den Leuchtturm auf <b>Route 25</b>.',
    lohn:'1 Hyperball · 3 ₽'},
-  {nr:6, titel:'Schatten über Prismania', geber:'Team Rocket', ico:'🕶',
+  {nr:7, titel:'Schatten über Prismania', geber:'Team Rocket', ico:'🕶',
    ausl:'Ab 3 Orden.',
    auf:'Besiege <b>3 wilde Pokémon</b> auf den Routen 5–8.',
    lohn:'5 ₽'},
-  {nr:7, titel:'Der Pokémon-Turm', geber:'Mr. Fuji · Lavandia', ico:'👻',
+  {nr:8, titel:'Der Felstunnel', geber:'Wanderer · Route 10', ico:'🔦',
+   ausl:'Ab 3 Orden.',
+   auf:'Fange ein Pokémon im <b>Felstunnel</b> und bring dein Team auf <b>4 Pokémon</b>.',
+   lohn:'1 Superball · 3 ₽'},
+  {nr:9, titel:'Der Pokémon-Turm', geber:'Mr. Fuji · Lavandia', ico:'👻',
    ausl:'Ab 4 Orden.',
    auf:'Fange ein <b>Geist-Pokémon</b> im Pokémon-Turm.',
    lohn:'<b>Pokéflöte</b> (geschenkt)'},
-  {nr:8, titel:'Der Schläfer', geber:'Anwohner · Route 11/16', ico:'🎵',
-   ausl:'Sobald Auftrag 7 erfüllt ist.',
+  {nr:10, titel:'Der Schläfer', geber:'Anwohner · Route 11/16', ico:'🎵',
+   ausl:'Sobald Auftrag 9 erfüllt ist.',
    auf:'Wecke <b>Relaxo</b> mit der Pokéflöte und fange es.',
    lohn:'1 Hyperball'},
-  {nr:9, titel:'Safari-Abenteuer', geber:'Safari-Aufseher · Fuchsania', ico:'🏕',
+  {nr:11, titel:'Safari-Abenteuer', geber:'Safari-Aufseher · Fuchsania', ico:'🏕',
    ausl:'Ab 5 Orden.',
    auf:'Fange <b>2 Pokémon</b> in der Safari-Zone.',
    lohn:'1 Hyperball · 3 ₽'},
-  {nr:10, titel:'Das stille Kraftwerk', geber:'Techniker · Route 10', ico:'⚡',
+  {nr:12, titel:'Das stille Kraftwerk', geber:'Techniker · Route 10', ico:'⚡',
    ausl:'Ab 5 Orden.',
    auf:'Fange <b>2 Elektro-Pokémon</b>.',
    lohn:'1 Beleber · Zapdos ist jetzt in Reichweite'},
-  {nr:11, titel:'Die Villa auf Zinnober', geber:'Verlassenes Herrenhaus', ico:'🏝',
+  {nr:13, titel:'Die Villa auf Zinnober', geber:'Verlassenes Herrenhaus', ico:'🏝',
    ausl:'Ab 6 Orden.',
    auf:'Erreiche <b>Zinnoberinsel</b> (ein Pokémon mit Surfer nötig).',
    lohn:'5 ₽ · 1 Supertrank'},
-  {nr:12, titel:'Das zweite Fossil', geber:'Ausgrabung · Siegesstraße', ico:'⛏',
+  {nr:14, titel:'Meister der Typen', geber:'Arenaleiter-Rat', ico:'⚔',
+   ausl:'Ab 7 Orden.',
+   auf:'Besiege <b>3 Pokémon mit Typvorteil</b> („+“ in der Typtabelle).',
+   lohn:'1 Supertrank · 5 ₽'},
+  {nr:15, titel:'Das zweite Fossil', geber:'Ausgrabung · Siegesstraße', ico:'⛏',
    ausl:'Ab 8 Orden.',
    auf:'Durchsuche die <b>Siegesstraße</b> und fange dort ein Pokémon.',
-   lohn:'Das <b>andere</b> Fossil aus Auftrag 4 (Lv 1 ins Team)'},
-  {nr:13, titel:'Der Weg zur Liga', geber:'Prof. Eich', ico:'🏆',
+   lohn:'Das <b>andere</b> Fossil aus Auftrag 5 (Lv 1 ins Team)'},
+  {nr:16, titel:'Der Weg zur Liga', geber:'Prof. Eich', ico:'🏆',
    ausl:'Ab 8 Orden.',
    auf:'Bringe <b>3 Pokémon auf Level 8</b>.',
    lohn:'1 Beleber · 1 Supertrank'},
@@ -3005,7 +3032,7 @@ function renderQuest(){
     <div class="q-uebersicht noprint">${questUebersichtHTML()}</div>
 
     ${questBoegen(haupt3, 'haupt', 'Hauptstrang · Die Kanto-Chronik',
-      'Drei vollständige Stapel (einer je Spieler). Nach dem Schneiden nach Nummern sortieren: je 13 Karten in der Reihenfolge 1–13 stapeln, Karte 1 oben.')}
+      'Ein Bogen = ein vollständiger Stapel (16 Karten) für einen Spieler. Nach dem Schneiden in der Reihenfolge 1–16 stapeln, Karte 1 oben.')}
     ${questBoegen(QUEST_NEBEN, 'neben', 'Nebenaufträge · Aushänge',
       'Ein gemeinsamer Stapel für alle Spieler – verdeckt mischen und neben das Spielbrett legen.')}`;
 }
@@ -3268,8 +3295,8 @@ function renderDoc(){
       jetzt eine zweite Quest, siehe unten und Kapitel 15.</p>
     <h3>Fossilien: erst Wahl, später das andere (Beschluss 31.07.2026)</h3>
     <p>Am <b>Mondberg</b> wählt der Spieler <b>ein</b> Fossil und erhält daraus Amonitas
-      <b>oder</b> Kabuto (Questreihe, Auftrag 4). Das <b>zweite</b> Fossil folgt später an der
-      <b>Siegesstraße</b> (Auftrag 12, ab 8 Orden) und wird <b>nicht</b> erneut gewählt: Man
+      <b>oder</b> Kabuto (Questreihe, Auftrag 5). Das <b>zweite</b> Fossil folgt später an der
+      <b>Siegesstraße</b> (Auftrag 15, ab 8 Orden) und wird <b>nicht</b> erneut gewählt: Man
       bekommt automatisch das jeweils andere. Damit bleibt die Wahl am Mondberg eine echte
       Entscheidung – sie bestimmt die <i>Reihenfolge</i>, nicht den Ausgang –, und der Pokédex
       bleibt vollständig erreichbar.</p>
@@ -3701,7 +3728,7 @@ function renderDoc(){
     <ul>
       
       <li><span class="badge ok">erledigt</span> <b>Siege für Teammitglieder (29.07.2026):</b> Nur das kämpfende Pokémon erhält einen Siegpunkt; wird während eines laufenden Kampfs gewechselt, erhalten beide beteiligten Pokémon einen Siegpunkt. Siehe Kapitel 4.</li>
-      <li><span class="badge open">offen</span> <b>Team Rocket / Story-Events:</b> Ein erster Faden ist gelegt – die <b>Questreihe</b> (Kapitel 15) bringt Team Rocket in Auftrag 6 als Gegner ins Spiel. Offen bleibt, ob zusätzlich eigene Rocket-<i>Ereigniskarten</i> nötig sind oder die Questreihe die Geschichte allein trägt.</li>
+      <li><span class="badge open">offen</span> <b>Team Rocket / Story-Events:</b> Ein erster Faden ist gelegt – die <b>Questreihe</b> (Kapitel 15) bringt Team Rocket in Auftrag 7 als Gegner ins Spiel. Offen bleibt, ob zusätzlich eigene Rocket-<i>Ereigniskarten</i> nötig sind oder die Questreihe die Geschichte allein trägt.</li>
       <li><span class="badge open">offen</span> <b>Questreihe:</b> Auslöser, Belohnungshöhe, Ortsbindung und Umfang der Nebenaufträge sind noch ungetestet – die Einzelpunkte stehen in <b>Kapitel 15</b>.</li>
       <li><span class="badge ok">erledigt</span> <b>Evoli (28.07.2026):</b> keine Quest nötig – Evoli steht
         als normaler Fang auf Route 5 in den Gebietstabellen. Bei <b>Lv 6</b> wählt der Spieler frei zwischen
@@ -3734,7 +3761,7 @@ function renderDoc(){
 
     <h3>Ausgabe „nach und nach" statt Liste</h3>
     <ul>
-      <li><b>Hauptstrang:</b> ein <b>sortierter Stapel je Spieler</b> (13 Karten, Reihenfolge 1–13).
+      <li><b>Hauptstrang:</b> ein <b>sortierter Stapel je Spieler</b> (16 Karten, Reihenfolge 1–16).
         Nur die oberste Karte liegt offen – das ist der aktuelle Auftrag. Erfüllt → ablegen, nächste
         aufdecken. Niemand sieht die Reihe im Voraus.</li>
       <li><b>Warum je Spieler ein eigener Stapel:</b> Der Fortschritt hängt am eigenen Ordensstand.
@@ -3753,20 +3780,20 @@ function renderDoc(){
     <h3>Anschluss an vorhandene Inhalte</h3>
     <ul>
       <li>Der bisher offene Punkt <b>„Team Rocket / Story-Events ausarbeiten"</b> ist damit
-        angefasst: Auftrag 6 („Schatten über Prismania") bringt Team Rocket als Gegner ins Spiel.</li>
+        angefasst: Auftrag 7 („Schatten über Prismania") bringt Team Rocket als Gegner ins Spiel.</li>
       <li>Vorhandene Quest-Pokémon sind eingebunden statt doppelt erfunden: <b>Fossilien</b>
-        als Belohnung der Aufträge 4 und 12, <b>Relaxo</b> als Auftrag 8, <b>Zapdos</b>
-        als Fingerzeig in Auftrag 10.</li>
-      <li><b>Beide Fossilien erreichbar (Beschluss 31.07.2026):</b> Auftrag 4 am Mondberg lässt
-        <b>wählen</b> (Amonitas oder Kabuto), Auftrag 12 an der Siegesstraße liefert ab 8 Orden
+        als Belohnung der Aufträge 5 und 15, <b>Relaxo</b> als Auftrag 10, <b>Zapdos</b>
+        als Fingerzeig in Auftrag 12.</li>
+      <li><b>Beide Fossilien erreichbar (Beschluss 31.07.2026):</b> Auftrag 5 am Mondberg lässt
+        <b>wählen</b> (Amonitas oder Kabuto), Auftrag 15 an der Siegesstraße liefert ab 8 Orden
         automatisch <b>das jeweils andere</b> – ohne erneute Wahl. Damit setzt die Questreihe den
         Grundsatz um, dass jeder Spieler jedes Pokémon fangen kann (Kapitel 3): Die Wahl am
         Mondberg bestimmt nur noch die <i>Reihenfolge</i>, nicht mehr den Ausgang. Der zweite
         Auftrag sitzt bewusst an der <b>Siegesstraße</b>, dem letzten Gebiet vor der Liga – so
         bleibt das zweite Fossil eine späte Belohnung und die erste Wahl behält über die halbe
         Partie hinweg Gewicht.</li>
-      <li>Die <b>Pokéflöte</b> ist Belohnung von Auftrag 7 (Pokémon-Turm) statt nur Ladenware – das
-        entspricht der Vorlage und macht Auftrag 8 (Relaxo) erst möglich. Im Pokeshop bleibt sie
+      <li>Die <b>Pokéflöte</b> ist Belohnung von Auftrag 9 (Pokémon-Turm) statt nur Ladenware – das
+        entspricht der Vorlage und macht Auftrag 10 (Relaxo) erst möglich. Im Pokeshop bleibt sie
         zusätzlich für 8 ₽ kaufbar, wer die Quest auslässt.</li>
       <li>Die <b>Meisterball-Quest</b> (50 Pokédex-Einträge bei Prof. Eich) bleibt unverändert
         daneben bestehen und wurde bewusst <b>nicht</b> in die Reihe gezogen, um sie nicht zu
@@ -3777,10 +3804,11 @@ function renderDoc(){
     <p>43 × 62 mm wie die Ereigniskarten, aber eigene Farbwelt, damit die Stapel am Tisch nicht
       verwechselt werden: Hauptstrang <b>pergament-gold</b>, Nebenaufträge <b>salbeigrün</b>,
       Ereigniskarten bleiben violett. <b>Vier Karten je Reihe, vier Reihen je Bogen</b> = 16 Karten;
-      Rückseiten reihenweise gespiegelt für den Duplexdruck über die lange Kante. Gesamt: 3 Bögen
-      Hauptstrang (39 Karten = 3 Stapel à 13) und 1 Bogen Nebenaufträge, je mit Rückseitenbogen.
-      Da 13 Karten nicht glatt auf einen Bogen aufgehen, laufen die drei Stapel über die Bögen
-      durch; nach dem Schneiden wird <b>nach den aufgedruckten Nummern</b> in drei Stapel sortiert.</p>
+      Rückseiten reihenweise gespiegelt für den Duplexdruck über die lange Kante. Da der Hauptstrang
+      seit der Erweiterung genau <b>16 Aufträge</b> hat, trägt <b>ein Bogen genau einen vollständigen
+      Stapel</b> – nach dem Schneiden ist der Stapel eines Spielers fertig beisammen, es muss nichts
+      sortiert werden. Gesamt: 3 Bögen Hauptstrang (je einer pro Spieler) und 1 Bogen
+      Nebenaufträge, je mit Rückseitenbogen.</p>
     <p class="note"><b>Warum die Bögen keine Überschrift tragen (31.07.2026):</b> Deckname,
       Bogennummer, Vorder-/Rückseite und der Zusammenbau-Hinweis stehen als schmale Fußzeile im
       unteren Seitenrand statt als Überschrift oben. Eine Überschrift kostete rund 18 mm Bauhöhe –
@@ -3788,12 +3816,28 @@ function renderDoc(){
       273 mm nutzbarer Höhe). Die Fußzeile ist absolut gesetzt und verbraucht deshalb gar keine
       Höhe. Ergebnis: 16 statt 12 Karten je Bogen, insgesamt 8 statt 10 Blatt.</p>
 
+    <h3>Gemeinsame Schnittkanten (Beschluss 31.07.2026)</h3>
+    <p>Die Karten liegen auf den Bögen <b>Kante an Kante</b> statt mit Abstand: Zwei Nachbarn teilen
+      sich dadurch <b>einen</b> Schnitt statt zweier knapp nebeneinanderliegender. Umgesetzt für
+      <b>Questkarten und Ereigniskarten</b> gleichermaßen. Technisch liegt die Schnittlinie als
+      Rahmen nur <b>rechts und unten</b> auf jeder Karte und ergänzend links bzw. oben an der ersten
+      Spalte und Reihe – so wird jede Grenze genau einmal gezeichnet statt doppelt. Der Zierrahmen
+      der Karte wandert dafür auf einen Innenschatten, der keine Kante belegt.</p>
+    <p class="note">Die <b>runden Chips</b> (Bälle, Münzen, Items) behalten ihren Abstand von 5 mm:
+      Zwei Kreise können sich keine gerade Schnittkante teilen, dort wird ohnehin einzeln
+      ausgeschnitten. Nachgemessen: Quest- und Ereigniskarten stoßen exakt aneinander (0 mm Spalt),
+      die Ballchips stehen unverändert 5 mm auseinander.</p>
+
     <h3>Offene Punkte zur Questreihe</h3>
     <ul>
       <li><span class="badge open">offen</span> <b>Spieltest der Auslöser:</b> Die Ordensschwellen
         (1/2/3/4/5/6/8) sind aus der Kanto-Reihenfolge abgeleitet, aber noch nicht am Tisch
-        geprüft. Auch liegen Auftrag 12 und 13 beide bei 8 Orden – ob sich das staut, muss der
+        geprüft. Auch liegen Auftrag 15 und 16 beide bei 8 Orden – ob sich das staut, muss der
         Test zeigen. Falls sich Aufträge stauen, die Schwellen entzerren.</li>
+      <li><span class="badge open">offen</span> <b>Die drei neuen Aufträge (31.07.2026)</b> –
+        „Erste Entwicklung" (4), „Der Felstunnel" (8) und „Meister der Typen" (14) – sind noch
+        ungetestet. Besonders „Meister der Typen" setzt voraus, dass die Spieler Typvorteile beim
+        Kämpfen mitzählen; ob das am Tisch als Buchführung stört, muss sich zeigen.</li>
       <li><span class="badge open">offen</span> <b>Belohnungshöhe kalibrieren:</b> Die Summe aller
         Quest-Belohnungen (rund 21 ₽, 2 Superbälle, 3 Hyperbälle, 2 Tränke, 2 Supertränke,
         2 Beleber, 1 Pokéflöte) ist bewusst zurückhaltend gesetzt. Ob das die Wirtschaft aus dem
@@ -3801,7 +3845,7 @@ function renderDoc(){
       <li><span class="badge open">offen</span> <b>Ortsbindung prüfen:</b> Aufträge nennen Orte
         (Mondberg, Route 25, Pokémon-Turm, Safari-Zone, Zinnoberinsel). Ob alle auf dem aktuellen
         Spielbrett eindeutig erreichbar und beschriftet sind, ist noch abzugleichen.</li>
-      <li><span class="badge open">offen</span> <b>Auftrag 11 setzt Surfer voraus.</b> Wer bis
+      <li><span class="badge open">offen</span> <b>Auftrag 13 setzt Surfer voraus.</b> Wer bis
         6 Orden kein Pokémon mit Surfer hat, hängt fest. Entweder als bewusste Hürde stehen lassen
         oder eine Ausweichbedingung ergänzen.</li>
       <li><span class="badge open">offen</span> <b>Mehr Nebenaufträge?</b> Sechs Aushänge sind für
@@ -3877,8 +3921,10 @@ function renderDoc(){
       <li><b>31.07.2026 (2)</b> – <b>Brettinhalt um 3 Felder nach oben und 2 nach rechts verschoben</b>, weil das Gelände unten am Rand anstieß. Umgesetzt als reine Koordinatenverschiebung über alle Bestandteile: Kacheln, Gebäude/Events, Zonentitel (die mit Kommastellen liegen) und Verbindungen. Vorher geprüft, dass die weichenden Bereiche leer sind – die obersten drei Reihen und die beiden rechten Spalten enthielten nichts, der Inhalt begann bei Reihe 6 und endete bei Spalte 91. Es ging also nichts verloren; danach automatisch kontrolliert, dass die Anzahl aller Elemente gleich blieb und nichts über den Brettrand ragt. Unten und oben sind jetzt je 3 Reihen frei.</li>
       <li><b>31.07.2026 (3)</b> – <b>Drei Trainerpässe je Starter, drei Rucksäcke, höhere Item-Mengen.</b> Der Reiter „Trainerpass“ druckt jetzt <b>ein Blatt pro Spieler</b> (Bisasam-, Glumanda-, Schiggy-Spieler): Auf jedem ist der jeweilige Starter farbig, die anderen beiden ausgegraut, und der zugehörige Rucksack liegt auf demselben A4-Blatt. Danach folgt der Orden-/Legendären-Chipbogen, jetzt in <b>drei Sätzen</b> (einer je Spieler, mit „Satz 1/2/3“ beschriftet) – insgesamt vier Seiten. Die Starterkreise im Passkopf sind etwas größer (Kreis 14 mm, Bild über Innenabstand nach innen geholt), damit das Artwork nicht mehr an den Rand stößt. Die <b>Startmengen je Spieler</b> steigen: Superbälle 5→6, Hyperbälle 3→4, Tränke 5→6 (Meisterball 2, Supertrank 3, Beleber 2, Pokéflöte 1 unverändert). Das ist an einer Stelle definiert (<code>RUCKSACK</code>, Mengen je Spieler); der Pokeshop druckt automatisch drei Sätze davon, also Superbälle 18, Hyperbälle 12, Tränke 18. Damit ein bereits gespeicherter Spielstand die alten Shop-Zahlen nicht festhält, hebt eine Migration sie beim Laden an – aber nur, wenn der Wert exakt der frühere Standard ist; eine selbst verstellte Menge bleibt unangetastet (geprüft: 15/9/15 → 18/12/18, eigenes 20 bleibt 20).</li>
       <li><b>31.07.2026 (4)</b> – <b>Questreihe „Die Kanto-Chronik" als eigener Reiter.</b> Zwölf aufeinander aufbauende Aufträge führen in der natürlichen Ordensreihenfolge durch Kanto (Vertania-Wald → Marmoria → Mondberg → Route 25 → Prismania → Lavandia → Safari → Kraftwerk → Zinnoberinsel → Liga), dazu sechs freiwillige Aushänge. <b>Ausgabe nach und nach statt als Liste:</b> Der Hauptstrang ist ein sortierter Stapel je Spieler, offen liegt immer nur die oberste Karte; jede Karte nennt selbst, ab wann sie aktiv wird, sodass es keine Buchführung braucht. Die Nebenaufträge liegen als gemeinsamer verdeckter Stapel bereit und werden am Pokécenter gezogen. Entwurfsleitlinie: <b>keine neue Mechanik</b> – jede Aufgabe prüft nur, was das Spiel ohnehin führt (Fänge, Typen, Gebiete, Geländefähigkeiten, Orden, Level, Pokédex), und alle Belohnungen kommen aus dem vorhandenen Vorrat. Vorhandene Inhalte sind eingebunden statt verdoppelt: Fossil, Relaxo und Zapdos hängen an Aufträgen, die Pokéflöte wird Questbelohnung (bleibt daneben käuflich), die Meisterball-Quest bleibt bewusst außen vor. Karten im Ereigniskarten-Format 43 × 62 mm, aber pergament-gold bzw. salbeigrün statt violett, damit die Stapel unterscheidbar bleiben; 4 Bögen plus Rückseitenbögen. Begründungen und offene Punkte stehen im neuen <b>Kapitel 15</b>.</li>
-      <li><b>31.07.2026 (5)</b> – <b>Grundsatz: Jeder Spieler kann jedes Pokémon fangen</b> (Kapitel 3). Kein Eintrag darf einem Spieler dauerhaft verschlossen bleiben; eine Entscheidung im Spielverlauf darf einen Pokédex-Eintrag höchstens <i>verschieben</i>, nie <i>ausschließen</i>. Der Bestand wurde daraufhin geprüft: Kein Pokémon ist ohne Fangort <i>und</i> ohne Vorstufe, die drei Starter sind zusätzlich wild fangbar (Bisasam Vertania-Wald, Glumanda Felstunnel, Schiggy Route 25), und Evoli ist auf Route 5 wiederholt fangbar – die Entwicklungswahl bei Lv 6 schließt also nichts aus. Einzige echte Einwegentscheidung war das <b>Fossil</b>. Dafür jetzt eine <b>zweite Fossil-Quest</b>: Auftrag 4 am Mondberg lässt weiterhin zwischen Amonitas und Kabuto <b>wählen</b>, der neue Auftrag 12 an der <b>Siegesstraße</b> (ab 8 Orden) liefert automatisch <b>das jeweils andere</b> – ohne erneute Wahl. Die Mondberg-Entscheidung bestimmt damit nur noch die Reihenfolge. Der Hauptstrang wächst auf <b>13 Karten</b> je Spieler („Der Weg zur Liga“ rückt auf 13); gedruckt werden 39 Hauptstrang-Karten, die nach dem Schneiden nach den aufgedruckten Nummern in drei Stapel sortiert werden.</li>
+      <li><b>31.07.2026 (5)</b> – <b>Grundsatz: Jeder Spieler kann jedes Pokémon fangen</b> (Kapitel 3). Kein Eintrag darf einem Spieler dauerhaft verschlossen bleiben; eine Entscheidung im Spielverlauf darf einen Pokédex-Eintrag höchstens <i>verschieben</i>, nie <i>ausschließen</i>. Der Bestand wurde daraufhin geprüft: Kein Pokémon ist ohne Fangort <i>und</i> ohne Vorstufe, die drei Starter sind zusätzlich wild fangbar (Bisasam Vertania-Wald, Glumanda Felstunnel, Schiggy Route 25), und Evoli ist auf Route 5 wiederholt fangbar – die Entwicklungswahl bei Lv 6 schließt also nichts aus. Einzige echte Einwegentscheidung war das <b>Fossil</b>. Dafür jetzt eine <b>zweite Fossil-Quest</b>: Auftrag 5 am Mondberg lässt weiterhin zwischen Amonitas und Kabuto <b>wählen</b>, der neue Auftrag 15 an der <b>Siegesstraße</b> (ab 8 Orden) liefert automatisch <b>das jeweils andere</b> – ohne erneute Wahl. Die Mondberg-Entscheidung bestimmt damit nur noch die Reihenfolge. Der Hauptstrang wächst auf <b>13 Karten</b> je Spieler („Der Weg zur Liga“ rückt auf 13); gedruckt werden 39 Hauptstrang-Karten, die nach dem Schneiden nach den aufgedruckten Nummern in drei Stapel sortiert werden.</li>
       <li><b>31.07.2026 (6)</b> – <b>16 statt 12 Questkarten je Bogen.</b> Die Bogenüberschrift kostete rund 18 mm Bauhöhe – genau so viel, wie eine vierte Kartenreihe braucht (4 × 62 mm + 3 × 5 mm Abstand = 263 mm bei 273 mm nutzbarer Höhe). Deckname, Bogennummer, Vorder-/Rückseite und der Zusammenbau-Hinweis stehen jetzt als schmale <b>Fußzeile im unteren Seitenrand</b>; weil sie absolut gesetzt ist, verbraucht sie keine Höhe. Damit passen vier Reihen à vier Karten auf den Bogen. Nachgemessen bleiben am engsten Bogen noch 8,6 mm Reserve, die Fußzeile überlappt keine Karte. Gesamt: <b>8 statt 10 Blatt</b> (3 Bögen Hauptstrang + 1 Bogen Nebenaufträge, je mit Rückseitenbogen).</li>
+      <li><b>31.07.2026 (7)</b> – <b>Questreihe auf 16 Aufträge je Spieler erweitert.</b> Drei neue Karten wurden nicht angehängt, sondern dort <b>eingefügt, wo die Kette Lücken hatte</b>: <b>„Erste Entwicklung"</b> als Auftrag 4 (direkt nach dem ersten Orden – führt die Entwicklungsmechanik früh ein), <b>„Der Felstunnel"</b> als Auftrag 8 (ab 3 Orden, schließt geografisch die Strecke nach Lavandia und verlangt nebenbei ein Team von vier Pokémon) und <b>„Meister der Typen"</b> als Auftrag 14 (ab 7 Orden – dort lag bisher kein einziger Auftrag; verlangt drei Siege mit Typvorteil und schärft damit die zentrale Kampfregel). Alle Folgeaufträge sind nachnummeriert, die Querverweise auf den Karten und in den Beschlüssen wurden mitgezogen und anschließend automatisch gegen die Kartendaten abgeglichen. <b>Angenehmer Nebeneffekt:</b> 16 Aufträge sind genau die Kapazität eines Bogens – jeder Bogen trägt jetzt einen vollständigen Spielerstapel, nach dem Schneiden muss nichts mehr sortiert werden.</li>
+      <li><b>31.07.2026 (8)</b> – <b>Gemeinsame Schnittkanten für Quest- und Ereigniskarten.</b> Die Karten liegen jetzt Kante an Kante statt mit 5 mm Abstand; zwei Nachbarn teilen sich <b>einen</b> Schnitt statt zweier knapp nebeneinanderliegender Linien. Umgesetzt über Rahmen, die nur <b>rechts und unten</b> auf der Karte sitzen (links bzw. oben nur an der ersten Spalte und Reihe), sodass jede Grenze genau einmal gezeichnet wird; der Zierrahmen der Karte wandert dafür auf einen Innenschatten, der keine Kante belegt. Die <b>runden Chips</b> (Bälle, Münzen, Items) behalten bewusst ihre 5 mm – zwei Kreise können sich keine gerade Schnittkante teilen. Nachgemessen: Quest- und Ereigniskarten stoßen exakt aneinander (0 mm Spalt), die Ballchips stehen unverändert 5 mm auseinander.</li>
     </ul>
   </div>`;
   groupDoneItemsInChapter14();
