@@ -331,10 +331,12 @@ table.typematrix .rowlab{color:#fff; font-weight:800; font-size:7.5px; padding:0
 
 #page-shop .sheet.shopsheet{width:210mm; min-height:296mm; margin:0 auto 16px; padding:11mm 10mm 12mm;
   background:#fff; box-shadow:0 3px 14px rgba(0,0,0,.16); border-radius:3px; position:relative;}
-#page-shop .sheet-head{font-family:'Fredoka',sans-serif; font-weight:700; font-size:15pt; margin-bottom:3mm;
-  display:flex; align-items:baseline; gap:8px;}
-#page-shop .sheet-head small{font-family:'Nunito'; font-weight:700; font-size:9.5pt; color:#8a7f6d;}
-#page-shop .sheet-sub{font-size:9pt; color:#8a7f6d; font-weight:700; margin-bottom:7mm;}
+/* Bogeninfo als absolut sitzende Fusszeile im unteren Seitenrand statt als Ueberschrift
+   (gleiches Prinzip wie bei den Questkarten): Titel, Format/Seite und Hinweistext bleiben
+   erhalten, kosten aber KEINE Bauhoehe – dadurch passt eine zusaetzliche Kartenreihe je Bogen. */
+#page-shop .sheet-lab{position:absolute; left:10mm; right:10mm; bottom:3mm; text-align:center;
+  font-size:7.5pt; color:#8a7f6d; font-weight:700;}
+#page-shop .sheet-lab b{color:#3a2c14; font-family:'Fredoka',sans-serif; font-size:9pt;}
 #page-shop .shopgrid{display:block;}
 #page-shop .shoprow{display:flex; gap:5mm; margin-bottom:5mm; align-items:flex-start;}
 #page-shop .shoprow.back{flex-direction:row-reverse; justify-content:flex-start;}
@@ -366,7 +368,7 @@ table.typematrix .rowlab{color:#fff; font-weight:800; font-size:7.5px; padding:0
 
 /* Wie bei den Questkarten: Kante an Kante, Schnittlinie nur rechts/unten (links/oben nur an der
    ersten Spalte bzw. Reihe), Zierrahmen als inset-Schatten. Ein Schnitt trennt zwei Karten. */
-#page-shop .ecard{width:43mm; height:62mm; overflow:hidden; position:relative;
+#page-shop .ecard{width:43mm; height:62mm; overflow:hidden; position:relative; border-radius:3mm;
   color:#f4f2ff; display:flex; flex-direction:column;
   background:radial-gradient(120% 90% at 30% 8%, #4a3f7a 0%, #2b2450 55%, #201b3d 100%);
   box-shadow:inset 0 0 0 0.5mm #171334;
@@ -443,7 +445,7 @@ table.typematrix .rowlab{color:#fff; font-weight:800; font-size:7.5px; padding:0
 #page-quest .q-row{display:flex; gap:0; margin-bottom:0;}
 #page-quest .q-row.back{flex-direction:row-reverse; justify-content:flex-start;}
 
-#page-quest .q-card{width:43mm; height:62mm; position:relative; display:flex; flex-direction:column;
+#page-quest .q-card{width:43mm; height:62mm; position:relative; display:flex; flex-direction:column; overflow:hidden; border-radius:3mm;
   border-right:0.12mm dashed #9a8f78; border-bottom:0.12mm dashed #9a8f78;}
 #page-quest .q-card:first-child{border-left:0.12mm dashed #9a8f78;}
 #page-quest .q-row:first-of-type .q-card{border-top:0.12mm dashed #9a8f78;}
@@ -2570,9 +2572,8 @@ const BALL_CFG = [
    nummerierte Meisterbälle). */
 function sheetWrap(title, small, sub, side, body){
   const label = side==='back' ? 'Rückseite' : 'Vorderseite';
-  return `<div class="sheet shopsheet"><div class="sheet-head">${title} <small>${small} · ${label}</small></div>
-    ${sub?`<div class="sheet-sub">${sub}</div>`:''}
-    <div class="shopgrid">${body}</div></div>`;
+  return `<div class="sheet shopsheet"><div class="shopgrid">${body}</div>
+    <div class="sheet-lab"><b>${title}</b> · ${small} · ${label}${sub?` — ${sub}`:''}</div></div>`;
 }
 const POKEBALL_OUTLINE = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
   <circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" stroke-width="5"/>
@@ -2647,12 +2648,11 @@ function shopGeometrie(){
   probe.setAttribute('aria-hidden', 'true');
   probe.style.cssText = 'position:absolute; left:-99999px; top:0; visibility:hidden; pointer-events:none;';
   probe.innerHTML = `<div class="sheet shopsheet">
-      <div class="sheet-head">Probe <small>Probe</small></div>
-      <div class="sheet-sub">Probe</div>
       <div class="shopgrid">
         <div class="group-label" data-p="label">Probe</div>
         ${Object.entries(SHOP_PROBE).map(([k, h]) => `<div class="shoprow shoprow-${k}" data-p="${k}">${h}</div>`).join('')}
       </div>
+      <div class="sheet-lab"><b>Probe</b> · Probe</div>
     </div>`;
   host.appendChild(probe);
   try{
@@ -2685,13 +2685,13 @@ function shopGeometrie(){
       const label = probe.querySelector('[data-p="label"]');
       labelH = mm(label.getBoundingClientRect().height + aus(label, 'marginTop') + aus(label, 'marginBottom'));
 
+      /* Die Fusszeile sitzt absolut (kostet also keine Bauhoehe im Grid) – braucht am unteren
+         Rand aber trotzdem Platz, damit die letzte Kartenreihe sie nicht ueberdeckt. */
       const bogen = probe.querySelector('.shopsheet');
-      const kopf  = probe.querySelector('.sheet-head');
-      const unter = probe.querySelector('.sheet-sub');
+      const lab   = probe.querySelector('.sheet-lab');
       const innen = mm(bogen.getBoundingClientRect().height - aus(bogen,'paddingTop') - aus(bogen,'paddingBottom'));
-      const kopfH = mm(kopf.getBoundingClientRect().height + aus(kopf,'marginBottom'))
-                  + mm(unter.getBoundingClientRect().height + aus(unter,'marginBottom'));
-      pageH = innen - kopfH - 2;   // 2mm Reserve für den Schnittrand der letzten Reihe
+      const labH  = mm(lab.getBoundingClientRect().height) + 3;   // + bottom-Abstand der Fusszeile
+      pageH = innen - labH - 2;   // 2mm Reserve für den Schnittrand der letzten Reihe
     }
   } finally { probe.remove(); }
   Object.keys(SHOP_GEO_FALLBACK).forEach(k=>{ if(!geo[k]) geo[k] = SHOP_GEO_FALLBACK[k]; });
@@ -3535,6 +3535,16 @@ function renderDoc(){
       <li>Pokécenter: gratis Vollheilung, kostet eine Hauptaktion.</li>
       <li>Pokédollar-Einkommen: Trainersiege 2 ₽, Arenasiege 5 ₽ (Stufe 1), Quest-Belohnungen variabel.</li>
     </ul>
+    <h3>Ereigniskarten: 16 statt 12 je Bogen (Beschluss 02.08.2026)</h3>
+    <p>Wie schon bei den Questkarten (Kapitel 15) kostete die Bogenüberschrift des Pokeshops rund
+      20 mm Bauhöhe – genug, um eine vierte Kartenreihe zu verhindern. Titel, Format und
+      Vorder-/Rückseiten-Hinweis stehen jetzt als schmale, absolut gesetzte <b>Fußzeile</b> im
+      unteren Seitenrand statt als Überschrift oben; sie verbraucht dadurch keine Bauhöhe mehr. Die
+      Umstellung betrifft <code>sheetWrap()</code> und gilt damit für alle vier Pokeshop-Bögen
+      (Bälle, Münzen, Items, Ereigniskarten) gleichermaßen – nur die Ereigniskarten waren mit
+      4 Reihen à 62 mm überhaupt knapp genug, um von der zusätzlichen Reihe zu profitieren.
+      Nachgemessen: nutzbare Bogenhöhe wächst von rund 251 mm auf rund 264 mm, vier Reihen à
+      4 Karten (248 mm) passen jetzt mit Reserve, keine Karte überdeckt die Fußzeile.</p>
   </div>
 
   <div class="dchapter" id="d9"><h2>9. Arenen &amp; Spielziel</h2>
@@ -3827,6 +3837,11 @@ function renderDoc(){
       Zwei Kreise können sich keine gerade Schnittkante teilen, dort wird ohnehin einzeln
       ausgeschnitten. Nachgemessen: Quest- und Ereigniskarten stoßen exakt aneinander (0 mm Spalt),
       die Ballchips stehen unverändert 5 mm auseinander.</p>
+    <p class="note"><b>Nachgebessert (02.08.2026):</b> Beim Umbau auf gemeinsame Schnittkanten war
+      <code>border-radius</code> versehentlich mit weggefallen – die Karten hatten dadurch eckige
+      statt abgerundete Ecken. Wieder ergänzt, die geteilte Schnittkante bleibt unverändert. Kleine
+      Rundungs-Einkerbungen dort, wo vier Kartenecken aufeinandertreffen, sind eine gewollte Folge
+      dieser Technik (dasselbe Prinzip wie schon bei den Pokémon-Normalkarten) und kein Fehler.</p>
 
     <h3>Offene Punkte zur Questreihe</h3>
     <ul>
@@ -3925,6 +3940,8 @@ function renderDoc(){
       <li><b>31.07.2026 (6)</b> – <b>16 statt 12 Questkarten je Bogen.</b> Die Bogenüberschrift kostete rund 18 mm Bauhöhe – genau so viel, wie eine vierte Kartenreihe braucht (4 × 62 mm + 3 × 5 mm Abstand = 263 mm bei 273 mm nutzbarer Höhe). Deckname, Bogennummer, Vorder-/Rückseite und der Zusammenbau-Hinweis stehen jetzt als schmale <b>Fußzeile im unteren Seitenrand</b>; weil sie absolut gesetzt ist, verbraucht sie keine Höhe. Damit passen vier Reihen à vier Karten auf den Bogen. Nachgemessen bleiben am engsten Bogen noch 8,6 mm Reserve, die Fußzeile überlappt keine Karte. Gesamt: <b>8 statt 10 Blatt</b> (3 Bögen Hauptstrang + 1 Bogen Nebenaufträge, je mit Rückseitenbogen).</li>
       <li><b>31.07.2026 (7)</b> – <b>Questreihe auf 16 Aufträge je Spieler erweitert.</b> Drei neue Karten wurden nicht angehängt, sondern dort <b>eingefügt, wo die Kette Lücken hatte</b>: <b>„Erste Entwicklung"</b> als Auftrag 4 (direkt nach dem ersten Orden – führt die Entwicklungsmechanik früh ein), <b>„Der Felstunnel"</b> als Auftrag 8 (ab 3 Orden, schließt geografisch die Strecke nach Lavandia und verlangt nebenbei ein Team von vier Pokémon) und <b>„Meister der Typen"</b> als Auftrag 14 (ab 7 Orden – dort lag bisher kein einziger Auftrag; verlangt drei Siege mit Typvorteil und schärft damit die zentrale Kampfregel). Alle Folgeaufträge sind nachnummeriert, die Querverweise auf den Karten und in den Beschlüssen wurden mitgezogen und anschließend automatisch gegen die Kartendaten abgeglichen. <b>Angenehmer Nebeneffekt:</b> 16 Aufträge sind genau die Kapazität eines Bogens – jeder Bogen trägt jetzt einen vollständigen Spielerstapel, nach dem Schneiden muss nichts mehr sortiert werden.</li>
       <li><b>31.07.2026 (8)</b> – <b>Gemeinsame Schnittkanten für Quest- und Ereigniskarten.</b> Die Karten liegen jetzt Kante an Kante statt mit 5 mm Abstand; zwei Nachbarn teilen sich <b>einen</b> Schnitt statt zweier knapp nebeneinanderliegender Linien. Umgesetzt über Rahmen, die nur <b>rechts und unten</b> auf der Karte sitzen (links bzw. oben nur an der ersten Spalte und Reihe), sodass jede Grenze genau einmal gezeichnet wird; der Zierrahmen der Karte wandert dafür auf einen Innenschatten, der keine Kante belegt. Die <b>runden Chips</b> (Bälle, Münzen, Items) behalten bewusst ihre 5 mm – zwei Kreise können sich keine gerade Schnittkante teilen. Nachgemessen: Quest- und Ereigniskarten stoßen exakt aneinander (0 mm Spalt), die Ballchips stehen unverändert 5 mm auseinander.</li>
+      <li><b>02.08.2026</b> – <b>Abgerundete Ecken bei Quest- und Ereigniskarten wiederhergestellt.</b> Beim Umbau auf gemeinsame Schnittkanten (31.07.2026) war <code>border-radius</code> versehentlich mit weggefallen (bei den Questkarten zusätzlich <code>overflow:hidden</code>) – beide Kartentypen hatten dadurch eckige statt runde Ecken. Wieder ergänzt (<code>border-radius:3mm</code>), die geteilte Schnittkante (Rahmen nur rechts/unten) bleibt unverändert.</li>
+      <li><b>02.08.2026 (2)</b> – <b>Ereigniskarten: 16 statt 12 je Bogen.</b> Analog zu den Questkarten vom 31.07. kostete die Bogenüberschrift des Pokeshops (<code>sheetWrap()</code>) rund 20 mm Bauhöhe – genau der Platz, der für eine vierte Kartenreihe fehlte. Titel, Format und Vorder-/Rückseiten-Hinweis stehen jetzt als absolut gesetzte Fußzeile im unteren Seitenrand und kosten damit keine Bauhöhe mehr; die Messung in <code>shopGeometrie()</code> wurde entsprechend umgestellt (misst jetzt die Fußzeilenhöhe statt Kopf- und Untertitel). Die Umstellung gilt für alle vier Pokeshop-Bögen, wirkt sich aber nur bei den Ereigniskarten auf die Reihenzahl aus (3 → 4 Reihen à 4 Karten); Bälle, Münzen und Items hatten schon vorher Luft übrig. Nachgemessen: nutzbare Bogenhöhe wächst von 251 auf 264 mm, vier Reihen (248 mm) passen mit Reserve, keine Karte überdeckt die Fußzeile.</li>
     </ul>
   </div>`;
   groupDoneItemsInChapter14();
