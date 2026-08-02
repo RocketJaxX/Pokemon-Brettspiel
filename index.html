@@ -419,11 +419,14 @@ table.typematrix .rowlab{color:#fff; font-weight:800; font-size:7.5px; padding:0
 #page-quest .q-tgeber{font-size:11px; color:#8a7f6d; font-weight:700;}
 
 #page-quest .q-sheet{width:210mm; min-height:296mm; margin:0 auto 16px; padding:11mm 10mm 12mm;
-  background:#fff; box-shadow:0 3px 14px rgba(0,0,0,.16); border-radius:3px;}
-#page-quest .q-sheethead{font-family:'Fredoka',sans-serif; font-weight:700; font-size:15pt; margin-bottom:3mm;
-  display:flex; align-items:baseline; gap:8px;}
-#page-quest .q-sheethead small{font-family:'Nunito'; font-weight:700; font-size:9.5pt; color:#8a7f6d;}
-#page-quest .q-sheetsub{font-size:9pt; color:#8a7f6d; font-weight:700; margin-bottom:7mm;}
+  background:#fff; box-shadow:0 3px 14px rgba(0,0,0,.16); border-radius:3px; position:relative;}
+/* Bogeninfo als absolut sitzende Fusszeile im unteren Seitenrand statt als Ueberschrift:
+   So bleiben Deckname, Bogennummer, Vorder-/Rueckseite und der Zusammenbau-Hinweis erhalten,
+   kosten aber KEINE Bauhoehe – dadurch passen 4 statt 3 Kartenreihen auf den Bogen
+   (4 x 62mm + 3 x 5mm Abstand = 263mm; nutzbar sind 296 - 11 - 12 = 273mm). */
+#page-quest .q-sheetlab{position:absolute; left:10mm; right:10mm; bottom:3mm; text-align:center;
+  font-size:7.5pt; color:#8a7f6d; font-weight:700;}
+#page-quest .q-sheetlab b{color:#5c5344;}
 #page-quest .q-row{display:flex; gap:5mm; margin-bottom:5mm;}
 #page-quest .q-row.back{flex-direction:row-reverse; justify-content:flex-start;}
 
@@ -2945,7 +2948,7 @@ function questBackHTML(art){
 /* Druckbogen: Reihen zu 4 Karten (43mm + 5mm Abstand passen 4x in die 190mm Innenbreite).
    Rückseiten reihenweise gespiegelt – beim Duplexdruck über die lange Kante liegt so jede
    Rückseite exakt hinter ihrer Vorderseite, dasselbe Prinzip wie beim Pokeshop. */
-const Q_PRO_REIHE = 4, Q_REIHEN_PRO_BOGEN = 3;
+const Q_PRO_REIHE = 4, Q_REIHEN_PRO_BOGEN = 4;
 function questBoegen(karten, art, titel, hinweis){
   const proBogen = Q_PRO_REIHE * Q_REIHEN_PRO_BOGEN;
   let out = '';
@@ -2954,12 +2957,12 @@ function questBoegen(karten, art, titel, hinweis){
     const reihen = [];
     for(let r=0; r<teil.length; r+=Q_PRO_REIHE) reihen.push(teil.slice(r, r+Q_PRO_REIHE));
     const bogenNr = Math.floor(i/proBogen)+1, bogenZahl = Math.ceil(karten.length/proBogen);
-    out += `<div class="q-sheet"><div class="q-sheethead">${titel} <small>Bogen ${bogenNr}/${bogenZahl} · Vorderseiten</small></div>
-      <div class="q-sheetsub">${hinweis}</div>
-      ${reihen.map(rw=>`<div class="q-row">${rw.map(q=>questCardHTML(q, art)).join('')}</div>`).join('')}</div>`;
-    out += `<div class="q-sheet"><div class="q-sheethead">${titel} <small>Bogen ${bogenNr}/${bogenZahl} · Rückseiten</small></div>
-      <div class="q-sheetsub">Duplex über die lange Kante – Reihen sind gespiegelt.</div>
-      ${reihen.map(rw=>`<div class="q-row back">${rw.map(()=>questBackHTML(art)).join('')}</div>`).join('')}</div>`;
+    out += `<div class="q-sheet">
+      ${reihen.map(rw=>`<div class="q-row">${rw.map(q=>questCardHTML(q, art)).join('')}</div>`).join('')}
+      <div class="q-sheetlab"><b>${titel}</b> · Bogen ${bogenNr}/${bogenZahl} · Vorderseiten — ${hinweis}</div></div>`;
+    out += `<div class="q-sheet">
+      ${reihen.map(rw=>`<div class="q-row back">${rw.map(()=>questBackHTML(art)).join('')}</div>`).join('')}
+      <div class="q-sheetlab"><b>${titel}</b> · Bogen ${bogenNr}/${bogenZahl} · Rückseiten — Duplex über die lange Kante, Reihen sind gespiegelt.</div></div>`;
   }
   return out;
 }
@@ -3773,11 +3776,17 @@ function renderDoc(){
     <h3>Kartenformat</h3>
     <p>43 × 62 mm wie die Ereigniskarten, aber eigene Farbwelt, damit die Stapel am Tisch nicht
       verwechselt werden: Hauptstrang <b>pergament-gold</b>, Nebenaufträge <b>salbeigrün</b>,
-      Ereigniskarten bleiben violett. Vier Karten je Reihe, drei Reihen je Bogen; Rückseiten
-      reihenweise gespiegelt für den Duplexdruck über die lange Kante. Gesamt: 4 Bögen Hauptstrang
-      (39 Karten = 3 Stapel à 13) und 1 Bogen Nebenaufträge, je mit Rückseitenbogen. Da 13 Karten
-      nicht glatt auf einen Bogen à 12 passen, laufen die drei Stapel über die Bögen durch; nach dem
-      Schneiden wird <b>nach den aufgedruckten Nummern</b> in drei Stapel sortiert.</p>
+      Ereigniskarten bleiben violett. <b>Vier Karten je Reihe, vier Reihen je Bogen</b> = 16 Karten;
+      Rückseiten reihenweise gespiegelt für den Duplexdruck über die lange Kante. Gesamt: 3 Bögen
+      Hauptstrang (39 Karten = 3 Stapel à 13) und 1 Bogen Nebenaufträge, je mit Rückseitenbogen.
+      Da 13 Karten nicht glatt auf einen Bogen aufgehen, laufen die drei Stapel über die Bögen
+      durch; nach dem Schneiden wird <b>nach den aufgedruckten Nummern</b> in drei Stapel sortiert.</p>
+    <p class="note"><b>Warum die Bögen keine Überschrift tragen (31.07.2026):</b> Deckname,
+      Bogennummer, Vorder-/Rückseite und der Zusammenbau-Hinweis stehen als schmale Fußzeile im
+      unteren Seitenrand statt als Überschrift oben. Eine Überschrift kostete rund 18 mm Bauhöhe –
+      genau so viel, wie die vierte Kartenreihe braucht (4 × 62 mm + 3 × 5 mm Abstand = 263 mm bei
+      273 mm nutzbarer Höhe). Die Fußzeile ist absolut gesetzt und verbraucht deshalb gar keine
+      Höhe. Ergebnis: 16 statt 12 Karten je Bogen, insgesamt 8 statt 10 Blatt.</p>
 
     <h3>Offene Punkte zur Questreihe</h3>
     <ul>
@@ -3868,7 +3877,8 @@ function renderDoc(){
       <li><b>31.07.2026 (2)</b> – <b>Brettinhalt um 3 Felder nach oben und 2 nach rechts verschoben</b>, weil das Gelände unten am Rand anstieß. Umgesetzt als reine Koordinatenverschiebung über alle Bestandteile: Kacheln, Gebäude/Events, Zonentitel (die mit Kommastellen liegen) und Verbindungen. Vorher geprüft, dass die weichenden Bereiche leer sind – die obersten drei Reihen und die beiden rechten Spalten enthielten nichts, der Inhalt begann bei Reihe 6 und endete bei Spalte 91. Es ging also nichts verloren; danach automatisch kontrolliert, dass die Anzahl aller Elemente gleich blieb und nichts über den Brettrand ragt. Unten und oben sind jetzt je 3 Reihen frei.</li>
       <li><b>31.07.2026 (3)</b> – <b>Drei Trainerpässe je Starter, drei Rucksäcke, höhere Item-Mengen.</b> Der Reiter „Trainerpass“ druckt jetzt <b>ein Blatt pro Spieler</b> (Bisasam-, Glumanda-, Schiggy-Spieler): Auf jedem ist der jeweilige Starter farbig, die anderen beiden ausgegraut, und der zugehörige Rucksack liegt auf demselben A4-Blatt. Danach folgt der Orden-/Legendären-Chipbogen, jetzt in <b>drei Sätzen</b> (einer je Spieler, mit „Satz 1/2/3“ beschriftet) – insgesamt vier Seiten. Die Starterkreise im Passkopf sind etwas größer (Kreis 14 mm, Bild über Innenabstand nach innen geholt), damit das Artwork nicht mehr an den Rand stößt. Die <b>Startmengen je Spieler</b> steigen: Superbälle 5→6, Hyperbälle 3→4, Tränke 5→6 (Meisterball 2, Supertrank 3, Beleber 2, Pokéflöte 1 unverändert). Das ist an einer Stelle definiert (<code>RUCKSACK</code>, Mengen je Spieler); der Pokeshop druckt automatisch drei Sätze davon, also Superbälle 18, Hyperbälle 12, Tränke 18. Damit ein bereits gespeicherter Spielstand die alten Shop-Zahlen nicht festhält, hebt eine Migration sie beim Laden an – aber nur, wenn der Wert exakt der frühere Standard ist; eine selbst verstellte Menge bleibt unangetastet (geprüft: 15/9/15 → 18/12/18, eigenes 20 bleibt 20).</li>
       <li><b>31.07.2026 (4)</b> – <b>Questreihe „Die Kanto-Chronik" als eigener Reiter.</b> Zwölf aufeinander aufbauende Aufträge führen in der natürlichen Ordensreihenfolge durch Kanto (Vertania-Wald → Marmoria → Mondberg → Route 25 → Prismania → Lavandia → Safari → Kraftwerk → Zinnoberinsel → Liga), dazu sechs freiwillige Aushänge. <b>Ausgabe nach und nach statt als Liste:</b> Der Hauptstrang ist ein sortierter Stapel je Spieler, offen liegt immer nur die oberste Karte; jede Karte nennt selbst, ab wann sie aktiv wird, sodass es keine Buchführung braucht. Die Nebenaufträge liegen als gemeinsamer verdeckter Stapel bereit und werden am Pokécenter gezogen. Entwurfsleitlinie: <b>keine neue Mechanik</b> – jede Aufgabe prüft nur, was das Spiel ohnehin führt (Fänge, Typen, Gebiete, Geländefähigkeiten, Orden, Level, Pokédex), und alle Belohnungen kommen aus dem vorhandenen Vorrat. Vorhandene Inhalte sind eingebunden statt verdoppelt: Fossil, Relaxo und Zapdos hängen an Aufträgen, die Pokéflöte wird Questbelohnung (bleibt daneben käuflich), die Meisterball-Quest bleibt bewusst außen vor. Karten im Ereigniskarten-Format 43 × 62 mm, aber pergament-gold bzw. salbeigrün statt violett, damit die Stapel unterscheidbar bleiben; 4 Bögen plus Rückseitenbögen. Begründungen und offene Punkte stehen im neuen <b>Kapitel 15</b>.</li>
-      <li><b>31.07.2026 (5)</b> – <b>Grundsatz: Jeder Spieler kann jedes Pokémon fangen</b> (Kapitel 3). Kein Eintrag darf einem Spieler dauerhaft verschlossen bleiben; eine Entscheidung im Spielverlauf darf einen Pokédex-Eintrag höchstens <i>verschieben</i>, nie <i>ausschließen</i>. Der Bestand wurde daraufhin geprüft: Kein Pokémon ist ohne Fangort <i>und</i> ohne Vorstufe, die drei Starter sind zusätzlich wild fangbar (Bisasam Vertania-Wald, Glumanda Felstunnel, Schiggy Route 25), und Evoli ist auf Route 5 wiederholt fangbar – die Entwicklungswahl bei Lv 6 schließt also nichts aus. Einzige echte Einwegentscheidung war das <b>Fossil</b>. Dafür jetzt eine <b>zweite Fossil-Quest</b>: Auftrag 4 am Mondberg lässt weiterhin zwischen Amonitas und Kabuto <b>wählen</b>, der neue Auftrag 12 an der <b>Siegesstraße</b> (ab 8 Orden) liefert automatisch <b>das jeweils andere</b> – ohne erneute Wahl. Die Mondberg-Entscheidung bestimmt damit nur noch die Reihenfolge. Der Hauptstrang wächst auf <b>13 Karten</b> je Spieler („Der Weg zur Liga“ rückt auf 13); gedruckt werden 39 Hauptstrang-Karten auf 4 Bögen, die nach dem Schneiden nach den aufgedruckten Nummern in drei Stapel sortiert werden.</li>
+      <li><b>31.07.2026 (5)</b> – <b>Grundsatz: Jeder Spieler kann jedes Pokémon fangen</b> (Kapitel 3). Kein Eintrag darf einem Spieler dauerhaft verschlossen bleiben; eine Entscheidung im Spielverlauf darf einen Pokédex-Eintrag höchstens <i>verschieben</i>, nie <i>ausschließen</i>. Der Bestand wurde daraufhin geprüft: Kein Pokémon ist ohne Fangort <i>und</i> ohne Vorstufe, die drei Starter sind zusätzlich wild fangbar (Bisasam Vertania-Wald, Glumanda Felstunnel, Schiggy Route 25), und Evoli ist auf Route 5 wiederholt fangbar – die Entwicklungswahl bei Lv 6 schließt also nichts aus. Einzige echte Einwegentscheidung war das <b>Fossil</b>. Dafür jetzt eine <b>zweite Fossil-Quest</b>: Auftrag 4 am Mondberg lässt weiterhin zwischen Amonitas und Kabuto <b>wählen</b>, der neue Auftrag 12 an der <b>Siegesstraße</b> (ab 8 Orden) liefert automatisch <b>das jeweils andere</b> – ohne erneute Wahl. Die Mondberg-Entscheidung bestimmt damit nur noch die Reihenfolge. Der Hauptstrang wächst auf <b>13 Karten</b> je Spieler („Der Weg zur Liga“ rückt auf 13); gedruckt werden 39 Hauptstrang-Karten, die nach dem Schneiden nach den aufgedruckten Nummern in drei Stapel sortiert werden.</li>
+      <li><b>31.07.2026 (6)</b> – <b>16 statt 12 Questkarten je Bogen.</b> Die Bogenüberschrift kostete rund 18 mm Bauhöhe – genau so viel, wie eine vierte Kartenreihe braucht (4 × 62 mm + 3 × 5 mm Abstand = 263 mm bei 273 mm nutzbarer Höhe). Deckname, Bogennummer, Vorder-/Rückseite und der Zusammenbau-Hinweis stehen jetzt als schmale <b>Fußzeile im unteren Seitenrand</b>; weil sie absolut gesetzt ist, verbraucht sie keine Höhe. Damit passen vier Reihen à vier Karten auf den Bogen. Nachgemessen bleiben am engsten Bogen noch 8,6 mm Reserve, die Fußzeile überlappt keine Karte. Gesamt: <b>8 statt 10 Blatt</b> (3 Bögen Hauptstrang + 1 Bogen Nebenaufträge, je mit Rückseitenbogen).</li>
     </ul>
   </div>`;
   groupDoneItemsInChapter14();
