@@ -396,6 +396,70 @@ table.typematrix .rowlab{color:#fff; font-weight:800; font-size:7.5px; padding:0
   #page-shop .sheet.shopsheet:last-child{page-break-after:auto;}
 }
 
+/* ===== Questreihe =====
+   Kartenmass wie die Ereigniskarten (43 × 62 mm), aber eigene Farbwelt, damit die beiden
+   Stapel am Tisch nicht verwechselt werden: Hauptstrang in warmem Pergament-Gold, Nebenauftraege
+   in Salbeigruen. Die Ereigniskarten bleiben violett. */
+#page-quest .q-toolbar{display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-bottom:12px;}
+#page-quest .q-toolbar h1{font-size:20px; margin:0;}
+#page-quest .q-toolbar button{background:var(--rot); color:#fff; padding:8px 16px; font-size:13px;}
+#page-quest .q-toolbar .hint{font-size:11px; color:#8a7f6d; font-weight:700; width:100%;}
+#page-quest .q-regeln, #page-quest .q-uebersicht{background:var(--panel); border:1px solid var(--line);
+  border-radius:10px; padding:14px 18px; margin-bottom:14px;}
+#page-quest .q-regeln h2, #page-quest .q-uebersicht h2{font-size:16px; margin:0 0 8px;}
+#page-quest .q-uebersicht h2{margin-top:16px;}
+#page-quest .q-uebersicht h2:first-child{margin-top:0;}
+#page-quest .q-regeln ol{margin:0 0 0 18px; font-size:13px; line-height:1.55;}
+#page-quest .q-regeln li{margin-bottom:5px;}
+#page-quest .q-table{border-collapse:collapse; width:100%; font-size:12.5px;}
+#page-quest .q-table th{background:var(--ink); color:#fff; font-family:'Fredoka',sans-serif; font-weight:600;
+  text-align:left; padding:5px 8px;}
+#page-quest .q-table td{border-bottom:1px solid var(--line); padding:5px 8px; vertical-align:top;}
+#page-quest .q-table .q-nr{font-family:'Fredoka',sans-serif; font-weight:700; color:var(--gold); width:28px;}
+#page-quest .q-tgeber{font-size:11px; color:#8a7f6d; font-weight:700;}
+
+#page-quest .q-sheet{width:210mm; min-height:296mm; margin:0 auto 16px; padding:11mm 10mm 12mm;
+  background:#fff; box-shadow:0 3px 14px rgba(0,0,0,.16); border-radius:3px;}
+#page-quest .q-sheethead{font-family:'Fredoka',sans-serif; font-weight:700; font-size:15pt; margin-bottom:3mm;
+  display:flex; align-items:baseline; gap:8px;}
+#page-quest .q-sheethead small{font-family:'Nunito'; font-weight:700; font-size:9.5pt; color:#8a7f6d;}
+#page-quest .q-sheetsub{font-size:9pt; color:#8a7f6d; font-weight:700; margin-bottom:7mm;}
+#page-quest .q-row{display:flex; gap:5mm; margin-bottom:5mm;}
+#page-quest .q-row.back{flex-direction:row-reverse; justify-content:flex-start;}
+
+#page-quest .q-card{width:43mm; height:62mm; border-radius:3mm; overflow:hidden; position:relative;
+  outline:0.3mm dashed #b8a878; outline-offset:1.1mm; display:flex; flex-direction:column;}
+#page-quest.nocut .q-card{outline:none;}
+#page-quest .q-card.haupt{color:#3a2c14; border:0.5mm solid #6b5326;
+  background:radial-gradient(120% 90% at 30% 8%, #fdf3d8 0%, #f0dfae 55%, #e3cd8e 100%);}
+#page-quest .q-card.neben{color:#1d3328; border:0.5mm solid #2f5a45; outline-color:#7ba892;
+  background:radial-gradient(120% 90% at 30% 8%, #e6f5ec 0%, #c9e6d5 55%, #b0d8c1 100%);}
+#page-quest .q-ico{position:absolute; top:2mm; right:2.4mm; font-size:7pt; opacity:.85; z-index:2;}
+#page-quest .q-head{padding:2.6mm 2.8mm 0;}
+#page-quest .q-eyebrow{font-family:'Fredoka',sans-serif; font-weight:600; font-size:5.6pt; letter-spacing:1.6px;
+  text-transform:uppercase; opacity:.7;}
+#page-quest .q-title{font-family:'Fredoka',sans-serif; font-weight:700; font-size:9.5pt; line-height:1.08; margin-top:0.8mm;}
+#page-quest .q-geber{padding:0.8mm 2.8mm 0; font-size:5.8pt; font-weight:800; opacity:.72;}
+#page-quest .q-ausl{margin:1.4mm 2.8mm 0; padding:0.8mm 1.4mm; font-size:5.6pt; font-weight:800;
+  background:rgba(0,0,0,.09); border-radius:1mm;}
+#page-quest .q-body{padding:1.8mm 2.8mm; font-size:7.2pt; font-weight:700; line-height:1.26; flex:1;}
+#page-quest .q-foot{margin-top:auto; padding:1.6mm 2.8mm; background:rgba(0,0,0,.14);
+  font-size:5.4pt; font-weight:800; display:flex; flex-direction:column; gap:0.5mm;}
+#page-quest .q-foot .q-lohn{font-size:6.8pt;}
+#page-quest .q-card.back{align-items:center; justify-content:center;}
+#page-quest .q-card.haupt.back{background:radial-gradient(120% 90% at 50% 30%, #f6e6bd 0%, #e0c98a 60%, #cdb069 100%);}
+#page-quest .q-card.neben.back{background:radial-gradient(120% 90% at 50% 30%, #d8efe1 0%, #b3d9c3 60%, #98c8ab 100%);}
+#page-quest .q-emblem{width:22mm; opacity:.42;}
+#page-quest .q-emblem svg{width:100%; height:100%; display:block;}
+#page-quest .q-backfoot{position:absolute; bottom:2.6mm; left:0; right:0; text-align:center;
+  font-family:'Fredoka',sans-serif; font-weight:800; font-size:5.6pt; letter-spacing:1.6px; opacity:.7;}
+
+@media print{
+  #page-quest .noprint{display:none !important;}
+  #page-quest .q-sheet{box-shadow:none; margin:0; border-radius:0; page-break-after:always; min-height:296mm; height:auto;}
+  #page-quest .q-sheet:last-child{page-break-after:auto;}
+}
+
 
 #page-volvelle .vpage{position:relative; width:297mm; height:210mm; background:var(--paper);
   box-shadow:0 2px 10px rgba(0,0,0,.1); border-radius:6px; margin:0 auto 14px;}
@@ -959,6 +1023,7 @@ table.kztable tr.hi td{background:#fdf3d4; font-weight:800;}
   <button class="tab" data-page="shop">🎁 Pokeshop</button>
   <button class="tab" data-page="trainerpass">🎫 Trainerpass</button>
   <button class="tab" data-page="arenen">🏟 Arenen</button>
+  <button class="tab" data-page="quest">🗺 Questreihe</button>
   <button class="tab" data-page="cards">🃏 Karten (Normal)</button>
   <button class="tab" data-page="volvelle">🎡 Karten (Volvelle)</button>
   <button class="tab" data-page="board">🗺 Spielbrett</button>
@@ -981,6 +1046,7 @@ table.kztable tr.hi td{background:#fdf3d4; font-weight:800;}
   <section class="page" id="page-doc"></section>
   <section class="page" id="page-volvelle"></section>
 <section class="page" id="page-arenen"></section>
+<section class="page" id="page-quest"></section>
 <section class="page" id="page-board"></section>
 <section class="page" id="page-konzept"></section>
 </main>
@@ -2778,6 +2844,165 @@ function shopSheetsHTML(){
 }
 
 
+/* ===================== Questreihe „Die Kanto-Chronik" =====================
+   Entwurfsleitlinie: Jede Aufgabe greift ausschliesslich auf Mechanik zurueck, die es im Spiel
+   schon gibt – fangen, Typen, Gebiete, Geländefähigkeiten, Orden, Level, Pokedex-Stand. Es
+   kommt kein neuer Wert und keine neue Rechnung dazu; eine Quest ist immer nur ein Blick auf
+   Karte, Trainerpass oder Team. Belohnungen kommen ebenfalls aus dem vorhandenen Vorrat
+   (Pokedollar, Baelle, Traenke, Beleber, Pokefloete, Fossil).
+
+   Ausgabe „nach und nach": Der Hauptstrang ist ein SORTIERTER Stapel je Spieler. Nur die
+   oberste Karte liegt offen – das ist der aktuelle Auftrag. Ist er erfuellt, wandert die Karte
+   ab und die naechste wird aufgedeckt. Niemand sieht die Liste im Voraus, und es braucht keine
+   Buchhaltung: Jede Karte traegt ihre eigene Bedingung. */
+const QUEST_HAUPT = [
+  {nr:1, titel:'Der Pokédex', geber:'Prof. Eich · Alabastia', ico:'📓',
+   ausl:'Zu Spielbeginn aufdecken.',
+   auf:'Fange <b>3 verschiedene</b> Pokémon.',
+   lohn:'3 ₽ · 1 Trank'},
+  {nr:2, titel:'Durch den Wald', geber:'Käfersammler · Vertania-Wald', ico:'🌿',
+   ausl:'Sobald Auftrag 1 erfüllt ist.',
+   auf:'Fange ein <b>Käfer-Pokémon</b> im Vertania-Wald.',
+   lohn:'2 Superbälle'},
+  {nr:3, titel:'Der erste Orden', geber:'Rocko · Marmoria', ico:'🥇',
+   ausl:'Sobald Auftrag 2 erfüllt ist.',
+   auf:'Gewinne den <b>Felsorden</b> in Marmoria.',
+   lohn:'5 ₽ · 1 Trank'},
+  {nr:4, titel:'Fossilien im Mondberg', geber:'Museum · Marmoria', ico:'🦴',
+   ausl:'Ab 1 Orden.',
+   auf:'Fange ein Pokémon <b>im Mondberg</b> und bring das Fossil ins Museum.',
+   lohn:'Fossil: <b>Amonitas oder Kabuto</b> (Lv 1 ins Team)'},
+  {nr:5, titel:'Bills Leuchtturm', geber:'Bill · Route 25', ico:'🔦',
+   ausl:'Ab 2 Orden.',
+   auf:'Erreiche den Leuchtturm auf <b>Route 25</b>.',
+   lohn:'1 Hyperball · 3 ₽'},
+  {nr:6, titel:'Schatten über Prismania', geber:'Team Rocket', ico:'🕶',
+   ausl:'Ab 3 Orden.',
+   auf:'Besiege <b>3 wilde Pokémon</b> auf den Routen 5–8.',
+   lohn:'5 ₽'},
+  {nr:7, titel:'Der Pokémon-Turm', geber:'Mr. Fuji · Lavandia', ico:'👻',
+   ausl:'Ab 4 Orden.',
+   auf:'Fange ein <b>Geist-Pokémon</b> im Pokémon-Turm.',
+   lohn:'<b>Pokéflöte</b> (geschenkt)'},
+  {nr:8, titel:'Der Schläfer', geber:'Anwohner · Route 11/16', ico:'🎵',
+   ausl:'Sobald Auftrag 7 erfüllt ist.',
+   auf:'Wecke <b>Relaxo</b> mit der Pokéflöte und fange es.',
+   lohn:'1 Hyperball'},
+  {nr:9, titel:'Safari-Abenteuer', geber:'Safari-Aufseher · Fuchsania', ico:'🏕',
+   ausl:'Ab 5 Orden.',
+   auf:'Fange <b>2 Pokémon</b> in der Safari-Zone.',
+   lohn:'1 Hyperball · 3 ₽'},
+  {nr:10, titel:'Das stille Kraftwerk', geber:'Techniker · Route 10', ico:'⚡',
+   ausl:'Ab 5 Orden.',
+   auf:'Fange <b>2 Elektro-Pokémon</b>.',
+   lohn:'1 Beleber · Zapdos ist jetzt in Reichweite'},
+  {nr:11, titel:'Die Villa auf Zinnober', geber:'Verlassenes Herrenhaus', ico:'🏝',
+   ausl:'Ab 6 Orden.',
+   auf:'Erreiche <b>Zinnoberinsel</b> (ein Pokémon mit Surfer nötig).',
+   lohn:'5 ₽ · 1 Supertrank'},
+  {nr:12, titel:'Der Weg zur Liga', geber:'Prof. Eich', ico:'🏆',
+   ausl:'Ab 8 Orden.',
+   auf:'Bringe <b>3 Pokémon auf Level 8</b>.',
+   lohn:'1 Beleber · 1 Supertrank'},
+];
+
+/* Nebenaufträge: ein GEMEINSAMER, verdeckter Stapel (wie die Ereigniskarten). Wer ein
+   Pokécenter betritt, darf einen ziehen; es ist immer nur einer offen. Sie sind freiwillig
+   und belohnen genau das, was man beim Spielen ohnehin tut – dadurch entsteht Abwechslung,
+   ohne dass jemand vom Hauptstrang abkommt. */
+const QUEST_NEBEN = [
+  {nr:1, titel:'Typenkenner', ico:'🧭', auf:'Habe <b>4 verschiedene Typen</b> gleichzeitig im Team.', lohn:'3 ₽'},
+  {nr:2, titel:'Sammlerstück', ico:'📗', auf:'Bringe deinen Pokédex auf <b>15 Einträge</b>.', lohn:'1 Superball · 3 ₽'},
+  {nr:3, titel:'Gewässerkunde', ico:'🌊', auf:'Fange <b>3 Wasser-Pokémon</b>.', lohn:'1 Superball'},
+  {nr:4, titel:'Bergsteiger', ico:'🪨', auf:'Fange <b>3 Pokémon in Höhlen</b>.', lohn:'1 Trank · 2 ₽'},
+  {nr:5, titel:'Wegbereiter', ico:'🗡', auf:'Habe je ein Pokémon mit <b>Zerschneider</b> und <b>Surfer</b>.', lohn:'5 ₽'},
+  {nr:6, titel:'Ausdauer', ico:'💪', auf:'Bringe ein Pokémon auf <b>Level 6</b>.', lohn:'1 Supertrank'},
+];
+
+function questCardHTML(q, art){
+  const kopf = art==='haupt' ? `AUFTRAG ${q.nr}` : `AUSHANG ${q.nr}`;
+  return `<div class="q-card ${art}">
+    <div class="q-ico">${q.ico}</div>
+    <div class="q-head"><div class="q-eyebrow">${kopf}</div><div class="q-title">${q.titel}</div></div>
+    ${q.geber ? `<div class="q-geber">${q.geber}</div>` : ''}
+    ${q.ausl ? `<div class="q-ausl">${q.ausl}</div>` : ''}
+    <div class="q-body">${q.auf}</div>
+    <div class="q-foot"><span>BELOHNUNG</span><span class="q-lohn">${q.lohn}</span></div>
+  </div>`;
+}
+function questBackHTML(art){
+  const txt = art==='haupt' ? 'KANTO-CHRONIK' : 'AUSHANG';
+  return `<div class="q-card ${art} back">
+    <div class="q-emblem">${POKEBALL_OUTLINE}</div>
+    <div class="q-backfoot">${txt}</div>
+  </div>`;
+}
+
+/* Druckbogen: Reihen zu 4 Karten (43mm + 5mm Abstand passen 4x in die 190mm Innenbreite).
+   Rückseiten reihenweise gespiegelt – beim Duplexdruck über die lange Kante liegt so jede
+   Rückseite exakt hinter ihrer Vorderseite, dasselbe Prinzip wie beim Pokeshop. */
+const Q_PRO_REIHE = 4, Q_REIHEN_PRO_BOGEN = 3;
+function questBoegen(karten, art, titel, hinweis){
+  const proBogen = Q_PRO_REIHE * Q_REIHEN_PRO_BOGEN;
+  let out = '';
+  for(let i=0; i<karten.length; i+=proBogen){
+    const teil = karten.slice(i, i+proBogen);
+    const reihen = [];
+    for(let r=0; r<teil.length; r+=Q_PRO_REIHE) reihen.push(teil.slice(r, r+Q_PRO_REIHE));
+    const bogenNr = Math.floor(i/proBogen)+1, bogenZahl = Math.ceil(karten.length/proBogen);
+    out += `<div class="q-sheet"><div class="q-sheethead">${titel} <small>Bogen ${bogenNr}/${bogenZahl} · Vorderseiten</small></div>
+      <div class="q-sheetsub">${hinweis}</div>
+      ${reihen.map(rw=>`<div class="q-row">${rw.map(q=>questCardHTML(q, art)).join('')}</div>`).join('')}</div>`;
+    out += `<div class="q-sheet"><div class="q-sheethead">${titel} <small>Bogen ${bogenNr}/${bogenZahl} · Rückseiten</small></div>
+      <div class="q-sheetsub">Duplex über die lange Kante – Reihen sind gespiegelt.</div>
+      ${reihen.map(rw=>`<div class="q-row back">${rw.map(()=>questBackHTML(art)).join('')}</div>`).join('')}</div>`;
+  }
+  return out;
+}
+
+function questUebersichtHTML(){
+  const zeile = q => `<tr><td class="q-nr">${q.nr}</td><td><b>${q.titel}</b><div class="q-tgeber">${q.geber||''}</div></td>
+    <td>${q.ausl||'Zieht man am Pokécenter.'}</td><td>${q.auf}</td><td>${q.lohn}</td></tr>`;
+  return `
+    <h2>Hauptstrang · „Die Kanto-Chronik"</h2>
+    <table class="q-table"><tr><th>Nr</th><th>Auftrag</th><th>Wird aktiv</th><th>Aufgabe</th><th>Belohnung</th></tr>
+      ${QUEST_HAUPT.map(zeile).join('')}</table>
+    <h2>Nebenaufträge · Aushänge im Pokécenter</h2>
+    <table class="q-table"><tr><th>Nr</th><th>Aushang</th><th>Wird aktiv</th><th>Aufgabe</th><th>Belohnung</th></tr>
+      ${QUEST_NEBEN.map(zeile).join('')}</table>`;
+}
+
+function renderQuest(){
+  const host = document.getElementById('page-quest');
+  /* Hauptstrang dreifach (jeder Spieler hat seinen eigenen Stapel und damit seinen eigenen
+     Fortschritt), Nebenaufträge nur einmal – die werden wie die Ereigniskarten geteilt. */
+  const haupt3 = [].concat(QUEST_HAUPT, QUEST_HAUPT, QUEST_HAUPT);
+  host.innerHTML = `
+    <div class="q-toolbar noprint">
+      <h1>🗺 Questreihe</h1>
+      <button onclick="printPage('portrait')">🖨 Drucken (A4 hoch)</button>
+      <span class="hint">Übersicht am Bildschirm, darunter die Druckbögen: Hauptstrang 3× (ein Stapel je Spieler), Nebenaufträge 1× (gemeinsam).</span>
+    </div>
+
+    <div class="q-regeln noprint">
+      <h2>So läuft die Questreihe</h2>
+      <ol>
+        <li><b>Jeder Spieler bekommt einen eigenen Hauptstrang-Stapel</b> – 12 Karten, in Reihenfolge, verdeckt. Nur die <b>oberste Karte liegt offen</b>: Das ist dein aktueller Auftrag.</li>
+        <li>Jede Karte sagt selbst, <b>wann sie aktiv wird</b> (z.&nbsp;B. „ab 3 Orden"). Vorher darfst du sie schon lesen, aber noch nicht abschließen.</li>
+        <li>Ist der Auftrag erfüllt, nimm die <b>Belohnung</b> aus dem Vorrat, lege die Karte ab und decke die nächste auf. So bekommst du die Geschichte Stück für Stück – nie als Liste.</li>
+        <li><b>Nebenaufträge</b> liegen als gemeinsamer verdeckter Stapel bereit. Betrittst du ein Pokécenter, darfst du einen ziehen. Es ist immer nur <b>ein Aushang gleichzeitig</b> offen; erfüllt oder freiwillig abgeworfen, darfst du am nächsten Pokécenter neu ziehen.</li>
+        <li>Quests sind <b>freiwillig</b> – sie geben Richtung und Belohnung, blockieren aber nie den Weg zur Liga.</li>
+      </ol>
+    </div>
+
+    <div class="q-uebersicht noprint">${questUebersichtHTML()}</div>
+
+    ${questBoegen(haupt3, 'haupt', 'Hauptstrang · Die Kanto-Chronik',
+      'Drei vollständige Stapel (einer je Spieler). Nach dem Schneiden je 12 Karten in der Reihenfolge 1–12 stapeln, Karte 1 oben.')}
+    ${questBoegen(QUEST_NEBEN, 'neben', 'Nebenaufträge · Aushänge',
+      'Ein gemeinsamer Stapel für alle Spieler – verdeckt mischen und neben das Spielbrett legen.')}`;
+}
+
 /* ===================== Trainerpass (3× A4 hoch: Pass · Rucksack · Chipbogen) ===================== */
 function starterRowHTML(highlightNr){
   return STARTER_NRS.map(nr=>{
@@ -2953,7 +3178,8 @@ function renderDoc(){
     <li><a href="#d12">Zentrale Nachschlage-Dokumente</a></li>
     <li><a href="#d13">Digitales System (diese HTML-Datei)</a></li>
     <li><a href="#d14">Offene Punkte &amp; nächste Schritte</a></li>
-    <li><a href="#d15">Änderungsprotokoll</a></li>
+    <li><a href="#d15">Questreihe „Die Kanto-Chronik"</a></li>
+    <li><a href="#d16">Änderungsprotokoll</a></li>
   </ol></div>
 
   <div class="dchapter" id="d1"><h2>1. Grundkonzept</h2>
@@ -3448,7 +3674,8 @@ function renderDoc(){
     <ul>
       
       <li><span class="badge ok">erledigt</span> <b>Siege für Teammitglieder (29.07.2026):</b> Nur das kämpfende Pokémon erhält einen Siegpunkt; wird während eines laufenden Kampfs gewechselt, erhalten beide beteiligten Pokémon einen Siegpunkt. Siehe Kapitel 4.</li>
-      <li><span class="badge open">offen</span> <b>Team Rocket / Story-Events</b> als Event-Karten inhaltlich ausarbeiten.</li>
+      <li><span class="badge open">offen</span> <b>Team Rocket / Story-Events:</b> Ein erster Faden ist gelegt – die <b>Questreihe</b> (Kapitel 15) bringt Team Rocket in Auftrag 6 als Gegner ins Spiel. Offen bleibt, ob zusätzlich eigene Rocket-<i>Ereigniskarten</i> nötig sind oder die Questreihe die Geschichte allein trägt.</li>
+      <li><span class="badge open">offen</span> <b>Questreihe:</b> Auslöser, Belohnungshöhe, Ortsbindung und Umfang der Nebenaufträge sind noch ungetestet – die Einzelpunkte stehen in <b>Kapitel 15</b>.</li>
       <li><span class="badge ok">erledigt</span> <b>Evoli (28.07.2026):</b> keine Quest nötig – Evoli steht
         als normaler Fang auf Route 5 in den Gebietstabellen. Bei <b>Lv 6</b> wählt der Spieler frei zwischen
         Aquana, Blitza und Flamara. Der ältere Regelwerk-Satz („Quest-Geschenk in Prismania, Wahl bei Lv 3")
@@ -3466,7 +3693,82 @@ function renderDoc(){
     </ul>
   </div>
 
-  <div class="dchapter" id="d15"><h2>15. Änderungsprotokoll (chronologisch)</h2>
+  <div class="dchapter" id="d15"><h2>15. Questreihe „Die Kanto-Chronik" (31.07.2026)</h2>
+    <p>Eine Questreihe, die den Spieler in der natürlichen Ordensreihenfolge durch Kanto führt.
+      Umgesetzt im Reiter <b>Questreihe</b> (Übersicht am Bildschirm, darunter die Druckbögen).</p>
+
+    <h3>Leitlinie des Entwurfs</h3>
+    <p class="note">Jede Aufgabe greift <b>ausschließlich auf Mechanik zurück, die es schon gibt</b>:
+      fangen, Typen, Gebiete, Geländefähigkeiten, Orden, Level, Pokédex-Stand. Es kommt kein neuer
+      Wert und keine neue Rechnung dazu – eine Quest ist immer nur ein Blick auf Spielbrett,
+      Trainerpass oder Team. Auch die Belohnungen stammen aus dem vorhandenen Vorrat (Pokédollar,
+      Bälle, Tränke, Beleber, Pokéflöte, Fossil), es entsteht also kein zusätzliches Spielmaterial
+      außer den Karten selbst.</p>
+
+    <h3>Ausgabe „nach und nach" statt Liste</h3>
+    <ul>
+      <li><b>Hauptstrang:</b> ein <b>sortierter Stapel je Spieler</b> (12 Karten, Reihenfolge 1–12).
+        Nur die oberste Karte liegt offen – das ist der aktuelle Auftrag. Erfüllt → ablegen, nächste
+        aufdecken. Niemand sieht die Reihe im Voraus.</li>
+      <li><b>Warum je Spieler ein eigener Stapel:</b> Der Fortschritt hängt am eigenen Ordensstand.
+        Ein gemeinsamer Stapel hätte einen Spielleiter oder Merkzettel gebraucht; drei Stapel kosten
+        nur Papier und gar keine Regel.</li>
+      <li><b>Selbsttragende Auslöser:</b> Jede Karte sagt selbst, wann sie aktiv wird („ab 3 Orden").
+        Dadurch ist keine Tabelle und keine Buchführung nötig – die Karte in der Hand genügt.</li>
+      <li><b>Nebenaufträge:</b> ein <b>gemeinsamer verdeckter Stapel</b> (6 Karten) wie die
+        Ereigniskarten. Am Pokécenter darf man einen ziehen, es ist immer nur einer offen. Sie sind
+        freiwillig und belohnen, was man ohnehin tut – das bringt Abwechslung, ohne vom Hauptstrang
+        abzulenken.</li>
+      <li><b>Quests blockieren nie</b> den Weg zur Liga. Sie geben Richtung und Belohnung, sind aber
+        kein Pflichtprogramm.</li>
+    </ul>
+
+    <h3>Anschluss an vorhandene Inhalte</h3>
+    <ul>
+      <li>Der bisher offene Punkt <b>„Team Rocket / Story-Events ausarbeiten"</b> ist damit
+        angefasst: Auftrag 6 („Schatten über Prismania") bringt Team Rocket als Gegner ins Spiel.</li>
+      <li>Vorhandene Quest-Pokémon sind eingebunden statt doppelt erfunden: <b>Fossil</b>
+        (Amonitas/Kabuto) als Belohnung von Auftrag 4, <b>Relaxo</b> als Auftrag 8, <b>Zapdos</b>
+        als Fingerzeig in Auftrag 10.</li>
+      <li>Die <b>Pokéflöte</b> ist Belohnung von Auftrag 7 (Pokémon-Turm) statt nur Ladenware – das
+        entspricht der Vorlage und macht Auftrag 8 (Relaxo) erst möglich. Im Pokeshop bleibt sie
+        zusätzlich für 8 ₽ kaufbar, wer die Quest auslässt.</li>
+      <li>Die <b>Meisterball-Quest</b> (50 Pokédex-Einträge bei Prof. Eich) bleibt unverändert
+        daneben bestehen und wurde bewusst <b>nicht</b> in die Reihe gezogen, um sie nicht zu
+        verdoppeln.</li>
+    </ul>
+
+    <h3>Kartenformat</h3>
+    <p>43 × 62 mm wie die Ereigniskarten, aber eigene Farbwelt, damit die Stapel am Tisch nicht
+      verwechselt werden: Hauptstrang <b>pergament-gold</b>, Nebenaufträge <b>salbeigrün</b>,
+      Ereigniskarten bleiben violett. Vier Karten je Reihe, drei Reihen je Bogen; Rückseiten
+      reihenweise gespiegelt für den Duplexdruck über die lange Kante. Gesamt: 3 Bögen Hauptstrang
+      (36 Karten = 3 Stapel) und 1 Bogen Nebenaufträge, je mit Rückseitenbogen.</p>
+
+    <h3>Offene Punkte zur Questreihe</h3>
+    <ul>
+      <li><span class="badge open">offen</span> <b>Spieltest der Auslöser:</b> Die Ordensschwellen
+        (1/2/3/4/5/6/8) sind aus der Kanto-Reihenfolge abgeleitet, aber noch nicht am Tisch
+        geprüft. Falls sich Aufträge stauen, die Schwellen entzerren.</li>
+      <li><span class="badge open">offen</span> <b>Belohnungshöhe kalibrieren:</b> Die Summe aller
+        Quest-Belohnungen (rund 21 ₽, 2 Superbälle, 3 Hyperbälle, 2 Tränke, 2 Supertränke,
+        2 Beleber, 1 Pokéflöte) ist bewusst zurückhaltend gesetzt. Ob das die Wirtschaft aus dem
+        Gleichgewicht bringt, muss ein Testlauf zeigen.</li>
+      <li><span class="badge open">offen</span> <b>Ortsbindung prüfen:</b> Aufträge nennen Orte
+        (Mondberg, Route 25, Pokémon-Turm, Safari-Zone, Zinnoberinsel). Ob alle auf dem aktuellen
+        Spielbrett eindeutig erreichbar und beschriftet sind, ist noch abzugleichen.</li>
+      <li><span class="badge open">offen</span> <b>Auftrag 11 setzt Surfer voraus.</b> Wer bis
+        6 Orden kein Pokémon mit Surfer hat, hängt fest. Entweder als bewusste Hürde stehen lassen
+        oder eine Ausweichbedingung ergänzen.</li>
+      <li><span class="badge open">offen</span> <b>Mehr Nebenaufträge?</b> Sechs Aushänge sind für
+        eine volle Partie womöglich zu wenig. Aufstocken ist billig – erst nach dem Test.</li>
+      <li><span class="badge open">offen</span> <b>Ablage auf dem Trainerpass:</b> Aktuell liegen
+        die offenen Quests neben dem Pass. Ein eigenes Feld auf dem Pass wäre denkbar, kostet dort
+        aber Platz.</li>
+    </ul>
+  </div>
+
+  <div class="dchapter" id="d16"><h2>16. Änderungsprotokoll (chronologisch)</h2>
     <ul class="dlog">
       <li><b>05.07.2026</b> – Designdokument v0.1–v2.9: Grundregeln, W20/W6-System, Kampf, Wirtschaft, Weltkarte, Kachelsystem schrittweise entwickelt und final gestellt.</li>
       <li><b>10.07.2026</b> – Regelwerk Einstufung &amp; Verteilung: Statformel KP=Sterne+4/Angriff=Sterne, Seltenheitsstufen A/B/C mit Symbolen ●/■/★, Verteilungsregeln fürs W20.</li>
@@ -3530,6 +3832,7 @@ function renderDoc(){
       <li><b>31.07.2026</b> – <b>Neues Spielbrett als Vorlage eingebettet.</b> Der überarbeitete Brettstand (4.431 bemalte Felder, 42 Gebäude/Events, 46 Zonen, 52 Verbindungen) ersetzt die alte Vorlage. Der Export enthielt zusätzlich 5.569 <b>leere</b> Kacheln – ohne Gelände, ohne Zone, ohne Rahmen –, die der Editor beim Speichern für jedes je berührte Feld anlegt. Das Format ist dünn besetzt, solche Felder entstehen beim Laden ohnehin von selbst; sie sind daher entfernt worden: 1.141 KB → 518 KB, bei <b>pixelgleichem</b> Ergebnis (beide Fassungen gerendert und die Zeichenfläche verglichen). <b>Wichtig zum Verständnis der Speicherung:</b> Die eingebettete Vorlage hat beim Start immer Vorrang vor der automatischen Sicherung im Browser – diese greift nur, wenn gar keine Vorlage eingebettet ist. Änderungen am Brett überleben also kein Neuladen und müssen über „Export als JSON“ gesichert werden.</li>
       <li><b>31.07.2026 (2)</b> – <b>Brettinhalt um 3 Felder nach oben und 2 nach rechts verschoben</b>, weil das Gelände unten am Rand anstieß. Umgesetzt als reine Koordinatenverschiebung über alle Bestandteile: Kacheln, Gebäude/Events, Zonentitel (die mit Kommastellen liegen) und Verbindungen. Vorher geprüft, dass die weichenden Bereiche leer sind – die obersten drei Reihen und die beiden rechten Spalten enthielten nichts, der Inhalt begann bei Reihe 6 und endete bei Spalte 91. Es ging also nichts verloren; danach automatisch kontrolliert, dass die Anzahl aller Elemente gleich blieb und nichts über den Brettrand ragt. Unten und oben sind jetzt je 3 Reihen frei.</li>
       <li><b>31.07.2026 (3)</b> – <b>Drei Trainerpässe je Starter, drei Rucksäcke, höhere Item-Mengen.</b> Der Reiter „Trainerpass“ druckt jetzt <b>ein Blatt pro Spieler</b> (Bisasam-, Glumanda-, Schiggy-Spieler): Auf jedem ist der jeweilige Starter farbig, die anderen beiden ausgegraut, und der zugehörige Rucksack liegt auf demselben A4-Blatt. Danach folgt der Orden-/Legendären-Chipbogen, jetzt in <b>drei Sätzen</b> (einer je Spieler, mit „Satz 1/2/3“ beschriftet) – insgesamt vier Seiten. Die Starterkreise im Passkopf sind etwas größer (Kreis 14 mm, Bild über Innenabstand nach innen geholt), damit das Artwork nicht mehr an den Rand stößt. Die <b>Startmengen je Spieler</b> steigen: Superbälle 5→6, Hyperbälle 3→4, Tränke 5→6 (Meisterball 2, Supertrank 3, Beleber 2, Pokéflöte 1 unverändert). Das ist an einer Stelle definiert (<code>RUCKSACK</code>, Mengen je Spieler); der Pokeshop druckt automatisch drei Sätze davon, also Superbälle 18, Hyperbälle 12, Tränke 18. Damit ein bereits gespeicherter Spielstand die alten Shop-Zahlen nicht festhält, hebt eine Migration sie beim Laden an – aber nur, wenn der Wert exakt der frühere Standard ist; eine selbst verstellte Menge bleibt unangetastet (geprüft: 15/9/15 → 18/12/18, eigenes 20 bleibt 20).</li>
+      <li><b>31.07.2026 (4)</b> – <b>Questreihe „Die Kanto-Chronik" als eigener Reiter.</b> Zwölf aufeinander aufbauende Aufträge führen in der natürlichen Ordensreihenfolge durch Kanto (Vertania-Wald → Marmoria → Mondberg → Route 25 → Prismania → Lavandia → Safari → Kraftwerk → Zinnoberinsel → Liga), dazu sechs freiwillige Aushänge. <b>Ausgabe nach und nach statt als Liste:</b> Der Hauptstrang ist ein sortierter Stapel je Spieler, offen liegt immer nur die oberste Karte; jede Karte nennt selbst, ab wann sie aktiv wird, sodass es keine Buchführung braucht. Die Nebenaufträge liegen als gemeinsamer verdeckter Stapel bereit und werden am Pokécenter gezogen. Entwurfsleitlinie: <b>keine neue Mechanik</b> – jede Aufgabe prüft nur, was das Spiel ohnehin führt (Fänge, Typen, Gebiete, Geländefähigkeiten, Orden, Level, Pokédex), und alle Belohnungen kommen aus dem vorhandenen Vorrat. Vorhandene Inhalte sind eingebunden statt verdoppelt: Fossil, Relaxo und Zapdos hängen an Aufträgen, die Pokéflöte wird Questbelohnung (bleibt daneben käuflich), die Meisterball-Quest bleibt bewusst außen vor. Karten im Ereigniskarten-Format 43 × 62 mm, aber pergament-gold bzw. salbeigrün statt violett, damit die Stapel unterscheidbar bleiben; 4 Bögen plus Rückseitenbögen. Begründungen und offene Punkte stehen im neuen <b>Kapitel 15</b>.</li>
     </ul>
   </div>`;
   groupDoneItemsInChapter14();
@@ -4691,8 +4994,8 @@ function renderKonzept(){
   kzRenderLive();
 }
 
-const RENDERERS = { home: renderHome, gm: renderGM, cards: renderCards, shop: renderShop, doc: renderDoc, volvelle: renderVolvelle, trainerpass: renderTrainerpass, board: renderBoard, arenen: renderArenen, konzept: renderKonzept };
-const PAGE_ORIENTATION = { home:'portrait', gm:'landscape', cards:'portrait', shop:'portrait', doc:'portrait', volvelle:'landscape', trainerpass:'portrait', board:'landscape', arenen:'landscape', konzept:'portrait' };
+const RENDERERS = { home: renderHome, gm: renderGM, cards: renderCards, shop: renderShop, doc: renderDoc, volvelle: renderVolvelle, trainerpass: renderTrainerpass, board: renderBoard, arenen: renderArenen, quest: renderQuest, konzept: renderKonzept };
+const PAGE_ORIENTATION = { home:'portrait', gm:'landscape', cards:'portrait', shop:'portrait', doc:'portrait', volvelle:'landscape', trainerpass:'portrait', board:'landscape', arenen:'landscape', quest:'portrait', konzept:'portrait' };
 /* Nur Volvelle braucht einen echten Papierrand (Scheiben dürfen nicht bis an die Kante) –
    alle anderen Reiter drucken randlos und übernehmen die 209.9mm/296.5mm-Feinabstimmung
    ihrer .sheet-Maße selbst. Beschluss 29.07.2026: früher stand dafür ein zweites, statisches
