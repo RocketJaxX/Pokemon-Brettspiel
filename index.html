@@ -688,6 +688,35 @@ table.typematrix .rowlab{color:#fff; font-weight:800; font-size:7.5px; padding:0
 .ar-kpnum{font-size:2.2mm; font-weight:800; color:#8a7f6d; margin-left:1mm;}
 .ar-empty{font-size:2.3mm; font-style:italic; color:#8a7f6d;}
 .ar-foot{margin-top:auto; font-size:2.3mm; font-weight:700; color:#6b5f4c; padding-top:1mm;}
+
+/* ===== Trainer-Chips (Beschluss 02.08.2026) =====
+   Durchmesser 10 mm = genau eine Brettkachel, damit der Chip das Feld exakt abdeckt.
+   Schnittlinie als outline mit Abstand – wie bei den runden Shop-Chips, zwei Kreise
+   koennen sich keine gerade Schnittkante teilen. */
+#page-arenen .tr-head{font-family:'Fredoka',sans-serif; font-weight:700; font-size:7mm; margin-bottom:1mm;}
+#page-arenen .tr-sub{font-size:3.1mm; font-weight:700; color:#6b5f4c; margin-bottom:4mm;}
+#page-arenen .tr-block{margin-bottom:5mm;}
+#page-arenen .tr-blocktitle{font-family:'Fredoka',sans-serif; font-weight:700; font-size:4.2mm; margin-bottom:2.5mm;}
+#page-arenen .tr-row{display:flex; gap:6mm; margin-bottom:5mm;}
+#page-arenen .tr-row.back{flex-direction:row-reverse; justify-content:flex-start;}
+#page-arenen .tr-chip{width:10mm; height:10mm; border-radius:50%; flex:0 0 auto;
+  display:flex; align-items:center; justify-content:center; position:relative;
+  outline:0.3mm dashed #c7bda9; outline-offset:1.1mm;
+  box-shadow:inset 0 0 0 0.5mm rgba(0,0,0,.28);}
+#page-arenen .tr-chip.land  {background:radial-gradient(120% 100% at 35% 20%, #cfe8a8 0%, #8fbe5c 60%, #6d9c3c 100%);}
+#page-arenen .tr-chip.wasser{background:radial-gradient(120% 100% at 35% 20%, #b8ddf5 0%, #63a8dd 60%, #3d84bd 100%);}
+#page-arenen .tr-chip.back{opacity:.9;}
+#page-arenen .tr-ico{font-size:5.4mm; line-height:1;}
+#page-arenen .tr-names{font-size:2.7mm; font-weight:700; color:#6b5f4c; margin-top:1mm;}
+#page-arenen .tr-regel{border:0.5mm solid #d9b04a; background:#fdf6e2; border-radius:2mm;
+  padding:3mm 4mm; font-size:3.1mm; font-weight:700; line-height:1.35;}
+/* Nur die Ueberschrift der Box ist ein eigener Block – <b> innerhalb der Liste
+   muss im Textfluss bleiben, sonst zerreisst es die Aufzaehlung. */
+#page-arenen .tr-regel > b{font-family:'Fredoka',sans-serif; color:#8a2f1f; display:block; margin-bottom:1.5mm; font-size:3.8mm;}
+#page-arenen .tr-regel ol{margin:0 0 0 4.5mm; padding:0;}
+#page-arenen .tr-regel li{margin-bottom:1.4mm;}
+#page-arenen .tr-hint{margin-top:2mm; font-size:2.9mm; color:#6b5f4c;}
+#page-arenen.nocut .tr-chip{outline:none;}
 @media print{ .ar-page{box-shadow:none; margin:0;} }
 
 /* ===== Rucksack (neu gezeichnet 30.07.2026) =====
@@ -1898,17 +1927,26 @@ function handbuchBloecke(){
       '</table>');
   add('<p>Übrig gebliebene Zugpunkte verfallen am Ende deines Zuges. Ein Kampf, ein Fangversuch oder eine ' +
       'Ereigniskarte kosten selbst keine Zugpunkte – sie gehören zu dem Feld, auf dem du gerade stehst.</p>');
+  add('<h3>Tore: gestrichelte Linien auf dem Brett</h3>' +
+      '<p>Zwei Felder, zwischen denen eine <b>gestrichelte Linie</b> verläuft, gehören zusammen – auch wenn ' +
+      'sie weit auseinanderliegen. Betrittst du eines davon, wirst du <b>sofort auf das andere gezogen</b>. ' +
+      'Das kostet nichts extra, der Schritt auf das Torfeld ist schon bezahlt.</p>' +
+      '<div class="hbtip">So kommst du in Höhlen und auf Inseln: Digda-Höhle, Kraftwerk, Azuria-Höhle und die ' +
+      'Safari-Zone hängen <b>nur</b> über solche Tore am Rest der Karte. Ein <b>weißer Kreis</b> ist ein ' +
+      'Weg-Tor, ein <b>brauner Halbkreis</b> ein Höhleneingang.</div>');
   add('<h3>Wege, die erst später aufgehen</h3>' +
       '<ul>' +
       '<li><b>🌊 Surfen</b> – Wasserwege darfst du erst betreten, wenn ein <b>Wasser-Pokémon ab Level 3</b> im Team ist.</li>' +
-      '<li><b>🗡 Zerschneider ab Level 2</b> und <b>🪨 Zertrümmerer ab Level 4</b> räumen Hindernisse weg, ' +
-      'die einen schmalen Durchgang blockieren.</li>' +
+      '<li><b>🌳 Baum-Felder</b> räumt <b>🗡 Zerschneider ab Level 2</b> frei, <b>🪨 Felsen-Felder</b> ' +
+      '<b>🪨 Zertrümmerer ab Level 4</b>. Das Feld bleibt <b>nicht</b> dauerhaft offen: Solange kein Pokémon ' +
+      'mit der passenden Fähigkeit im Team ist, kommst du dort nicht durch.</li>' +
       '<li><b>🪽 Fliegen ab Level 5</b> – bringt dich in einem Zug zu jeder Stadt, in der du schon warst.</li>' +
       '<li><b>Graue Felder</b> sind Felsen und Mauern: Da geht es nie durch, such dir einen anderen Weg.</li>' +
-      '<li>Manche Städte und Routen öffnen erst, wenn du genug <b>Orden</b> hast.</li>' +
+      '<li><b>Orden-Schilder:</b> Steht am Zonenschild ein goldenes Ordensymbol mit einer Zahl, brauchst du ' +
+      'so viele Orden, um diese Zone überhaupt zu betreten. Ohne Zahl ist sie von Anfang an offen.</li>' +
       '</ul>' +
-      '<p>Welche Fähigkeit ein Pokémon mitbringt, steht auf seiner Kartenrückseite. Dafür zählt auch der ' +
-      'kleine zweite Typ – ein Pokémon mit Flug-Typ kann fliegen, auch wenn es kein reines Flug-Pokémon ist.</p>');
+      '<p>Welche Fähigkeit ein Pokémon mitbringt, steht als Symbol auf seiner Kartenrückseite ' +
+      '(🗡 🪨 🌊 🪽). Der Typ des Pokémon spielt dafür keine Rolle.</p>');
 
   kap('5 · Wilde Pokémon finden');
   add('<p>Betrittst du ein Feld mit <b>Gras, tiefem Wasser oder Höhle</b>, sag laut, in welchem Gebiet du ' +
@@ -1931,12 +1969,20 @@ function handbuchBloecke(){
       '<p><b>Dazu zählst du:</b> Superball +1 · Hyperball +2 · das Pokémon hat nur noch die Hälfte seiner ' +
       'KP oder weniger +1. Ein <b>Meisterball</b> fängt sofort, ohne Wurf.</p>');
   add('<div class="hbbox"><b class="t">Wenn der Ball danebengeht</b>' +
-      '<p>Der Ball ist verbraucht, aber das Pokémon läuft nicht weg – du darfst weiterwerfen, so oft du willst. ' +
-      'Der Versuch endet erst, wenn alle deine Pokémon besiegt sind oder wenn du die Schwelle rechnerisch ' +
-      'nicht mehr erreichen kannst.</p></div>');
+      '<p>Der Ball ist verbraucht. Du hast <b>drei Fangversuche</b> – geht auch der dritte daneben, ' +
+      '<b>flieht das Pokémon</b> und die Begegnung ist vorbei. Such es dir woanders noch einmal.</p>' +
+      '<p>Der Versuch endet ebenfalls, wenn alle deine Pokémon besiegt sind oder wenn du die Schwelle ' +
+      'rechnerisch gar nicht mehr erreichen kannst.</p></div>');
   add('<h3>Schon gefangen?</h3>' +
       '<p>Fängst du ein Pokémon, das in deinem Pokédex schon steht, kommt es nicht ins Team. Du gibst es ab ' +
       'und bekommst dafür <b>1 ₽ je Stern</b> – ein ⭐⭐⭐⭐⭐-Pokémon bringt also 5 ₽.</p>');
+  add('<h3>Wenn dein Team voll ist</h3>' +
+      '<p>Mehr als <b>6 Pokémon</b> kannst du nicht mitnehmen. Fängst du ein neues, obwohl das Team voll ist, ' +
+      'entscheidest du selbst: Entweder du <b>legst ein Teammitglied ab</b> und nimmst das neue auf – oder du ' +
+      '<b>legst das gerade gefangene ab</b>. In beiden Fällen steht es im Pokédex.</p>' +
+      '<div class="hbtip">Abgelegte Pokémon sind nicht verloren: An <b>jedem Pokécenter</b> darfst du dein Team ' +
+      'beliebig gegen bereits gefangene Pokémon tauschen. Das kostet keinen zusätzlichen Zugpunkt – der Besuch ' +
+      'im Pokécenter reicht.</div>');
   add('<h3>Die Legendären</h3>' +
       '<p>Vier Legendäre wohnen an einem festen Ort. Sobald du die Bedingung erfüllt hast, suchst du sie ' +
       'genau wie jedes andere wilde Pokémon: Du stehst im richtigen Gebiet und würfelst den W20. Nur ' +
@@ -1950,7 +1996,9 @@ function handbuchBloecke(){
       '<p><b>Mew</b> hat keinen festen Ort auf dem Brett – sobald dein Pokédex <b>100 Einträge</b> ' +
       'erreicht, sag das den anderen Spielern: Ihr einigt euch auf ein kurzes Geheim-Event am Tisch, bei ' +
       'dem du Mew fangen kannst.</p>' +
-      '<p>Legendäre laufen nie weg – aber du hast <b>nur einen Fangversuch pro Spielabend</b>.</p>');
+      '<p>Bei Legendären hast du <b>einen einzigen Fangversuch</b> – die Drei-Versuche-Regel gilt hier nicht. ' +
+      'Geht der Wurf daneben, verschwindet das Legendäre. Du kannst es aber <b>jederzeit erneut finden</b>: ' +
+      'Würfle im richtigen Gebiet wieder eine 1.</p>');
 
   kap('6 · Kämpfen');
   add('<p>Jeder Kampf läuft gleich ab, egal ob gegen ein wildes Pokémon, einen Trainer oder einen Arenaleiter.</p>' +
@@ -2001,10 +2049,15 @@ function handbuchBloecke(){
       '</ul>');
 
   kap('7 · Stärker werden');
-  add('<p>Für <b>jedes besiegte Pokémon</b> streichst du auf der Karte deines Kämpfers ein Kästchen der ' +
-      '<b>Siege-Leiste</b> ab. Ein Arenaleiter mit vier Pokémon bringt dir also vier Siege, nicht einen.</p>' +
+  add('<p>Für <b>jedes besiegte Pokémon</b> gibt es Siege für dein ganzes Team:</p>' +
+      '<ul><li>Das Pokémon, das gekämpft hat, streicht <b>2 Kästchen</b> der <b>Siege-Leiste</b> ab.</li>' +
+      '<li><b>Jedes andere Pokémon</b> in deinem Team streicht <b>1 Kästchen</b> ab.</li></ul>' +
+      '<p>Ein Arenaleiter mit vier Pokémon bringt deinem Kämpfer also 8 Siege und allen anderen je 4.</p>' +
       '<p>Es zählen Siege gegen <b>wilde Pokémon, Trainer und Arenaleiter</b>. Freundschaftskämpfe zwischen ' +
-      'euch Spielern zählen nicht.</p>');
+      'euch Spielern zählen nicht.</p>' +
+      '<div class="hbtip">So wächst dein ganzes Team mit, auch die Pokémon, die gerade nicht kämpfen. Wer ' +
+      'immer nur mit demselben Pokémon antritt, hat es trotzdem am weitesten vorn – aber niemand bleibt ' +
+      'auf Level 1 zurück.</div>');
   add('<p>Die dick umrandeten Kästchen sind die <b>Levelaufstiege</b>:</p>' + hbSiegeTabelle() +
       '<p>Mit jedem Level bekommt dein Pokémon mehr KP; der Angriff steigt bei <b>Level 3, 6 und 9</b>. ' +
       'Beide Werte liest du einfach auf der Karte ab.</p>');
@@ -2043,9 +2096,9 @@ function handbuchBloecke(){
   kap('9 · Arenen und Orden');
   add('<p>In acht Städten wartet ein <b>Arenaleiter</b>. Wer ihn besiegt, bekommt einen <b>Orden</b> – und ' +
       'darf seine Pokémon ein Level höher trainieren. Eine Herausforderung kostet deinen ganzen Zug.</p>' +
-      '<ul><li><b>Erstkampf:</b> Sieg bringt den <b>Orden und 5 ₽</b>.</li>' +
+      '<ul><li><b>Erstkampf:</b> Sieg bringt den <b>Orden und 15 ₽</b>.</li>' +
       '<li><b>Rückkampf:</b> Danach darfst du noch einmal antreten. Der Leiter ist dann stärker und hat ein ' +
-      'Pokémon mehr. Sieg bringt <b>8 ₽ und einen Hyperball</b>, aber keinen zweiten Orden.</li>' +
+      'Pokémon mehr. Sieg bringt <b>20 ₽ und einen Hyperball</b>, aber keinen zweiten Orden.</li>' +
       '<li>Verlierst du, passiert nichts Schlimmes – es kostet dich nur den Zug. Du darfst es jederzeit ' +
       'wieder versuchen.</li></ul>');
   add(hbArenaTabelle());
@@ -2906,7 +2959,7 @@ const QUEST_HAUPT = [
    auf:'Lass ein Pokémon zum <b>ersten Mal entwickeln</b>.',
    lohn:'1 Trank · 3 ₽'},
   {nr:5, titel:'Fossilien im Mondberg', geber:'Museum · Marmoria', ico:'🦴',
-   auf:'Erreiche die <b>Fossilien-Ausgrabung im Mondberg</b> und bring den Fund ins Museum. <b>Wähle</b> eines der beiden Fossilien.',
+   auf:'Erreiche die <b>Fossilien-Ausgrabung im Mondberg</b> und <b>wähle</b> eines der beiden Fossilien.',
    lohn:'Amonitas <b>oder</b> Kabuto (Lv 1 ins Team). Das andere bekommst du später.'},
   {nr:6, titel:'Bills Leuchtturm', geber:'Bill · Route 25', ico:'🔦',
    auf:'Erreiche den Leuchtturm auf <b>Route 25</b>.',
@@ -2970,7 +3023,7 @@ const QUEST_NEBEN = [
   {nr:16, titel:'Jäger des Seltenen I', ico:'💎', auf:'Habe <b>1 Pokémon</b> der Seltenheit <b>★</b>.', lohn:'3 ₽'},
   {nr:17, titel:'Jäger des Seltenen II', ico:'👑', auf:'Habe <b>3 Pokémon</b> der Seltenheit <b>★</b>.', lohn:'1 Hyperball · 5 ₽'},
   {nr:18, titel:'Volles Haus', ico:'🐾', auf:'Habe <b>6 Pokémon</b> gleichzeitig im Team.', lohn:'1 Supertrank · 3 ₽'},
-  {nr:19, titel:'Kämpferherz', ico:'🥋', auf:'Gewinne <b>3 Kämpfe</b> gegen andere Spieler.', lohn:'1 Beleber'},
+  {nr:19, titel:'Kämpferherz', ico:'🥋', auf:'Besiege <b>3 Trainer</b> (Trainer-Chips auf dem Brett).', lohn:'1 Beleber'},
 ];
 
 function questCardHTML(q, art){
@@ -3590,7 +3643,8 @@ function renderDoc(){
       <li>Meisterball: 2 Stück insgesamt je Spieler – 1× Pokédex-Quest bei Prof. Eich (50 Pokémon),
         1× Auftrag 16 „Der Weg zur Liga" (alle 8 Orden).</li>
       <li>Pokécenter: gratis Vollheilung, kostet eine Hauptaktion.</li>
-      <li>Pokédollar-Einkommen: Trainersiege 2 ₽, Arenasiege 5 ₽ (Stufe 1), Quest-Belohnungen variabel.</li>
+      <li>Pokédollar-Einkommen (angehoben 02.08.2026): Trainer-Chip 3 ₽ je besiegtem Pokémon (6 ₽ je Chip),
+        Arena-Erstkampf 15 ₽, Arena-Rückkampf 20 ₽ + Hyperball, Quest-Belohnungen variabel.</li>
     </ul>
     <h3>Ereigniskarten: 16 statt 12 je Bogen (Beschluss 02.08.2026)</h3>
     <p>Wie schon bei den Questkarten (Kapitel 15) kostete die Bogenüberschrift des Pokeshops rund
@@ -3802,7 +3856,32 @@ function renderDoc(){
         Aquana, Blitza und Flamara. Der ältere Regelwerk-Satz („Quest-Geschenk in Prismania, Wahl bei Lv 3")
         widersprach den Daten und wurde ersetzt.</li>
       <li><span class="badge ok">erledigt</span> <b>Dritter Spieler (29.07.2026):</b> Zugreihenfolge im Uhrzeigersinn, beginnend beim jüngsten Spieler. Stehen zwei von drei Spielern im selben Gebiet, können sie bei gegenseitigem Einverständnis ein Showmatch austragen. Siehe Kapitel 2.</li>
-      <li><span class="badge open">offen</span> <b>Wurf-Häufigkeit im Gras</b> beobachten: 10 Felder Gras = bis zu 10 W20-Würfe pro Runde. Falls das bremst, Wurf nur alle 2 Felder.</li>
+      <li><span class="badge open">offen</span> <b>Niete-/Fund-Verhältnis – Kernentscheidung nach dem Testlauf (02.08.2026).</b>
+        Nachgemessen über alle 47 Gebietstabellen: Im Mittel sind <b>14,6 von 20 Augen eine Begegnung</b>
+        (73 %), nur 4,4 sind Niete und 1 ist Ereignis. Bei 10 Zugpunkten macht das <b>7,3 Begegnungen je
+        Zug</b>; die Chance, in einem vollen Grasszug gar keiner Begegnung zu haben, liegt bei 0,00 %. Da
+        jede Begegnung ein Kampf (Ø 6–8 W6-Würfe) plus Fangwürfe ist, kostet ein Zug durch hohes Gras real
+        60–80 Würfe. Zusätzlich waren im Testlauf <b>80 % aller Begegnungen Dubletten</b> (63 zu 16), weil
+        ein Gebiet schon nach 10–34 Begegnungen leergefangen ist. Durchgerechnete Varianten:
+        <table class="dtable">
+          <tr><th>Variante</th><th>P(Begegnung)</th><th>Begegnungen/Zug</th><th>Züge bis Gebiet durch</th></tr>
+          <tr><td><b>IST:</b> W20, Wurf je Feld</td><td>73 %</td><td>7,3</td><td>1,6</td></tr>
+          <tr><td>A · W20, Niete 1–10</td><td>45 %</td><td>4,5</td><td>2,5</td></tr>
+          <tr><td>B · W20, Niete 1–14</td><td>25 %</td><td>2,5</td><td>4,6</td></tr>
+          <tr><td><b>C · W50, gleiche Artenzahl</b></td><td>29 %</td><td>2,9</td><td>3,9</td></tr>
+          <tr><td>E · W20, Wurf nur jedes 2. Feld</td><td>73 %</td><td>3,6</td><td>3,1</td></tr>
+        </table>
+        <b>Empfehlung: Variante C (W50).</b> Sie löst zwei Dinge auf einmal – die Begegnungsrate landet im
+        Zielkorridor von 2–4 je Zug, <i>und</i> die Seltenheit bekommt endlich Auflösung: Bei W20 muss ein
+        ★-Pokémon mit einem einzigen Auge auskommen (5 %), feiner geht es nicht; bei W50 sind 2 % und echte
+        Zwischenstufen möglich. Variante E ist die billigste Lösung (keine Tabelle ändert sich), hilft der
+        Seltenheit aber nicht. <b>Zu beachten bei W50:</b> Der einzige auf Land erreichbare Surfer für
+        Bisasam-/Glumanda-Spieler ist Schiggy auf Route 25 (heute 10 % je Wurf) – bei W50 fiele das auf ~4 %
+        und würde zum Nadelöhr; Schiggy bräuchte dort einen breiteren Bereich. Diese Entscheidung hängt mit
+        dem Drehscheiben-Konzept (Konzept-Labor) zusammen, weil beide dieselben Tabellen betreffen.</li>
+      <li><span class="badge open">offen</span> <b>Shop-Preise</b> erst nach der Niete-/Fund-Entscheidung
+        anfassen: Das Dubletten-Einkommen (~11 ₽ je Grasszug) hängt direkt an der Begegnungsrate. Die
+        Kampfbelohnungen sind bereits angehoben (Arena 15/20 ₽, Trainer 3 ₽ je Pokémon).</li>
       <li><span class="badge open">offen</span> <b>Physischer Testdruck:</b> 1–2 Volvelle-Karten inkl. kleiner KP-Scheibe (2,3 mm Ziffern) vor der Vollproduktion. <b>Erst nach dem Systemwechsel drucken:</b> Der Angriffs-Ring der großen Scheibe trägt seit 28.07.2026 neue Zahlen; KP-Scheibe und alle STL-Geometrien sind unverändert gültig.</li>
       <li><span class="badge open">offen</span> <b>Prototyp-Test:</b> 1 Route + 5 Pokémon + 1 Kampf mit dem Sohn spielen.</li>
     </ul>
@@ -4058,6 +4137,17 @@ function renderDoc(){
       <li><b>02.08.2026 (3)</b> – <b>Legendäre: Begegnung über W20 = 1 statt einer undefinierten Freischaltung.</b> Bisher stand nur, <i>wann</i> ein ortsgebundener Legendärer (Arktos, Zapdos, Lavados, Mewtu) verfügbar wird (Orden/Top 4), aber nicht, <i>wie</i> der Spieler ihn am Tisch tatsächlich findet. Gelöst über die schon vorhandene Ereignis-Mechanik: In den vier Gebieten bringt eine gewürfelte 1 – sobald die Bedingung erfüllt ist – den Legendären an Stelle der sonst dort üblichen Ereigniskarte; vorher bleibt die 1 dort normal die Ereigniskarte. Kostenlos umsetzbar, weil die 1 immer schon zum Niete-Korridor gehört und nie an ein reguläres Pokémon vergeben wird – keine der 46 Gebietstabellen musste neu berechnet werden. <b>Mew</b> bleibt ohne Gebiets-Fundort außen vor (eigenes Tischevent ab Pokédex ≥ 100). Umgesetzt: <code>MONS_RAW</code>-Fangort der vier Legendären trägt jetzt den Zusatz „· W20=1"; Karten- und Volvelle-Fußzeile zeigen für sie „bei W20 = 1 im Gebiet" statt „nicht per W20 auffindbar"; Kapitel 3 und die Spielanleitung (Kapitel 5 „Wilde Pokémon finden" bzw. Kapitel 10 „Ereigniskarten") beschreiben den Ablauf.</li>
       <li><b>02.08.2026 (4)</b> – <b>Fossilien-Fundort: fester Platz auf dem Brett statt eines beliebigen Fangs.</b> „Fange ein Pokémon im Mondberg und bring das Fossil ins Museum" (Auftrag 5) und „Durchsuche die Siegesstraße und fange dort ein Pokémon" (Auftrag 15) verlangten bisher einen normalen Pokémon-Fang, obwohl die Belohnung ein <i>Fossil</i> ist – thematisch unpassend, ein Fossil wird nicht gefangen. Beide Quests laufen jetzt über das bereits etablierte Muster „Erreiche eine bestimmte Stelle" (wie Auftrag 6 „Bills Leuchtturm" oder Auftrag 13 „Die Villa auf Zinnober"), keine neue Mechanik nötig. Umgesetzt im <b>Karteneditor</b>: Die Events-Palette hat jetzt einen dritten Eintrag <b>„Fossil"</b> (Farbe Gold/Amber #c9a227, damit er sich von der Höhlenfarbe abhebt) neben „Trainer" und „Quest"; je eine Fossil-Markierung sitzt fest auf einer Höhlenkachel im Mondberg (Auftrag 5, Kachel 41/21) und an der Siegesstraße (Auftrag 15, Kachel 9/15) – beide auf bisher unbelegten Feldern platziert, keine Kollision mit vorhandenen Gebäuden/Barrieren. Quest-Auftragstexte entsprechend angepasst (Catch-Anforderung entfällt).</li>
       <li><b>02.08.2026 (5)</b> – <b>Fange-Aufgaben durch Besiegen/Zustand ersetzt, Nebenaufträge 6 → 19, Auslöser-Anzeige entfernt, Meisterball/Pokéflöte nur noch Quest-Belohnung.</b> Vier Punkte, ein Anlass: „Fange ein Pokémon vom Typ X" bzw. „auf Route Y" konnte unlösbar werden, sobald ein Spieler den fangbaren Bestand dort schon komplett im Pokédex hatte (weitere Fänge sind dann nur noch Dubletten, siehe Kapitel 3). <b>(1) Hauptquests:</b> Aufträge 2, 9, 11, 12 von „Fangen" auf „Besiegen" umgestellt (ein Kampf findet immer statt, unabhängig vom Pokédex-Stand), Auftrag 8 von „Fange … im Felstunnel" auf „Erreiche den Felstunnel" (Team-auf-4-Bedingung bleibt, aber ohne Orts-Fang-Kopplung). Auftrag 1 bleibt bewusst beim Fangen (Tutorial, Spielbeginn, kein Risiko). <b>(2) Nebenaufträge:</b> „Gewässerkunde" und „Bergsteiger" ebenso umgestellt (Besiegen bzw. Pokédex-Bestand); 13 neue Aushänge ergänzt – 7× „Habe N Pokémon vom Typ X im Pokédex" (Feuer, Pflanze, Gift, Gestein, Psycho, Kampf, Käfer), 4× Sterne/Seltenheit-Besitz („Spitzenklasse I/II", „Jäger des Seltenen I/II"), 2× Sonstiges („Volles Haus" für Teamgröße 6, „Kämpferherz" für 3 Spielerduell-Siege). Stapel wächst von 6 auf 19 Karten, Druckbogen passt sich automatisch an (2 Bögen statt 1, keine Codeänderung). <b>(3) Auslöser-Anzeige:</b> „Ab N Orden"/„Sobald Auftrag X erfüllt ist" ersatzlos von Karte und Übersichtstabelle entfernt – der persönliche Kartenstapel deckt ohnehin nur die jeweils nächste Karte auf, die Schwelle wurde von keiner Regel geprüft und war reiner Kontext. <b>(4) Meisterball/Pokéflöte:</b> Bis dahin zusätzlich im Pokeshop kaufbar (Pokéflöte 8 ₽, Meisterball 20 ₽) – wer früh kaufte, hatte Auftrag 9/10 (Pokémon-Turm/Relaxo) teils schon erledigt, bevor die Karten aufgedeckt wurden. Beide Items kommen jetzt <b>ausschließlich</b> als Quest-Belohnung: Pokéflöte aus Auftrag 9, der zweite Meisterball (neben der bestehenden 50-Pokédex-Quest bei Prof. Eich) neu aus Auftrag 16 „Der Weg zur Liga" (alle 8 Orden). Die Chips werden weiterhin im Pokeshop gedruckt, nur nicht mehr dort gekauft; Preistabellen in Spielanleitung und Beschlüssen entsprechend bereinigt.</li>
+      <li><b>02.08.2026 (6)</b> – <b>Ergebnisse des ersten vollständigen Testlaufs.</b> Eine Solo-Partie (Schiggy) wurde streng nach gedrucktem Material durchgespielt: 632 Laufffelder, 315 Begegnungswürfe, alle 8 Arenen und die Liga je 3.000-fach nachgerechnet. Befund: Nach <b>71 Zügen</b> standen erst <b>5 Orden und 19 Pokédex-Einträge</b> – die Liga war gar nicht erreichbar. Ursachen und Gegenmaßnahmen, alle in diesem Durchgang umgesetzt:
+        <ul>
+          <li><b>Siege wuchsen zu langsam.</b> Bisher bekam nur das kämpfende Pokémon einen Sieg; für Lv 10 braucht eines 36 Siege, ein Sechserteam also 216. Neu: <b>Kämpfer 2 Kästchen, jedes andere Teammitglied 1</b>. Damit wächst das Team mit, ohne den aktiven Kämpfer zu entwerten.</li>
+          <li><b>Fangen war keine Hürde.</b> Pokébälle sind gratis, unbegrenzt und das Pokémon floh nie – jedes Pokémon mit Schwelle ≤ 6 wurde damit zu <b>100 %</b> gefangen, nur unterschiedlich lange. Seltenheit wirkte allein über die Fundhäufigkeit. Neu: <b>Flucht nach dem 3. Fehlversuch</b>. Damit trennt die Seltenheit spürbar – 1★ 99,5 % · 2★ 96 % · 3★ 88 % · 4★ 70 % · <b>5★ nur 42 %</b> je Begegnung. Legendäre behalten ihren einen Versuch, sind danach aber über eine erneute 1 wieder auffindbar.</li>
+          <li><b>Kampfbelohnungen waren belanglos.</b> Dubletten bringen bei 7,3 Begegnungen je Grasszug rund <b>11 ₽ pro Zug</b> – mehr als ein Arenasieg (5 ₽). Arena-Erstkampf daher auf <b>15 ₽</b>, Rückkampf auf <b>20 ₽</b>, Trainer auf <b>3 ₽ je besiegtem Pokémon</b> angehoben. Die Shop-Preise bleiben vorerst unverändert, weil das Dubletten-Einkommen direkt am noch offenen Niete-/Fund-Verhältnis hängt (siehe Kapitel 14).</li>
+          <li><b>Regellücken geschlossen:</b> Tore/Verbindungen sind jetzt in Kapitel 4 erklärt (gestrichelte Linie, Betreten zieht auf das Gegenstück) – vorher stand davon nichts im Heft, obwohl vier Gebiete ausschließlich so erreichbar sind. Zerschneider/Zertrümmerer sind Baum- bzw. Felsenfeldern zugeordnet, und das Feld bleibt <b>nicht</b> dauerhaft offen: Ohne passendes Pokémon im Team kommt man dort nicht durch. Team-voll-Fall geregelt (Spieler wählt, wer abgelegt wird; Tausch an jedem Pokécenter). Der Nebentyp-Rest im Heft („der kleine zweite Typ") ist entfernt – der Nebentyp entfiel am 30.07.2026.</li>
+          <li><b>Schwierigkeitsbefund:</b> Die Arenen sind mit typgerechtem Konter zu leicht (7 von 8 bei 97–100 %, nur Koga 61 %), die Liga dagegen hart und vollständig vom Rucksack abhängig (breites Lv-10-Team: 35 % ohne Items, 95 % mit vollem Rucksack). Beides bleibt zunächst so und wird nach dem nächsten Testlauf bewertet.</li>
+        </ul></li>
+      <li><b>02.08.2026 (7)</b> – <b>Trainer werden Chips statt Brettfelder.</b> Auf dem Brett lag ein einziges festes Trainer-Feld (Route 25), zu dem es keine Regel gab – weder Team noch Belohnung noch Einmaligkeit waren definiert. Trainer sind jetzt <b>20 lose Chips im Kachelmaß (10 mm)</b> im Reiter „Arenen": 10 Land-Trainer (Käfersammler, Wanderer, Pfadfinder, Jungtrainer, Rüpel, Gärtnerin, Bergsteiger, Picknicker, Vogelfänger, Schnösel) und 10 Wasser-Trainer (Schwimmer, Angler, Matrose, Taucher, Surfer, Seefahrer, Rettungsring, Fischer, Kapitän, Perlentaucher), je mit Rückseitenbogen für den Duplexdruck. Regel: Je Route liegt höchstens ein Chip; wer das Feld betritt, kämpft gegen <b>2 zufällige Pokémon der Route</b> (W20 in der Gebietstabelle, Niete neu würfeln, Level = Gebietslevel), bekommt 3 ₽ je besiegtem Pokémon und <b>verschiebt den Chip danach auf eine andere Route</b>. Dadurch wandern die Trainer durch Kanto und wiederholen sich nie am selben Ort, und die Trainerdichte bleibt über die Chipzahl steuerbar. Das feste Trainer-Objekt wurde vom Brett und aus der Events-Palette des Karteneditors entfernt. Nebenauftrag 19 „Kämpferherz" verlangte bis dahin <b>3 Siege gegen andere Spieler</b> – im Solospiel unlösbar und zu dritt eine erzwungene Spielerinteraktion; er verlangt jetzt <b>3 besiegte Trainer</b>.</li>
+      <li><b>02.08.2026 (8)</b> – <b>Orden-Schwelle je Zone im Karteneditor.</b> Die Anleitung sagte „Manche Städte und Routen öffnen erst, wenn du genug Orden hast", nannte aber nur Vertania (7) und die Siegesstraße (8) – für alle übrigen 44 Zonen war nichts definiert. Gleichzeitig verband ein Tor <b>Alabastia direkt mit Route 21</b>, wodurch Zinnoberinsel (Lv 8) vom Startfeld aus in zwei Zügen erreichbar war. Zonen tragen jetzt ein Feld <code>orden</code>, das im Editor beim Anlegen und Bearbeiten gesetzt wird und als <b>goldenes Ordensymbol mit Zahl</b> rechts am Zonenschild erscheint (ohne Zahl = frei). Alle 46 Zonen sind mit Vorschlagswerten belegt; automatisch gegengeprüft wurde, dass <b>keine Arenastadt hinter einer höheren Schwelle liegt, als der Spieler beim Eintreffen Orden haben kann</b> (Saffronia bleibt als zentraler Verkehrsknoten früh offen, obwohl seine Arena die sechste ist). Die Inselgruppe Route 19–21/Zinnoberinsel/Seeschauminseln steht jetzt auf 5 Orden und schließt damit die Abkürzung. Außerdem: <b>Verbindungslinien deutlich sichtbarer</b> (heller Unterzug plus kräftigerer gestrichelter Strich, 0,04 → 0,10 cm) – sie sind der einzige Hinweis darauf, dass zwei weit auseinanderliegende Felder zusammengehören. Und das <b>Indigo-Plateau hat jetzt einen Pokeshop</b> (Center links unten, Shop rechts unten); vorher gab es dort nur ein Pokécenter, obwohl die Liga fünf Kämpfe ohne Pause ist und der Rucksack vorher gefüllt sein muss.</li>
+      <li><b>02.08.2026 (9)</b> – <b>Konzept-Labor: zweites Kapitel „Drehscheibe statt Würfel".</b> Angestoßen von der Frage, ob ein Twister-artiger Zeiger den W20 ersetzen kann. Kern des Problems: Ein Würfel ist gebietsneutral (die Gebietstabelle übersetzt), eine Scheibe trägt ihre Bedeutung dagegen aufgedruckt mit sich – bei 47 Gebieten bräuchte es 47 Scheiben. Drei Varianten ausgearbeitet: <b>(A)</b> Scheibe zeigt nur die Zahl – 1:1-Ersatz, keine Regeländerung, aber auch kein Gewinn außer der Haptik (20 Sektoren = 18° ≈ 23 mm am Rand, 50 Sektoren nur noch 7,2° ≈ 9 mm). <b>(B)</b> Scheibe zeigt die <b>Seltenheit</b> statt der Zahl – die Gebietstabelle schrumpft von 20 Zahlenfeldern auf 2–4 Zeilen, weil je Gebiet höchstens 4 verschiedene Sterne-Stufen vorkommen (28 von 47 Gebieten haben sogar nur 2). Stichentscheid bei mehreren Arten derselben Stufe über durchnummerierte Sektoren; betroffen wären 38 Fälle mit 2, sieben mit 3 und vier mit 4 Arten. <b>(C)</b> neutrale Grundscheibe mit Papierauflage je Gebiet – genau, aber 47 Auflagen sind am Tisch unpraktisch. Zwischenstand: Variante B ist die interessanteste, greift aber tief in dieselben Gebietstabellen ein wie die noch offene Entscheidung zum Niete-/Fund-Verhältnis und sollte erst danach angefasst werden.</li>
     </ul>
   </div>`;
   groupDoneItemsInChapter14();
@@ -4601,6 +4691,75 @@ function starkGegen(defTyp){
     .filter(t=>TYPE_MATRIX[t] && TYPE_MATRIX[t][defTyp]==='+' && KANTO_HAUPTTYPEN.has(t))
     .join(', ');
 }
+/* Trainer-Chips (Beschluss 02.08.2026): Trainer sind keine festen Brettfelder mehr, sondern
+   lose Chips im Kachelmass (10 mm), die frei auf dem Brett liegen. Wer ein Chipfeld betritt,
+   kaempft gegen 2 zufaellige Pokemon der Route; danach wandert der Chip auf eine andere Route.
+   Dadurch bleibt die Trainerdichte steuerbar und wiederholt sich nie an derselben Stelle. */
+const TRAINER_CHIPS = {
+  land: [
+    {ico:'🦋', name:'Käfersammler'}, {ico:'🎒', name:'Wanderer'},
+    {ico:'🧭', name:'Pfadfinder'},   {ico:'🧢', name:'Jungtrainer'},
+    {ico:'😎', name:'Rüpel'},        {ico:'🌱', name:'Gärtnerin'},
+    {ico:'⛏', name:'Bergsteiger'},   {ico:'🧺', name:'Picknicker'},
+    {ico:'🪶', name:'Vogelfänger'},  {ico:'🎩', name:'Schnösel'},
+  ],
+  wasser: [
+    {ico:'🏊', name:'Schwimmer'},    {ico:'🎣', name:'Angler'},
+    {ico:'⚓', name:'Matrose'},      {ico:'🤿', name:'Taucher'},
+    {ico:'🏄', name:'Surfer'},       {ico:'⛵', name:'Seefahrer'},
+    {ico:'🛟', name:'Rettungsring'}, {ico:'🐟', name:'Fischer'},
+    {ico:'🚢', name:'Kapitän'},      {ico:'🦪', name:'Perlentaucher'},
+  ],
+};
+function trainerChipHTML(t, art){
+  return `<div class="tr-chip ${art}"><span class="tr-ico">${t.ico}</span></div>`;
+}
+function trainerChipBackHTML(art){
+  return `<div class="tr-chip ${art} back"><span class="tr-ico">${art==='land'?'🌿':'🌊'}</span></div>`;
+}
+function trainerChipSeite(){
+  const reihe = (liste, art) => `<div class="tr-row">${liste.map(t=>trainerChipHTML(t,art)).join('')}</div>`;
+  const namen = liste => liste.map(t=>`${t.ico} ${t.name}`).join(' · ');
+  return `<div class="ar-page">
+    <div class="tr-head">🎽 Trainer-Chips</div>
+    <div class="tr-sub">20 Chips im Kachelmaß (10 mm). Ausschneiden und frei auf dem Brett verteilen –
+      <b>Land-Chips auf Gras-, Höhlen- und Straßenfelder, Wasser-Chips auf Wasserfelder</b>.</div>
+    <div class="tr-block"><div class="tr-blocktitle">🌿 Land-Trainer</div>
+      ${reihe(TRAINER_CHIPS.land.slice(0,5),'land')}
+      ${reihe(TRAINER_CHIPS.land.slice(5),'land')}
+      <div class="tr-names">${namen(TRAINER_CHIPS.land)}</div></div>
+    <div class="tr-block"><div class="tr-blocktitle">🌊 Wasser-Trainer</div>
+      ${reihe(TRAINER_CHIPS.wasser.slice(0,5),'wasser')}
+      ${reihe(TRAINER_CHIPS.wasser.slice(5),'wasser')}
+      <div class="tr-names">${namen(TRAINER_CHIPS.wasser)}</div></div>
+    <div class="tr-regel"><b>So funktionieren sie</b>
+      <ol>
+        <li>Zu Spielbeginn werden die Chips verdeckt gemischt und <b>je Route höchstens einer</b> offen
+          ausgelegt – Land-Chips auf Land, Wasser-Chips aufs Wasser.</li>
+        <li>Betritt ein Spieler ein Feld mit Chip, <b>kämpft er gegen 2 Pokémon dieser Route</b>:
+          Würfle für jedes den W20 und schlag es in der Gebietstabelle nach (bei einer Niete
+          neu würfeln). Beide haben das <b>Level des Gebiets</b>.</li>
+        <li>Nach dem Kampf gibt es <b>3 ₽ je besiegtem Pokémon</b> (also 6 ₽ je Chip), und die Siege
+          zählen ganz normal für die Siege-Leiste.</li>
+        <li>Danach nimmt der Spieler den Chip und legt ihn auf <b>eine andere Route</b>, auf der noch
+          kein Chip liegt. So wandern die Trainer durch Kanto und wiederholen sich nie am selben Ort.</li>
+      </ol>
+      <div class="tr-hint">Verloren? Es passiert nichts Besonderes – zurück ins Pokécenter wie sonst
+        auch. Der Chip bleibt liegen, du darfst es später erneut versuchen.</div>
+    </div>
+  </div>
+  <div class="ar-page">
+    <div class="tr-head">🎽 Trainer-Chips · Rückseiten</div>
+    <div class="tr-sub">Für den Duplexdruck über die lange Kante – Reihen sind gespiegelt.</div>
+    <div class="tr-block"><div class="tr-blocktitle">🌿 Land-Trainer</div>
+      <div class="tr-row back">${TRAINER_CHIPS.land.slice(0,5).map(()=>trainerChipBackHTML('land')).join('')}</div>
+      <div class="tr-row back">${TRAINER_CHIPS.land.slice(5).map(()=>trainerChipBackHTML('land')).join('')}</div></div>
+    <div class="tr-block"><div class="tr-blocktitle">🌊 Wasser-Trainer</div>
+      <div class="tr-row back">${TRAINER_CHIPS.wasser.slice(0,5).map(()=>trainerChipBackHTML('wasser')).join('')}</div>
+      <div class="tr-row back">${TRAINER_CHIPS.wasser.slice(5).map(()=>trainerChipBackHTML('wasser')).join('')}</div></div>
+  </div>`;
+}
+
 function arenaCardHTML(a){
   /* Zeilenhoehe ist immer ein Fuenftel der Flaeche (Platz fuer 5 Pokemon); sind es weniger,
      verteilt das Layout sie gleichmaessig ueber die Hoehe, statt sie oben zu sammeln. */
@@ -4682,11 +4841,12 @@ function renderArenen(){
       </div>
       <div class="ar-t4block">${TOP4.map(top4SpalteHTML).join('')}</div>
     </div>`;
+  seiten += trainerChipSeite();
   host.innerHTML = `
     <div class="ar-toolbar noprint">
       <h1>🏟 Arenaleiter-Karten</h1>
       <button onclick="printPage('landscape')">🖨 Drucken (A4 quer, 4 Leiter/Blatt)</button>
-      <span class="hint">4 Arenaleiter je A4-Blatt quer (2 Blätter), danach die Top 4 gemeinsam auf einer Halbseite. KP-Kästchen mit Folienstift abstreichen.</span>
+      <span class="hint">4 Arenaleiter je A4-Blatt quer (2 Blätter), danach die Top 4 gemeinsam auf einer Halbseite, zuletzt die Trainer-Chips zum Ausschneiden. KP-Kästchen mit Folienstift abstreichen.</span>
     </div>
     ${seiten}`;
 }
@@ -5179,6 +5339,60 @@ function renderKonzept(){
         außermittig. Das ist deutlich fehlertoleranter als jede Rastmechanik. Voraussetzung ist, dass die Scheibe
         <b>außen in einer Ringnut</b> läuft statt auf einer Mittelnabe – dann bleibt die Mitte frei und die Karte
         ist ein schlichtes Rechteck.</p>
+    </div>
+
+    <div class="kzbox">
+      <h2>Idee: Drehscheibe statt Würfel</h2>
+      <p><b>Die Idee:</b> Der W20 für die Pokémon-Suche wird durch einen <b>Zeiger auf einer Drehscheibe</b>
+        ersetzt, wie beim Twister-Spiel. Ein Schnippen statt Würfeln – kein Würfel, der vom Tisch rollt,
+        und für jüngere Kinder deutlich griffiger.</p>
+      <p><b>Der Haken, den du benannt hast:</b> Ein Würfel ist gebietsneutral – die 20 Augen bedeuten in jedem
+        Gebiet etwas anderes, das übersetzt die Gebietstabelle. Eine Drehscheibe trägt ihre Bedeutung dagegen
+        aufgedruckt mit sich. Bei <b>47 Gebieten</b> bräuchte man 47 Scheiben. Genau das ist das Problem.</p>
+
+      <h3>Variante A – Scheibe zeigt nur die Zahl</h3>
+      <p>Die Scheibe ersetzt den Würfel <b>1:1</b>: 20 (oder 50) nummerierte Sektoren, die Gebietstabellen
+        bleiben unverändert. Nachschlagen läuft wie bisher.</p>
+      <ul>
+        <li><b>Dafür:</b> keine einzige Regel- oder Tabellenänderung nötig, sofort einsetzbar.</li>
+        <li><b>Dagegen:</b> gewinnt nichts außer der Haptik – man schlägt weiterhin in der Tabelle nach.</li>
+        <li><b>Maße:</b> Bei 20 Sektoren und 15 cm Scheibe sind das 18° je Sektor ≈ 23 mm am Rand – gut lesbar.
+          Bei 50 Sektoren nur noch 7,2° ≈ 9 mm; machbar, aber die Zahlen müssen klein und der Zeiger genau sein.</li>
+      </ul>
+
+      <h3>Variante B – Scheibe zeigt die Seltenheit statt der Zahl</h3>
+      <p>Hier wird der Nachteil zum Vorteil. Die Sektoren tragen keine Zahlen, sondern <b>Seltenheitsbänder</b>:
+        <code>Niete</code> · <code>⭐</code> · <code>⭐⭐</code> · <code>⭐⭐⭐</code> · <code>⭐⭐⭐⭐</code> ·
+        <code>⭐⭐⭐⭐⭐</code> · <code>Ereignis</code>. Die Flächenanteile bilden genau die heutige
+        Wahrscheinlichkeitsverteilung ab. Die Gebietstabelle schrumpft dann von 20 Zahlenfeldern auf
+        <b>eine Zeile je Sterne-Stufe</b>.</p>
+      <p class="kz-note">Nachgerechnet am aktuellen Datenstand: Je Gebiet kommen <b>höchstens 4 verschiedene
+        Sterne-Stufen</b> vor (28 von 47 Gebieten haben nur 2, fünf sogar nur eine). Die Tabelle im Heft würde
+        also von 20 Feldern auf 2–4 Zeilen zusammenschrumpfen – ein sehr großer Gewinn beim Nachschlagen.</p>
+      <p><b>Der Rest-Haken:</b> Teilen sich mehrere Pokémon dieselbe Stufe, braucht es einen Stichentscheid.
+        Das betrifft <b>38 Fälle mit 2 Arten, 7 mit 3 und 4 mit 4 Arten</b>. Lösung ohne zweiten Wurf: Die
+        Sektoren einer Stufe werden durchnummeriert (⭐⭐-a, ⭐⭐-b …) und die Tabelle listet die Arten in
+        derselben Reihenfolge. Der Zeiger liefert Stufe und Auswahl in einem Zug.</p>
+
+      <h3>Variante C – eine Grundscheibe, Gebiete als Auflage</h3>
+      <p>Die Scheibe bleibt neutral (nur der Zeiger und eine Gradskala), und je Gebiet gibt es eine dünne
+        <b>Papierauflage</b>, die man auflegt. Damit stimmt die Beschriftung immer exakt.</p>
+      <ul>
+        <li><b>Dafür:</b> volle Genauigkeit je Gebiet, keine Kompromisse in der Verteilung.</li>
+        <li><b>Dagegen:</b> 47 Auflagen, die gewechselt werden müssen – am Tisch mühsam und leicht zu verlieren.
+          Realistisch nur für die 8–10 meistbesuchten Gebiete sinnvoll.</li>
+      </ul>
+
+      <h3>Zwischenstand</h3>
+      <p><b>Variante B ist die interessanteste</b>, weil sie das Nachschlagen wirklich vereinfacht, statt nur den
+        Würfel zu ersetzen. Sie greift aber tief in die Gebietstabellen ein und sollte erst nach der Entscheidung
+        über das Niete-/Fund-Verhältnis angefasst werden – beide betreffen dieselben Tabellen.</p>
+      <div class="kz-note"><b>Offen zu klären:</b> (1) Wie stabil ist ein selbstgebauter Zeiger? Ein
+        3D-gedruckter Pfeil auf einer Messing-Öse dreht sich gleichmäßiger als eine Büroklammer.
+        (2) Sollen Kampf- und Fangwurf (W6) ebenfalls auf die Scheibe? Dann bräuchte sie einen zweiten,
+        inneren Ring – oder es bleibt beim W6, was den Materialaufwand klein hält.
+        (3) Bei Variante B: Wie werden Legendäre abgebildet, die heute an der 1 hängen? Vermutlich als
+        eigener, sehr schmaler Sektor „Ereignis/Legendär".</div>
     </div>
 
     <div class="kzbox">
