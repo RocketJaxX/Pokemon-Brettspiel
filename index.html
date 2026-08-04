@@ -5396,6 +5396,114 @@ function renderKonzept(){
     </div>
 
     <div class="kzbox">
+      <h2>Machbarkeitsstudie: A/B-Scheibe mit Sterne-Sektoren</h2>
+      <p>Ausgearbeitet zur Idee, die Scheibe fest in Sterneklassen mit je einem <b>A-</b> und <b>B-</b>Bereich
+        zu teilen und je Route <b>mindestens 1, höchstens 2</b> Pokémon pro Klasse zu führen. Alle Zahlen unten
+        sind am aktuellen Datenstand nachgerechnet.</p>
+
+      <h3>Befund 1 – die Ausgangslage bestätigt den Verdacht</h3>
+      <p>Von den 151 Pokémon sind <b>96 wild fangbar</b>. Die Verteilung ist oben extrem dünn:</p>
+      <table class="kztable">
+        <tr><th>Sterne</th><th>gesamt</th><th>wild fangbar</th><th>nur Entwicklung/Quest</th></tr>
+        <tr><td>1★</td><td>16</td><td>16</td><td>0</td></tr>
+        <tr><td>2★</td><td>42</td><td>40</td><td>2</td></tr>
+        <tr><td>3★</td><td>61</td><td>38</td><td>23</td></tr>
+        <tr class="hi"><td>4★</td><td>23</td><td><b>2</b></td><td>21</td></tr>
+        <tr class="hi"><td>5★</td><td>9</td><td><b>0</b></td><td>9</td></tr>
+      </table>
+      <p>Wild fangbar sind an 4★ nur <b>Aerodactyl und Garados</b>, an 5★ <b>gar nichts</b>. Die Beobachtung
+        „es gibt praktisch nichts zu farmen, worüber man sich freut" trifft also exakt zu – die gesamte obere
+        Hälfte der Seltenheitsskala ist über das Fangen unerreichbar. <b>4★ fehlt in 45 von 47 Gebieten.</b></p>
+
+      <h3>Befund 2 – „höchstens 2 je Klasse" ist praktisch schon erfüllt</h3>
+      <p>Nur <b>11 Verstöße</b> im ganzen Spiel: 1★ mehr als zweimal in 1 Gebiet, 2★ in 6, 3★ in 4. Das lässt
+        sich durch Verschieben einzelner Arten glattziehen. <b>Diese Hälfte der Idee ist unkritisch.</b></p>
+
+      <h3>Befund 3 – „mindestens 1 je Klasse" ist der teure Teil</h3>
+      <p>Damit jede Route eine 4★-Art führt, bräuchte es <b>43 verschiedene Arten</b> auf 4★ (nicht 47, weil
+        einige Arten in mehreren Gebieten der Spitzenreiter wären). Deren heutige Einstufung:</p>
+      <ul>
+        <li><b>23 sind bereits 3★</b> – Beförderung kostet nur <b>+2 KP</b>, der Angriff bleibt gleich
+          (ANG = 2 + ⌊(S−1)/2⌋ steigt erst wieder bei 5★). Unkritisch.</li>
+        <li><b>15 sind 2★</b> – +4 KP und +1 Angriff. Spürbar, aber vertretbar.</li>
+        <li><b>3 sind 1★</b> – +6 KP und +1 Angriff. Hier kippt es: Ein <b>Taubsi als 4★</b> widerspricht der
+          Regel „Sterne = Entwicklungsstufe" (Kapitel 6) und auch dem Gefühl am Tisch.</li>
+      </ul>
+      <div class="kz-note"><b>Der Kern des Problems:</b> Die Sterne tragen heute <b>zwei Bedeutungen
+        gleichzeitig</b> – sie sind Kampfkraft (KP = 2×S+8, ANG = 2+⌊(S−1)/2⌋) <i>und</i> Fangschwierigkeit
+        (Schwelle = S+2). Die Scheibe braucht sie als <b>dritte</b> Größe: Fundhäufigkeit im Gebiet. Drei
+        Bedeutungen auf einer Skala gehen nicht widerspruchsfrei auf. Eine zweite Achse gibt es bereits – die
+        <b>Seltenheit ● ◆ ★</b> aus der Zahl der Fundorte –, sie wird aber von der Fangschwelle nicht benutzt.</div>
+
+      <h3>Befund 4 – ohne „mindestens 1" wird die Scheibe ungleichmäßig</h3>
+      <p>Getestet mit der Auffangregel „leerer Slot = Niete" und diesem Sektorvorschlag:</p>
+      <table class="kztable">
+        <tr><th>Sektor</th><th>Anteil</th><th>Winkel</th></tr>
+        <tr><td>1★ A / 1★ B</td><td>je 9 %</td><td>je 32,4°</td></tr>
+        <tr><td>2★ A / 2★ B</td><td>je 7 %</td><td>je 25,2°</td></tr>
+        <tr><td>3★ A / 3★ B</td><td>je 4,5 %</td><td>je 16,2°</td></tr>
+        <tr><td>4★ (einzeln)</td><td>4 %</td><td>14,4°</td></tr>
+        <tr><td>Ereignis / Legendär</td><td>5 %</td><td>18,0°</td></tr>
+        <tr><td>Niete</td><td>50 %</td><td>180,0°</td></tr>
+      </table>
+      <p>Ergebnis: Begegnungsrate im Mittel <b>23 %</b> (2,3 je Zug – gut), aber die Spanne reicht von
+        <b>9 % (Digda-Höhle, nur eine Art)</b> bis <b>41 % (Vertania-Wald, Safari Süd)</b>. Die dünn besetzten
+        frühen Routen fühlen sich dadurch tot an. <b>Genau das ist es, was „mindestens 1 je Klasse" ausgleichen
+        würde</b> – die Forderung ist also nicht kosmetisch, sondern trägt die Mechanik.</p>
+
+      <h3>Befund 5 – 6★ und 7★ funktionieren rechnerisch sehr gut</h3>
+      <p>Fangschwelle = Sterne + 2, davon −1 bei ≤ ½ KP und −1/−2 für Super-/Hyperball:</p>
+      <table class="kztable">
+        <tr><th>Stufe</th><th>Pokéball</th><th>Superball</th><th>Hyperball</th><th>Legendär (1 Versuch)</th></tr>
+        <tr><td>4★</td><td>70 %</td><td>88 %</td><td>96 %</td><td>–</td></tr>
+        <tr><td>5★</td><td>42 %</td><td>70 %</td><td>88 %</td><td>–</td></tr>
+        <tr><td>6★</td><td><b>unmöglich</b></td><td>42 %</td><td>70 %</td><td>17–33 %</td></tr>
+        <tr class="hi"><td>7★</td><td><b>unmöglich</b></td><td><b>unmöglich</b></td><td>42 %</td><td><b>17 %</b></td></tr>
+      </table>
+      <p>(Prozent = Erfolg in 3 Versuchen nach der neuen Fluchtregel.) <b>7★ für Legendäre ist eine sehr gute
+        Idee:</b> Ohne Hyperball sind sie rechnerisch nicht fangbar, mit einem einzigen Versuch je Begegnung
+        liegt die Chance bei 17 %. Das erzwingt Vorbereitung und macht den Fang zum echten Ereignis – genau das,
+        was heute fehlt. Der Meisterball behält seinen Sinn als sichere Lösung für Mewtu und Mew.
+        Werte: 7★ = 22 KP / 5 ANG Basis, das liegt im Rahmen der heutigen Legendären.</p>
+
+      <h3>Empfehlung</h3>
+      <p><b>Die Idee ist umsetzbar, aber nicht in einem Schritt.</b> Vorschlag in dieser Reihenfolge:</p>
+      <ol>
+        <li><b>Zuerst das Farm-Problem lösen, unabhängig von der Scheibe.</b> 21 Arten mit 4★ und 4 mit 5★
+          haben heute gar keinen Fundort – darunter <b>17 Endstufen</b> (Arkani, Gengar, Geowaz, Machomei,
+          Nidoking, Nidoqueen, Simsala, Sleimok, Smogmog, Raichu, Aquana/Blitza/Flamara, Pixi, Knuddeluff,
+          Amoroso, Kabutops) und die vier großen Endstufen Bisaflor, Glurak, Turtok, Dragoran. Gibt man einem
+          Teil davon ein <b>seltenes Wildvorkommen in späten Gebieten</b> (Siegesstraße, Azuria-Höhle,
+          Seeschauminseln, Kraftwerk, Safari), entstehen sofort echte Farm-Ziele – <b>ohne die Sterne
+          umzudeuten und ohne die Scheibe</b>. Das ist der billigste große Gewinn.</li>
+        <li><b>Dann 6★/7★ einführen</b> – 7★ für die fünf Legendären, 6★ optional für die vier stärksten
+          Endstufen. Betrifft nur wenige Karten und macht die Spitze der Skala erst spürbar.</li>
+        <li><b>Erst danach die Scheibe.</b> Wenn Schritt 1 die späten Gebiete aufgefüllt hat, ist „mindestens 1
+          je Klasse" für die mittleren und späten Routen fast von selbst erfüllt. Für die frühen Routen bleibt
+          die ehrliche Antwort: Dort <i>soll</i> es keine 4★ geben. Zwei Auswege – entweder <b>gestaffelte
+          Scheiben</b> (eine für Routen bis Level 4, eine ab Level 5, die Sektoren verschieben sich um eine
+          Stufe) oder die Auffangregel <b>„leerer Slot = Niete"</b> mit den 23 % aus Befund 4.</li>
+      </ol>
+      <div class="kz-note"><b>Noch zu entscheiden:</b> (1) Sollen die Sterne dauerhaft <i>drei</i> Bedeutungen
+        tragen, oder wird die Fangschwelle auf die vorhandene Seltenheit ● ◆ ★ umgestellt? Letzteres würde die
+        Skala entlasten, ist aber ein Eingriff in Karten und Anleitung. (2) Gestaffelte Scheiben oder eine
+        einzige mit Auffangregel? (3) Bei zwei Arten in einer Klasse: A/B-Sektoren wie vorgeschlagen – bei nur
+        einer Art gilt sie für beide Seiten, das ist bereits in der Idee enthalten und funktioniert.</div>
+
+      <h3>Gestaltung der Sektoren</h3>
+      <p>Wie gewünscht ohne Text, nur über Symbole:</p>
+      <ul>
+        <li><b>Niete</b> – leere grüne Fläche, kein Zeichen.</li>
+        <li><b>Ereignis/Legendär</b> – Fläche im Muster der Ereigniskarten-Rückseite mit <b>?</b>; darin ein
+          kleines rundes Feld mit dem Legendären-Symbol. Sitzt mittig im Niete-Bereich, damit die
+          „nichts gefunden"-Zone optisch zusammenhängt.</li>
+        <li><b>1★ bis 4★</b> – jeweils die Sternenreihe genau wie in der Kartenfußzeile, damit kein
+          Übersetzen nötig ist. A- und B-Hälfte durch eine feine Trennlinie und einen kleinen Punkt (•/••)
+          unterschieden.</li>
+      </ul>
+    </div>
+
+    <div class="kzbox">
       <h2>Warum 7 KP-Ringe und 4 Angriffs-Ringe genügen</h2>
       <p>Über alle 151 Pokémon gibt es nur <b>${varianten.length} verschiedene Wertesätze</b>. Die Zeile deiner
         aktuellen Einstellung ist hervorgehoben – wenn sie leer bleibt, ist die Kombination im Spiel gar nicht
