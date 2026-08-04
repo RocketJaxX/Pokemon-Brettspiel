@@ -1380,7 +1380,7 @@ function defaultEvents(){
     ...evtDef('Tauschhändler', 'Ein Sammler bietet einen Tausch an: eines seiner Pokémon gegen eines aus deinem Team.', 'TAUSCH', 1),
     ...evtDef('Seltener Händler', 'Einmalig im Angebot: ein <b>Meisterball</b> für <b>15 ₽</b>.', 'GESCHENK', 1),
     /* --- Itemfunde (Beschluss 27.07.2026): decken alle Items ab, damit der
-       Fundwurf bei W20=1 immer ein sinnvolles Ergebnis liefern kann --- */
+       Ereignis-Sektor der Drehscheibe immer ein sinnvolles Ergebnis liefern kann --- */
     ...evtDef('Superball im Gebüsch', 'Du findest einen <b>Superball</b>. Lege den Chip in die linke Seitentasche.', 'FUND', 3),
     ...evtDef('Hyperball im Geröll', 'Du findest einen <b>Hyperball</b>. Lege den Chip in die rechte Seitentasche.', 'FUND', 2),
     ...evtDef('Trank am Wegesrand', 'Du findest einen <b>Trank</b> (heilt 8 KP).', 'FUND', 3),
@@ -1687,7 +1687,7 @@ function renderHome(){
     body += `<tr data-row-nr="${nr}">`;
     body += `<td class="sticky" style="left:${fixedColLeft(0)}px; width:${FIXED_COLS[0].width}px;"><b>${nr}</b></td>`;
     body += `<td class="sticky" style="left:${fixedColLeft(1)}px; width:${FIXED_COLS[1].width}px;"><img class="rowimg" src="${IMG(nr)}" loading="lazy" onerror="this.style.visibility='hidden'"></td>`;
-    body += `<td class="sticky nameCell" style="left:${fixedColLeft(2)}px; width:${FIXED_COLS[2].width}px;">${m.name}${m.quest?' <span class="questbadge" title="Quest-Pokémon, nicht per W20 fangbar">Q</span>':''}</td>`;
+    body += `<td class="sticky nameCell" style="left:${fixedColLeft(2)}px; width:${FIXED_COLS[2].width}px;">${m.name}${m.quest?' <span class="questbadge" title="Quest-Pokémon, nicht über die Scheibe fangbar">Q</span>':''}</td>`;
     let sterneOpts=''; for(let s=1;s<=5;s++) sterneOpts += `<option value="${s}" ${m.sterne===s?'selected':''}>${'★'.repeat(s)}</option>`;
     body += `<td style="width:${SCROLL_COLS[0].width}px;"><select class="sterne-sel" data-nr="${nr}">${sterneOpts}</select></td>`;
     body += `<td class="seltenheit-cell" data-nr="${nr}" style="width:${SCROLL_COLS[1].width}px;">${seltenheitHTML(nr)}</td>`;
@@ -3296,8 +3296,8 @@ function renderDoc(){
     <li><a href="#d3">Pokémon finden &amp; fangen</a></li>
     <li><a href="#d4">Kampf- &amp; Levelsystem</a></li>
     <li><a href="#d5">Statwerte-Formeln (Kanto-System)</a></li>
-    <li><a href="#d6">Sterne, Seltenheit &amp; Klasse</a></li>
-    <li><a href="#d7">Verteilung der Fundorte (W20)</a></li>
+    <li><a href="#d6">Sterne, Seltenheit &amp; Klasse (1–7)</a></li>
+    <li><a href="#d7">Drehscheibe &amp; Gebietstabellen</a></li>
     <li><a href="#d8">Items, Shop &amp; Wirtschaft</a></li>
     <li><a href="#d9">Arenen &amp; Spielziel</a></li>
     <li><a href="#d10">Weltkarte &amp; Kachelsystem</a></li>
@@ -3326,13 +3326,13 @@ function renderDoc(){
   <div class="dchapter" id="d2"><h2>2. Spielablauf &amp; Bewegung</h2>
     <h3>Zugpunkte (Beschluss 27.07.2026)</h3>
     <p>Jeder Spieler hat pro Runde <b>10 Zugpunkte (ZP)</b>. Kein zusätzlicher Würfel – der Zufall
-      steckt bereits in Begegnung (W20), Kampf (W6) und Fang (W6). Fester Vorrat, damit der Zug
+      steckt bereits in Begegnung (Drehscheibe), Kampf (W6) und Fang (W6). Fester Vorrat, damit der Zug
       planbar bleibt und niemand kurz vor der Stadt hängen bleibt.</p>
     <table class="dtable">
       <tr><th>Aktion</th><th>Kosten</th><th>Anmerkung</th></tr>
       <tr><td>1 Feld bewegen</td><td>1 ZP</td><td>Straße, Wasser und Stadt sind sicher</td></tr>
       <tr><td>Betreten von Gras, tiefem Wasser oder Höhle</td><td>im Schritt enthalten</td>
-          <td><b>W20-Wurf beim Betreten</b> – wie im hohen Gras der Videospiele</td></tr>
+          <td><b>Drehscheibe beim Betreten</b> – wie im hohen Gras der Videospiele</td></tr>
       <tr><td>Pokécenter (Vollheilung)</td><td>2 ZP</td><td></td></tr>
       <tr><td>Einkauf im Pokeshop</td><td>2 ZP</td><td>beliebig viele Artikel in einem Besuch</td></tr>
       <tr><td>Arenaleiter herausfordern</td><td><b>gesamter Zug</b></td>
@@ -3402,54 +3402,54 @@ function renderDoc(){
       dritten Eintrag <b>„Fossil"</b> (neben „Trainer" und „Quest"), und je eine Fossil-Markierung sitzt
       fest auf einer Höhlenkachel im Mondberg (Auftrag 5) und an der Siegesstraße (Auftrag 15) – der
       Spieler muss die Kachel nur erreichen, kein Zufall ist beteiligt.</p>
-    <h3>Begegnung</h3>
-    <p>Spieler sagt das Gebiet an und würfelt <b>W20</b>. In der Gebietstabelle (Reiter „Spielanleitung") wird nachgeschlagen, welches Pokémon zu dem Wurf gehört. Die Verteilung ist nach festen Regeln aus Sternen/Klassen berechnet, siehe Kapitel 7.</p>
+    <h3>Begegnung (Drehscheibe, Beschluss 02.08.2026)</h3>
+    <p>Der Spieler sagt das Gebiet an und <b>dreht die Scheibe</b>. Der Sektor nennt eine Sterneklasse und
+      – bei ⭐ bis ⭐⭐⭐ – eine Hälfte A oder B; in der Gebietstabelle steht, welche Art dort sitzt.
+      Sektorbreiten und Aufteilung siehe <b>Kapitel 7</b>. Der W20 ist damit ersatzlos entfallen.</p>
     <h3>Fangwurf</h3>
-    <div class="formula">Fangwurf (W6) = Sterne + 2 — geändert am 11.07.2026, alle Stufen um 1 erschwert</div>
-    <table><tr><th>Sterne</th><th>Schwelle</th></tr>
-      <tr><td>⭐</td><td>3+</td></tr><tr><td>⭐⭐</td><td>4+</td></tr>
-      <tr><td>⭐⭐⭐</td><td>5+</td></tr><tr><td>⭐⭐⭐⭐</td><td>6</td></tr>
-      <tr><td>⭐⭐⭐⭐⭐</td><td>7 → nur mit Bonus erreichbar</td></tr></table>
+    <div class="formula">Fangwurf (W6) = Sterne + 2</div>
+    <table><tr><th>Sterne</th><th>Schwelle</th><th>erreichbar mit</th></tr>
+      <tr><td>⭐</td><td>3</td><td>Pokéball</td></tr>
+      <tr><td>⭐⭐</td><td>4</td><td>Pokéball</td></tr>
+      <tr><td>⭐⭐⭐</td><td>5</td><td>Pokéball</td></tr>
+      <tr><td>⭐⭐⭐⭐</td><td>6</td><td>Pokéball</td></tr>
+      <tr><td>⭐⭐⭐⭐⭐</td><td>7</td><td>Super-/Hyperball</td></tr>
+      <tr><td>⭐⭐⭐⭐⭐⭐</td><td>8</td><td>Super-/Hyperball</td></tr>
+      <tr><td>⭐⭐⭐⭐⭐⭐⭐</td><td>9</td><td><b>nur Hyperball</b></td></tr></table>
     <ul>
-      <li>Superball +1 · Hyperball +2 · Meisterball automatisch.</li>
+      <li>Superball +1 · Hyperball +2 · Meisterball fängt automatisch.</li>
       <li>Gegner auf ≤ ½ KP geschwächt: zusätzlich +1.</li>
-      <li><b>Fehlschlag (geändert 27.07.2026):</b> Der Ball ist verbraucht, das Pokémon <b>flieht aber nicht</b> –
-        es darf beliebig oft geworfen werden. Der Versuch endet erst, wenn alle eigenen Pokémon besiegt sind,
-        oder wenn ein Fang rechnerisch unmöglich geworden ist (Schwelle 7 ohne Super-/Hyperball im Rucksack).</li>
-      <li>Der frühere Sonderfall "Legendäre nur bei 6" ist entfallen – er ergibt sich jetzt automatisch aus der Formel (Schwelle 7 ist ohne Ballbonus unerreichbar).</li>
+      <li><b>Flucht nach dem 3. Fehlversuch (Beschluss 02.08.2026):</b> Vorher floh ein Pokémon nie, und
+        weil Pokébälle gratis und unbegrenzt sind, war jeder Fang mit Schwelle ≤ 6 zu <b>100 %</b> sicher –
+        nur unterschiedlich lang. Jetzt trennt die Seltenheit spürbar: ⭐ 99,5 % · ⭐⭐ 96 % ·
+        ⭐⭐⭐ 88 % · ⭐⭐⭐⭐ 70 % je Begegnung.</li>
     </ul>
-    <h3>Legendäre (Mix-Prinzip)</h3>
+    <h3>Legendäre</h3>
     <table><tr><th>Pokémon</th><th>Fundort</th><th>Freischaltung</th></tr>
       <tr><td>Arktos</td><td>Seeschauminseln</td><td>Surfen + 5 Orden</td></tr>
       <tr><td>Zapdos</td><td>Kraftwerk</td><td>5 Orden + Route 10</td></tr>
       <tr><td>Lavados</td><td>Siegesstraße</td><td>8 Orden</td></tr>
-      <tr><td>Mewtu</td><td>Azuria-Höhle</td><td>Top 4 besiegt · nur Meisterball</td></tr>
+      <tr><td>Mewtu</td><td>Azuria-Höhle</td><td>Top 4 besiegt</td></tr>
       <tr><td>Mew</td><td>Geheim-Event</td><td>Pokédex ≥ 100 Einträge</td></tr></table>
-    <p>Legendäre fliehen nicht bei Fehlwurf, aber max. <b>1 Fangversuch pro Spielsitzung</b>.</p>
-    <h3>Begegnung: W20 = 1 statt Ereigniskarte (Beschluss 02.08.2026)</h3>
-    <p>Bis 01.08.2026 war offen, <i>wie</i> ein Spieler einen ortsgebundenen Legendären (Arktos, Zapdos,
-      Lavados, Mewtu) am Tisch tatsächlich findet – die Tabelle oben nannte nur Ort und Freischaltung,
-      keine Spielhandlung. Gelöst über die bereits vorhandene Ereignis-Mechanik statt einer neuen Regel:
-      In den vier Gebieten bringt eine gewürfelte <b>1</b> nicht wie sonst überall die Ereigniskarte,
-      sondern – <b>sobald die Freischaltbedingung erfüllt ist</b> – den Legendären selbst. Vorher bleibt
-      die 1 dort ganz normal die Ereigniskarte. Das kostet <b>keine</b> Rebalance der übrigen
-      Gebietstabellen: Die 1 gehört immer schon zum Niete-Korridor (Kapitel 7) und wird nie an ein
-      normales Pokémon vergeben, die vier Gebiete verlieren also keinem anderen Eintrag eine Zahl.
-      <b>Mew</b> hat keinen Gebiets-Fundort und bleibt bewusst außen vor – die Bedingung (Pokédex ≥ 100)
-      löst stattdessen ein eigenes Tischevent aus. Datentechnisch steht der Hinweis „<code>· Scheibe</code>"
-      jetzt im Fangort-Feld der vier Legendären (<code>MONS_RAW</code>); die Karten- und
-      Volvelle-Fußzeile ("nicht über die Scheibe auffindbar") ist für diese vier durch "bei W20 = 1 im Gebiet"
-      ersetzt, damit die Karte selbst den Prozess korrekt beschreibt.</p>
-    <h3>Ereignis bei W20 = 1 (Beschluss 27.07.2026)</h3>
-    <p>Der Niete-Korridor bleibt leer – mit einer Ausnahme: Bei einer gewürfelten <b>1</b> wird
-      <b>immer eine Ereigniskarte gezogen</b>. Kein zusätzlicher Wurf, keine Zwischentabelle.</p>
+    <p>Alle fünf stehen auf <b>⭐⭐⭐⭐⭐⭐⭐</b> (Schwelle 9). Ohne Hyperball sind sie rechnerisch
+      nicht fangbar, und es gibt <b>einen einzigen Versuch je Begegnung</b> – die Drei-Versuche-Regel gilt
+      hier nicht. Geht der Wurf daneben, verschwindet das Legendäre, ist aber jederzeit wieder auffindbar.
+      Der Meisterball bleibt die sichere Lösung für Mewtu und Mew.</p>
+    <p><b>Wie man sie trifft:</b> Die vier ortsgebundenen Legendären sitzen auf dem <b>kleinen runden Feld
+      im Ereignis-Sektor</b> ihres Gebiets – sobald die Freischaltbedingung erfüllt ist. Vorher liegt dort
+      wie überall eine Ereigniskarte. Das kostet keine Rebalance der Gebietstabellen, weil der
+      Ereignis-Sektor ohnehin nie an ein normales Pokémon vergeben wird. <b>Mew</b> hat keinen
+      Gebiets-Fundort; die Bedingung Pokédex ≥ 100 löst stattdessen ein eigenes Tischevent aus.</p>
+    <h3>Ereignis-Sektor (5 % der Scheibe)</h3>
+    <p>Bleibt der Zeiger im <b>Fragezeichen-Bereich</b> stehen, wird <b>immer eine Ereigniskarte
+      gezogen</b>. Kein zusätzlicher Wurf, keine Zwischentabelle.</p>
     <p>Der Stapel enthält Itemfunde (Superball, Hyperball, Trank, Supertrank, Beleber, Pokédollar),
       Geschenke, Gefahren und <b>Sonder-Bonbons</b>, mit denen ein Pokémon deiner Wahl sofort ein Level
       aufsteigt. Das Maximallevel (2 + Orden) gilt dabei weiterhin.</p>
-    <p class="note">Bewusst nur auf der 1 und nicht auf dem ganzen Niete-Korridor: Sonst wäre eine Niete
-      im Schnitt mehr wert als eine echte Begegnung. So bleibt sie in etwa 4 von 5 Fällen ein Leerlauf.
-      Ist das passende Rucksackfach voll, verfällt der Fund oder wird gegen ₽ eingetauscht – wie bei Duplikaten.
-      <b>Nicht im Stapel:</b> Pokéflöte und Meisterball – beide haben feste Bezugswege (siehe Kapitel 8).</p>
+    <p class="note">Bewusst nur 5 % und nicht der ganze Niete-Bereich: Sonst wäre eine Niete im Schnitt
+      mehr wert als eine echte Begegnung. Ist das passende Rucksackfach voll, verfällt der Fund oder wird
+      gegen ₽ eingetauscht – wie bei Duplikaten. <b>Nicht im Stapel:</b> Pokéflöte und Meisterball – beide
+      haben feste Bezugswege (siehe Kapitel 8).</p>
 
     <h3>Doppelt gefangene Pokémon (Beschluss 27.07.2026)</h3>
     <p>Wird ein Pokémon gefangen, das bereits im Pokédex steht, wandert es nicht ins Team, sondern wird
@@ -3488,7 +3488,7 @@ function renderDoc(){
       <li>3-stufige Familien: 1. Entwicklung Lv 4, 2. Entwicklung Lv 8.</li>
       <li>2-stufige Familien: Entwicklung Lv 6.</li>
       <li>Sonderfall Karpador → Garados: Lv 6 (Durchhalte-Belohnung).</li>
-      <li>Sonderfall Evoli: wild auf <b>Route 5</b> zu finden (W20 19–20). Es entwickelt sich wie jede zweistufige Familie bei <b>Lv 6</b> – der Spieler wählt dabei selbst, ob <b>Aquana, Blitza oder Flamara</b> daraus wird. Alle drei stehen auf der Kartenrückseite.</li>
+      <li>Sonderfall Evoli: wild auf <b>Route 5</b> zu finden (⭐⭐-Sektor). Es entwickelt sich wie jede zweistufige Familie bei <b>Lv 6</b> – der Spieler wählt dabei selbst, ob <b>Aquana, Blitza oder Flamara</b> daraus wird. Alle drei stehen auf der Kartenrückseite.</li>
       <li>Jede Entwicklung ist eine eigene Spielkarte; Level/Siege werden per Folienstift übertragen.</li>
       <li>Starter-Endstufen (Bisaflor/Glurak/Turtok), Aquana/Blitza/Flamara, Amoroso/Kabutops und Dragoran sind <b>nie wild fangbar</b>, nur durch Entwicklung.</li>
     </ul>
@@ -3541,70 +3541,104 @@ function renderDoc(){
     <p class="note">Trank am 23.07.2026 von 5 auf <b>8 KP</b> angehoben (Anpassung an die großen KP-Pools). Supertrank (volle KP, 4 ₽) bleibt bei hohen Pools klar der bessere Kauf – gewollt.</p>
   </div>
 
-  <div class="dchapter" id="d6"><h2>6. Sterne, Seltenheit &amp; Klasse</h2>
-    <p>Alle drei Größen folgen festen Regeln – kein Wert ist frei gesetzt. Reihenfolge der Ableitung:
-      <b>Sterne → Seltenheit → Klasse</b>.</p>
-    <h3>1. Sterne (⭐) – wie stark ist das Pokémon?</h3>
-    <p>Die Sterne bilden <b>Entwicklungsstufe und Wertigkeit</b> ab und sind die einzige Größe, die direkt
-      in die Statformeln eingeht (KP = 2 × Sterne + 8 · Angriff = 2 + (Sterne − 1) ÷ 2 + Level ÷ 3, siehe Kapitel 5).</p>
-    <ul>
-      <li>⭐ unentwickelte Allerwelts-Pokémon · ⭐⭐ erste Entwicklungsstufe · ⭐⭐⭐ zweite Stufe und Starter-Basis</li>
-      <li>⭐⭐⭐⭐ Endstufen mittlerer Linien · ⭐⭐⭐⭐⭐ Endstufen starker Linien und Legendäre</li>
-    </ul>
-    <h3>2. Seltenheit (● ◆ ★) – wie häufig begegnet man ihm?</h3>
-    <p>Die Seltenheit steuert <b>zwei</b> Dinge: den Augenanteil im W20 (Kapitel 7) und die Höhe des
-      Klassenbonus. Sie ist bewusst von den Sternen getrennt – ein häufiges Pokémon kann stark sein und umgekehrt.</p>
+  <div class="dchapter" id="d6"><h2>6. Sterne, Seltenheit &amp; Klasse (neu vergeben 02.08.2026)</h2>
+    <p>Die Sterne sind seit dem 02.08.2026 die <b>eine tragende Skala</b> des Spiels: Sie bestimmen die
+      Kampfwerte, die Fangschwierigkeit <i>und</i> den Sektor auf der Drehscheibe. Sie reichen jetzt von
+      <b>1 bis 7</b> statt bis 5.</p>
+
+    <h3>1. Die Regel: Basiswert + Entwicklungsstufe</h3>
+    <p>Jede Familie hat einen <b>Basiswert 1–4</b>, jede Entwicklungsstufe zählt <b>+1</b> dazu. Legendäre
+      stehen fest auf <b>7★</b>. Damit ist jeder Wert herleitbar, statt einzeln vergeben zu werden.</p>
+    <table class="dtable"><tr><th>Basis</th><th>Familien</th><th>welche</th></tr><tr><td><b>1</b></td><td>22</td><td>Bluzuk, Digda, Dodu, Flegmon, Goldini, Habitak, Hornliu, Jurob, Karpador, Krabby, Mauzi, Muschas, Myrapla, Paras, Rattfratz, Raupy, Seeper, Sterndu, Taubsi, Tentacha, Voltobal, Zubat</td></tr><tr><td><b>2</b></td><td>26</td><td>Abra, Enton, Evoli, Fukano, Kleinstein, Knofensa, Machollo, Magnetilo, Menki, Nebulak, Nidoran♀, Nidoran♂, Owei, Piepi, Pikachu, Ponita, Pummeluff, Quapsel, Rettan, Rihorn, Sandan, Sleima, Smogon, Tragosso, Traumato, Vulpix</td></tr><tr><td><b>3</b></td><td>9</td><td>Ditto, Dratini, Kangama, Kicklee, Nockchan, Onix, Porenta, Schlurp, Tangela</td></tr><tr><td><b>4</b></td><td>17</td><td>Aerodactyl, Amonitas, Bisasam, Chaneira, Elektek, Glumanda, Kabuto, Lapras, Magmar, Pantimos, Pinsir, Porygon, Relaxo, Rossana, Schiggy, Sichlor, Tauros</td></tr></table>
+    <p class="note">Beispiele: Raupy ⭐ → Safcon ⭐⭐ → Smettbo ⭐⭐⭐ · Taubsi ⭐ → Tauboga ⭐⭐ →
+      Tauboss ⭐⭐⭐ · Nidoran♀ ⭐⭐ → Nidorina ⭐⭐⭐ → Nidoqueen ⭐⭐⭐⭐ ·
+      <b>Bisasam ⭐⭐⭐⭐ → Bisaknosp ⭐⭐⭐⭐⭐ → Bisaflor ⭐⭐⭐⭐⭐⭐</b>.
+      Eine bewusste Ausnahme: <b>Karpador ⭐ → Garados ⭐⭐⭐⭐</b> (zwei Stufen auf einmal), damit der
+      Brocken ein Brocken bleibt.</p>
+
+    <h3>2. Was an den Sternen hängt</h3>
     <table class="dtable">
-      <tr><th>Seltenheit</th><th>Bedeutung</th><th>Klassenbonus</th></tr>
-      <tr><td>● gewöhnlich</td><td>häufig, großer Augenanteil</td><td><b>keiner</b> – der „normale" Fall</td></tr>
-      <tr><td>◆ ungewöhnlich</td><td>seltener</td><td>+2 KP <i>oder</i> +1 Angriff</td></tr>
-      <tr><td>★ selten</td><td>am seltensten, endet im W20 auf der 20</td><td>+4 KP <i>oder</i> +1 Angriff</td></tr>
+      <tr><th>Sterne</th><th>Arten</th><th>KP-Basis</th><th>ANG-Basis</th><th>Fangschwelle</th></tr><tr><td>⭐</td><td>22</td><td>10</td><td>2</td><td>3</td></tr><tr><td>⭐⭐</td><td>47</td><td>12</td><td>2</td><td>4</td></tr><tr><td>⭐⭐⭐</td><td>41</td><td>14</td><td>3</td><td>5</td></tr><tr><td>⭐⭐⭐⭐</td><td>27</td><td>16</td><td>3</td><td>6</td></tr><tr><td>⭐⭐⭐⭐⭐</td><td>6</td><td>18</td><td>4</td><td>7</td></tr><tr><td>⭐⭐⭐⭐⭐⭐</td><td>3</td><td>20</td><td>4</td><td>8</td></tr><tr><td>⭐⭐⭐⭐⭐⭐⭐</td><td>5</td><td>22</td><td>5</td><td>9</td></tr>
     </table>
-    <p class="note">Der Angriffs-Bonus ist seit 28.07.2026 einheitlich +1: Im Band-System wirkt ein
-      Angriffspunkt über Würfel (bis ×2) und Typfaktor (bis ×2) bis zu vierfach – ★ +2 machte Glaskanonen
-      messbar zu stark. Der KP-Bonus (◆ +2 / ★ +4) bleibt, denn ein Punkt KP wirkt weiterhin nur einmal.</p>
-    <h3>3. Klasse (KP oder Angriff) – Tank oder Glaskanone?</h3>
-    <p><b>Beschluss 27.07.2026.</b> Bis dahin war die Zuweisung händisch und damit nicht nachvollziehbar.
-      Jetzt entscheidet eine Formel aus den <b>Basiswerten der Originalspiele</b>:</p>
-    <div class="formula">Verteidigungsquote = (KP + Verteidigung + Spezial-Verteidigung) ÷ Summe aller sechs Basiswerte</div>
+    <div class="formula">KP = 2 × Sterne + 8 &nbsp;·&nbsp; Angriff = 2 + ⌊(Sterne−1)/2⌋ &nbsp;·&nbsp; Fangschwelle = Sterne + 2</div>
     <ul>
-      <li>Quote <b>≥ 48,1 %</b> (Median aller 151 Kanto-Pokémon) → <b>KP-Klasse</b> = Tank</li>
-      <li>Quote <b>&lt; 48,1 %</b> → <b>Angriffs-Klasse</b> = Glaskanone</li>
-      <li>Seltenheit ● bekommt keine Klasse – weder Tank noch Glaskanone, sondern schlicht normal.</li>
+      <li><b>⭐ bis ⭐⭐⭐⭐</b> sind die wild auffindbaren Stufen – ⭐⭐⭐⭐ genau einmal je Gebiet.</li>
+      <li><b>⭐⭐⭐⭐⭐ und ⭐⭐⭐⭐⭐⭐</b> gibt es nur über Entwicklung (Bisaflor, Glurak, Turtok
+        und die zweiten Fossilstufen).</li>
+      <li><b>⭐⭐⭐⭐⭐⭐⭐</b> sind die fünf Legendären. Schwelle 9 ist <b>nur mit Hyperball</b>
+        erreichbar (9 − 1 für ≤ ½ KP − 2 für den Ball = 6), und Legendäre haben nur einen Versuch je
+        Begegnung. Der Meisterball bleibt die sichere Lösung für Mewtu und Mew.</li>
     </ul>
-    <p>Der Median als Schwelle teilt das Feld automatisch in zwei etwa gleich große Hälften, ohne dass ein
-      Wert von Hand gewählt werden muss. Ergebnis: <b>57 Tanks, 53 Glaskanonen, 41 ohne Klasse</b>.
-      Die Regel bestätigt beide zuvor fest vergebenen Fälle – Abra 31 % (Glaskanone), Onix 62 % (Tank) –
-      und ließ 82 % der vorherigen vorläufigen Zuweisungen unverändert; 18 Pokémon wurden angepasst.</p>
-    <p class="note">Extremwerte zur Einordnung: Chaneira 80 % und Relaxo 62 % als deutlichste Tanks,
-      Digda 30 % und Abra 31 % als deutlichste Glaskanonen.</p>
-    <h3>4. Typ (ein Typ je Pokémon, Beschluss 30.07.2026)</h3>
-    <p>Es gilt das <b>vollständige 18-Typen-System</b> der Spiele mit der kompletten Typtabelle inklusive
-      der Immunitäten („✕"). Jedes Pokémon trägt aber nur noch <b>seinen Haupttyp</b> – der Nebentyp ist
-      ersatzlos entfallen. Damit gibt es genau eine Nachschlagestelle und keine Auslegungsfragen mehr,
-      ohne dass die vertraute Typtabelle vereinfacht werden musste.</p>
-    <p class="note">Als Haupttyp kommen in Kanto <b>15 der 18 Typen</b> vor – Stahl, Unlicht und Flug
-      treten hier nie an erster Stelle auf. Häufigste: Wasser 29 · Normal 22 · Gift 14 · Pflanze, Feuer
-      und Käfer je 12.</p>
-    <h3>5. Geländefähigkeiten</h3>
-    <p>Seit dem 30.07.2026 nicht mehr aus dem Typ abgeleitet, sondern fest je Pokémon aus den
-      <b>Original-VM-Daten</b> der ersten Spielgeneration: VM01 Zerschneider (27), VM02 Fliegen (11),
-      VM03 Surfer (35), VM04 Stärke → im Spiel Zertrümmerer (27).</p>
-    <p class="note">Dass <b>Glurak in der ersten Generation kein Fliegen lernt</b>, war der Grund, die alte
-      Ableitung über den Flug-Typ aufzugeben – sie hätte 19 Flieger ergeben statt der tatsächlichen 11.
-      Fliegen ist damit deutlich seltener und als Abkürzung wertvoller.</p>
+
+    <h3>3. Seltenheit (● ◆ ★) – aus der echten Auffindbarkeit</h3>
+    <p>Bis 01.08.2026 kam die Seltenheit aus der bloßen <b>Zahl der Fundorte</b> (1 = ★, 2 = ◆, 3+ = ●).
+      Das funktioniert seit der Umstellung nicht mehr: Die Sterneklasse bestimmt über die Sektorbreite
+      bereits, wie oft man einer Art begegnet – die alte Formel maß größtenteils dasselbe noch einmal und
+      bei den ⭐⭐⭐ sogar falsch herum (◆ lag unter ★).</p>
+    <div class="formula">Auffindbarkeit = Σ über alle Gebiete ( Sektoranteil der Sterneklasse ÷ Zahl der Arten in dieser Klasse )</div>
+    <p>Der Wert wird über alle wild auffindbaren Arten sortiert und in <b>Drittel</b> geschnitten:
+      oberes Drittel ● gewöhnlich, mittleres ◆ ungewöhnlich, unteres ★ selten. Weil er aus den
+      Gebietstabellen gerechnet wird, <b>korrigiert er sich von selbst</b>, sobald dort etwas geändert wird.
+      Die vier Safari-Exklusiven landen dadurch automatisch ganz unten.</p>
+
+    <h3>4. Klasse (Tank oder Glaskanone)</h3>
+    <p>Unverändert aus den <b>Basiswerten der Originalspiele</b> abgeleitet:</p>
+    <div class="formula">Verteidigungsquote = (KP + Vert. + Spez.-Vert.) ÷ Summe aller sechs Basiswerte</div>
+    <ul>
+      <li>Quote <b>≥ 48,1 %</b> (Median aller 151) → <b>KP-Klasse</b> = Tank</li>
+      <li>Quote <b>&lt; 48,1 %</b> → <b>Angriffs-Klasse</b> = Glaskanone</li>
+    </ul>
+    <p>Die <b>Höhe</b> des Bonus hängt an der Seltenheit – und wurde am 02.08.2026 <b>gesenkt</b>:</p>
+    <table class="dtable">
+      <tr><th>Seltenheit</th><th>KP-Bonus</th><th>ANG-Bonus</th></tr>
+      <tr><td>● gewöhnlich</td><td>0</td><td>0</td></tr>
+      <tr><td>◆ ungewöhnlich</td><td>+1 <span class="note">(vorher +2)</span></td><td>+1</td></tr>
+      <tr><td>★ selten</td><td>+2 <span class="note">(vorher +4)</span></td><td>+1</td></tr>
+    </table>
+    <p class="note">Grund für die Senkung: Die Sterne spreizen die KP-Basis inzwischen selbst von 10 bis 22.
+      Ein zweiter Verstärker in alter Höhe hätte die Spitze zu weit abgehoben – ein ⭐⭐⭐⭐ ★ wäre auf
+      20 KP gekommen, ein Legendäres auf 26. Mit +2 machen die Sterne die Hauptarbeit und die Seltenheit
+      justiert nur noch nach.</p>
+
+    <h3>5. Typ (ein Typ je Pokémon)</h3>
+    <p>Es gilt das <b>vollständige 18-Typen-System</b> mit der kompletten Typtabelle inklusive der
+      Immunitäten („✕"). Jedes Pokémon trägt nur <b>seinen Haupttyp</b> – der Nebentyp ist am 30.07.2026
+      entfallen. Geländefähigkeiten (🗡 🪨 🌊 🪽) stehen fest je Pokémon aus den Original-VM-Daten und
+      hängen nicht am Typ.</p>
   </div>
 
-  <div class="dchapter" id="d7"><h2>7. Verteilung der Fundorte (W20)</h2>
-    <p>Für jedes Gebiet wird eine Verteilung der 20 Würfelaugen auf die vorkommenden Pokémon berechnet – sichtbar im Reiter „Spielanleitung".</p>
+  <div class="dchapter" id="d7"><h2>7. Die Drehscheibe &amp; Gebietstabellen (Beschluss 02.08.2026)</h2>
+    <p>Die Suche nach wilden Pokémon läuft seit dem 02.08.2026 über eine <b>Drehscheibe</b> statt über den
+      W20. Der entscheidende Unterschied: Die <b>Sektorbreiten sind fest und für jedes Gebiet gleich</b>.
+      Die Gebietstabelle sagt nur noch, <i>welche Art</i> in welchem Sektor sitzt – nicht mehr, wie oft sie
+      vorkommt. Damit trägt die Sterneklasse die Seltenheit selbst.</p>
+    <table class="dtable">
+      <tr><th>Sektor</th><th>Anteil</th><th>Winkel</th><th>Aufteilung</th></tr>
+      <tr><td>Niete (leere grüne Fläche)</td><td>45,0 %</td><td>162,0°</td><td>–</td></tr>
+      <tr><td>Ereignis / Legendär (Fragezeichen)</td><td>5,0 %</td><td>18,0°</td><td>kleines rundes Feld innen</td></tr>
+      <tr><td>⭐</td><td>25,0 %</td><td>90,0°</td><td>2 × 45,0° (A / B)</td></tr>
+      <tr><td>⭐⭐</td><td>15,0 %</td><td>54,0°</td><td>2 × 27,0° (A / B)</td></tr>
+      <tr><td>⭐⭐⭐</td><td>7,5 %</td><td>27,0°</td><td>2 × 13,5° (A / B)</td></tr>
+      <tr><td>⭐⭐⭐⭐</td><td>2,5 %</td><td>9,0°</td><td>einzeln, nicht geteilt</td></tr>
+    </table>
     <ul>
-      <li><b>Niete-Korridor:</b> 4–6 von 20 Würfen treffen kein Pokémon (Zielwert 5).</li>
-      <li><b>Goldene Regel:</b> alle Pokémon derselben Sterneklasse in einem Gebiet bekommen gleich viele Augen.</li>
-      <li><b>Fehlende Seltenheitsstufen:</b> deren Augen-Kontingent wandert zur <b>untersten vorhandenen</b> Stufe im Gebiet (Häufiges wird häufiger, nicht Seltenes).</li>
-      <li><b>Monotonie:</b> höhere Sterneklassen bekommen nie mehr Augen pro Pokémon als niedrigere.</li>
-      <li>Die höchste vorkommende Klasse endet immer exakt auf der 20.</li>
+      <li><b>Je Gebiet 1–2 Arten der Klassen ⭐ bis ⭐⭐⭐</b> und <b>genau eine ⭐⭐⭐⭐-Art</b>.
+        Steht in einer Klasse nur eine Art, gilt sie für die A- und die B-Hälfte.</li>
+      <li>Der schmalste Sektor ist die ⭐⭐⭐⭐-Fläche mit <b>9°</b> – bei einer 15-cm-Scheibe rund
+        <b>12 mm am Rand</b>, gut treffbar.</li>
+      <li><b>Begegnungsrate 50 %</b> je betretenem Feld, also rund 5 Begegnungen je vollem Zug. Ein
+        ⭐⭐⭐⭐ trifft man im Schnitt alle 40 Felder – etwa alle vier Züge im Gras.</li>
+      <li>Nicht besetzte Klassen fallen auf die Niete zurück. Da alle 48 Gebiete vollständig besetzt sind,
+        liegt der Niete-Anteil überall bei exakt 45 %.</li>
     </ul>
-    <p class="note">Diese Regeln werden im digitalen System (Kapitel 13) bei jeder Sterne-Änderung automatisch neu berechnet und geprüft (Audit gegen alle 47 Gebiete).</p>
+    <p class="note">Die Sektorenlogik steht in <code>computeAreaDistribution()</code>. Sie rechnet keine
+      Würfelaugen mehr aus, sondern verteilt nur noch die festen Anteile auf die vorhandenen Arten – die
+      alte Mechanik mit Niete-Korridor, Goldener Regel und Monotonie ist damit ersatzlos entfallen.</p>
+
+    <h3>Alle 48 Gebiete</h3>
+    <p>Die Safari-Zone ist in <b>vier Bereiche</b> geteilt; <b>Sichlor, Tauros, Pinsir und Lapras</b> kommen
+      ausschließlich dort vor und sind die einzigen vier Arten der Karte mit genau einem Fundort.</p>
+    <table class="dtable"><tr><th>Gebiet</th><th>⭐</th><th>⭐⭐</th><th>⭐⭐⭐</th><th>⭐⭐⭐⭐</th></tr><tr><td>💧 Azuria-Höhle</td><td>Flegmon</td><td>Kingler · Golking</td><td>Quaputzi</td><td>Garados</td></tr><tr><td>🪨 Azuria-Höhle</td><td>Digda</td><td>Golbat</td><td>Georok · Ditto</td><td>Geowaz</td></tr><tr><td>🪨 Digda-Höhle</td><td>Digda</td><td>Piepi</td><td>Maschock</td><td>Geowaz</td></tr><tr><td>🪨 Felstunnel</td><td>Zubat</td><td>Machollo · Kleinstein</td><td>Onix</td><td>Glumanda</td></tr><tr><td>🪨 Kraftwerk</td><td>Voltobal</td><td>Magnetilo · Sleima</td><td>Maschock</td><td>Elektek</td></tr><tr><td>🪨 Mondberg</td><td>Zubat · Paras</td><td>Piepi · Kleinstein</td><td>Onix</td><td>Aerodactyl</td></tr><tr><td>🪨 Pokémon-Turm</td><td>Digda</td><td>Nebulak · Tragosso</td><td>Maschock</td><td>Simsala</td></tr><tr><td>🌿 Route 10</td><td>Habitak</td><td>Kleinstein</td><td>Arbok</td><td>Elektek</td></tr><tr><td>💧 Route 10</td><td>Krabby · Goldini</td><td>Tentoxa</td><td>Entoron</td><td>Garados</td></tr><tr><td>🌿 Route 11</td><td>Rattfratz</td><td>Traumato</td><td>Arbok</td><td>Nidoking</td></tr><tr><td>💧 Route 12/13</td><td>Krabby · Karpador</td><td>Tentoxa</td><td>Entoron</td><td>Garados</td></tr><tr><td>🌿 Route 12</td><td>Paras</td><td>Duflor · Knofensa</td><td>Porenta</td><td>Simsala</td></tr><tr><td>🌿 Route 13</td><td>Paras</td><td>Duflor · Knofensa</td><td>Ditto</td><td>Pantimos</td></tr><tr><td>🌿 Route 14</td><td>Bluzuk</td><td>Tauboga · Knofensa</td><td>Arbok</td><td>Sarzenia</td></tr><tr><td>🌿 Route 15</td><td>Myrapla · Bluzuk</td><td>Tauboga</td><td>Arbok</td><td>Chaneira</td></tr><tr><td>🌿 Route 16</td><td>Rattfratz</td><td>Ponita</td><td>Schlurp</td><td>Simsala</td></tr><tr><td>🌿 Route 17</td><td>Dodu</td><td>Ponita · Dodri</td><td>Arbok</td><td>Machomei</td></tr><tr><td>🌿 Route 18</td><td>Paras</td><td>Rattikarl · Ibitak</td><td>Arbok</td><td>Machomei</td></tr><tr><td>💧 Route 19</td><td>Tentacha · Karpador</td><td>Tentoxa</td><td>Entoron</td><td>Rossana</td></tr><tr><td>🌿 Route 1</td><td>Taubsi · Rattfratz</td><td>Nidoran♀ · Nidoran♂</td><td>Porenta</td><td>Chaneira</td></tr><tr><td>💧 Route 20</td><td>Tentacha · Sterndu</td><td>Tentoxa</td><td>Entoron</td><td>Rossana</td></tr><tr><td>🌿 Route 21</td><td>Myrapla</td><td>Rattikarl</td><td>Tangela</td><td>Chaneira</td></tr><tr><td>💧 Route 21</td><td>Tentacha · Karpador</td><td>Tentoxa</td><td>Entoron</td><td>Garados</td></tr><tr><td>🌿 Route 22</td><td>Habitak</td><td>Nidoran♀ · Nidoran♂</td><td>Arbok</td><td>Machomei</td></tr><tr><td>🌿 Route 23</td><td>Paras</td><td>Rettan</td><td>Arbok · Sandamer</td><td>Machomei</td></tr><tr><td>💧 Route 23</td><td>Flegmon</td><td>Quapsel · Golking</td><td>Quaputzi</td><td>Garados</td></tr><tr><td>🌿 Route 24</td><td>Raupy · Myrapla</td><td>Safcon · Abra</td><td>Arbok</td><td>Sarzenia</td></tr><tr><td>💧 Route 24</td><td>Goldini · Karpador</td><td>Tentoxa</td><td>Entoron</td><td>Quappo</td></tr><tr><td>🌿 Route 25</td><td>Hornliu · Myrapla</td><td>Kokuna</td><td>Arbok</td><td>Schiggy</td></tr><tr><td>💧 Route 25</td><td>Goldini · Karpador</td><td>Tentoxa</td><td>Entoron</td><td>Rossana</td></tr><tr><td>🌿 Route 2</td><td>Taubsi · Rattfratz</td><td>Pikachu</td><td>Porenta</td><td>Pantimos</td></tr><tr><td>🌿 Route 3</td><td>Habitak</td><td>Pummeluff · Menki</td><td>Porenta</td><td>Nidoking</td></tr><tr><td>🌿 Route 4</td><td>Rattfratz</td><td>Sandan</td><td>Porenta</td><td>Nidoqueen</td></tr><tr><td>💧 Route 4</td><td>Goldini · Karpador</td><td>Enton</td><td>Dratini</td><td>Quappo</td></tr><tr><td>🌿 Route 5</td><td>Taubsi · Myrapla</td><td>Evoli</td><td>Arbok</td><td>Chaneira</td></tr><tr><td>🌿 Route 6</td><td>Taubsi · Myrapla</td><td>Rattikarl</td><td>Arbok</td><td>Nidoqueen</td></tr><tr><td>💧 Route 6</td><td>Goldini</td><td>Enton · Quapsel</td><td>Entoron</td><td>Quappo</td></tr><tr><td>🌿 Route 7</td><td>Taubsi</td><td>Vulpix · Fukano</td><td>Kicklee</td><td>Sarzenia</td></tr><tr><td>🌿 Route 8</td><td>Rattfratz</td><td>Vulpix · Fukano</td><td>Nockchan</td><td>Simsala</td></tr><tr><td>🌿 Route 9</td><td>Habitak</td><td>Sandan</td><td>Arbok</td><td>Nidoking</td></tr><tr><td>🌿 Safari 1</td><td>Paras</td><td>Nidoran♀ · Omot</td><td>Nidorino</td><td>Sichlor</td></tr><tr><td>🌿 Safari 2</td><td>Paras · Dodu</td><td>Rattikarl</td><td>Nidorina · Kangama</td><td>Tauros</td></tr><tr><td>🌿 Safari 3</td><td>Paras</td><td>Nidoran♂ · Parasek</td><td>Arbok</td><td>Pinsir</td></tr><tr><td>💧 Safari 4</td><td>Flegmon</td><td>Enton</td><td>Entoron · Dratini</td><td>Lapras</td></tr><tr><td>💧 Seeschauminseln</td><td>Flegmon · Muschas</td><td>Lahmus · Kingler</td><td>Entoron</td><td>Garados</td></tr><tr><td>🪨 Seeschauminseln</td><td>Zubat · Jurob</td><td>Golbat</td><td>Maschock</td><td>Rossana</td></tr><tr><td>🪨 Siegesstraße</td><td>Zubat</td><td>Machollo · Rihorn</td><td>Maschock · Georok</td><td>Machomei</td></tr><tr><td>🌿 Vertania-Wald</td><td>Raupy · Hornliu</td><td>Safcon · Kokuna</td><td>Porenta</td><td>Bisasam</td></tr></table>
   </div>
 
   <div class="dchapter" id="d8"><h2>8. Items, Shop &amp; Wirtschaft</h2>
@@ -3722,7 +3756,7 @@ function renderDoc(){
     <ul>
       <li>Kopf: Name links, Nummer rechts, <b>ein Typsymbol</b> (PokéWiki-PLA-Icons, weicher farbiger Kreisverlauf) links neben der Nummer. Seit dem 30.07.2026 nur noch <b>ein</b> Symbol je Karte, weil der Nebentyp entfallen ist.</li>
       <li>Artwork-Fenster (PokéWiki, offiziell, live per Hash-URL).</li>
-      <li>Fangorte-Tabelle: Gebiet + Terrain-Symbol + W20-Würfelbereich; bei Quest-Pokémon "Besonderer Fundort" statt W20; bei reinen Entwicklungen "Nicht wild fangbar".</li>
+      <li>Fangorte-Tabelle: Gebiet + Terrain-Symbol + Scheibensektor (Sterne, ggf. Hälfte A/B); bei Quest-Pokémon "Besonderer Fundort"; bei reinen Entwicklungen "Nicht wild fangbar".</li>
       <li>Fangtabelle: W6-Symbol, zwei Zeilen (&gt; ½ KP / &lt; ½ KP), drei Ball-Spalten (Poké/Super/Hyper) mit den jeweiligen Würfelbereichen.</li>
       <li>Fußzeile: Sterne links in Gold · Seltenheit rechts in <b>schwarzer</b> Schrift – beides rahmenlos direkt auf dem Kartenhintergrund (Beschluss 23.07.2026, gilt für Normal- und Volvelle-Karten).</li>
     </ul>
@@ -3787,7 +3821,7 @@ function renderDoc(){
   <div class="dchapter" id="d13"><h2>13. Digitales System (diese HTML-Datei)</h2>
     <p>Alle Materialien sind in <b>einer</b> selbstenthaltenen HTML-Datei zusammengeführt (Reiter: Beschlüsse, Pokémon-Tabelle, Spielanleitung, Pokeshop, Trainerpass, Arenen, Karten Normal, Karten Volvelle, Spielbrett, Konzept).</p>
     <ul>
-      <li><b>Datenfluss:</b> Sterne/Seltenheit/Klasse/Fähigkeiten/Fundorte eines Pokémon werden zentral gepflegt und wirken automatisch auf Kartenwerte, W20-Verteilung und Fangwurf-Anzeige.</li>
+      <li><b>Datenfluss:</b> Sterne/Seltenheit/Klasse/Fähigkeiten/Fundorte eines Pokémon werden zentral gepflegt und wirken automatisch auf Kartenwerte, Sektorverteilung und Fangwurf-Anzeige.</li>
       <li><b>Würfelaugen-Verteilung:</b> wird bei jeder Änderung nach den Regeln aus Kapitel 7 komplett neu berechnet (nicht nachträglich verschoben).</li>
       <li><b>JSON-Austausch:</b> ⬇ JSON exportiert den kompletten Datenstand; ⬆ JSON spielt eine Datei ein (nur die enthaltenen Felder werden verändert – idealer Weg, um Änderungen aus einem KI-Chat zu übernehmen).</li>
       <li><b>HTML-Sicherung:</b> 💾 HTML speichert diese Datei inklusive des aktuellen Datenstands; beim erneuten Öffnen gewinnt automatisch der jüngere Stand (eingebettet vs. Browser-Speicher).</li>
@@ -3843,7 +3877,7 @@ function renderDoc(){
         plus Trank; die Wirtschaft kippt dadurch nicht, weil Pflichtausgaben (Pokéflöte 8 ₽, Meisterball 20 ₽)
         weiterhin erspielt werden müssen. In der Spielanleitung ist der Wert bereits eingetragen.</li>
       <li><span class="badge ok">erledigt</span> <s><b>Nebentyp-Darstellung:</b> Haupttyp groß, Nebentyp klein daneben</s> — gegenstandslos, seit am 30.07.2026 der Nebentyp entfallen ist.</li>
-      <li><span class="badge ok">erledigt</span> <b>Fundwurf bei W20 = 1</b> inkl. Ereigniskarten mit Itemfunden und Sonder-Bonbons.</li>
+      <li><span class="badge ok">erledigt</span> <b>Fundwurf im Ereignis-Sektor</b> inkl. Ereigniskarten mit Itemfunden und Sonder-Bonbons.</li>
       <li><span class="badge ok">erledigt</span> <b>Meisterball-Quest (29.07.2026):</b> Globale Quest bei Prof. Eich – 50 Pokémon im Pokédex geben einen Meisterball. Siehe Kapitel 8.</li>
       <li><span class="badge ok">erledigt</span> <s><b>Meisterball-Shop-Zuordnung</b> auf der Brettkarte markieren</s> — gegenstandslos, seit der Meisterball (02.08.2026) nicht mehr im Pokeshop verkauft wird, sondern ausschließlich als Quest-Belohnung kommt (Kapitel 8).</li>
     </ul>
@@ -3877,29 +3911,13 @@ function renderDoc(){
         Aquana, Blitza und Flamara. Der ältere Regelwerk-Satz („Quest-Geschenk in Prismania, Wahl bei Lv 3")
         widersprach den Daten und wurde ersetzt.</li>
       <li><span class="badge ok">erledigt</span> <b>Dritter Spieler (29.07.2026):</b> Zugreihenfolge im Uhrzeigersinn, beginnend beim jüngsten Spieler. Stehen zwei von drei Spielern im selben Gebiet, können sie bei gegenseitigem Einverständnis ein Showmatch austragen. Siehe Kapitel 2.</li>
-      <li><span class="badge open">offen</span> <b>Niete-/Fund-Verhältnis – Kernentscheidung nach dem Testlauf (02.08.2026).</b>
-        Nachgemessen über alle 47 Gebietstabellen: Im Mittel sind <b>14,6 von 20 Augen eine Begegnung</b>
-        (73 %), nur 4,4 sind Niete und 1 ist Ereignis. Bei 10 Zugpunkten macht das <b>7,3 Begegnungen je
-        Zug</b>; die Chance, in einem vollen Grasszug gar keiner Begegnung zu haben, liegt bei 0,00 %. Da
-        jede Begegnung ein Kampf (Ø 6–8 W6-Würfe) plus Fangwürfe ist, kostet ein Zug durch hohes Gras real
-        60–80 Würfe. Zusätzlich waren im Testlauf <b>80 % aller Begegnungen Dubletten</b> (63 zu 16), weil
-        ein Gebiet schon nach 10–34 Begegnungen leergefangen ist. Durchgerechnete Varianten:
-        <table class="dtable">
-          <tr><th>Variante</th><th>P(Begegnung)</th><th>Begegnungen/Zug</th><th>Züge bis Gebiet durch</th></tr>
-          <tr><td><b>IST:</b> W20, Wurf je Feld</td><td>73 %</td><td>7,3</td><td>1,6</td></tr>
-          <tr><td>A · W20, Niete 1–10</td><td>45 %</td><td>4,5</td><td>2,5</td></tr>
-          <tr><td>B · W20, Niete 1–14</td><td>25 %</td><td>2,5</td><td>4,6</td></tr>
-          <tr><td><b>C · W50, gleiche Artenzahl</b></td><td>29 %</td><td>2,9</td><td>3,9</td></tr>
-          <tr><td>E · W20, Wurf nur jedes 2. Feld</td><td>73 %</td><td>3,6</td><td>3,1</td></tr>
-        </table>
-        <b>Empfehlung: Variante C (W50).</b> Sie löst zwei Dinge auf einmal – die Begegnungsrate landet im
-        Zielkorridor von 2–4 je Zug, <i>und</i> die Seltenheit bekommt endlich Auflösung: Bei W20 muss ein
-        ★-Pokémon mit einem einzigen Auge auskommen (5 %), feiner geht es nicht; bei W50 sind 2 % und echte
-        Zwischenstufen möglich. Variante E ist die billigste Lösung (keine Tabelle ändert sich), hilft der
-        Seltenheit aber nicht. <b>Zu beachten bei W50:</b> Der einzige auf Land erreichbare Surfer für
-        Bisasam-/Glumanda-Spieler ist Schiggy auf Route 25 (heute 10 % je Wurf) – bei W50 fiele das auf ~4 %
-        und würde zum Nadelöhr; Schiggy bräuchte dort einen breiteren Bereich. Diese Entscheidung hängt mit
-        dem Drehscheiben-Konzept (Konzept-Labor) zusammen, weil beide dieselben Tabellen betreffen.</li>
+      <li><span class="badge ok">erledigt</span> <b>Niete-/Fund-Verhältnis (02.08.2026):</b> Gelöst durch
+        den Umstieg auf die <b>Drehscheibe</b>. Der W20 traf im Mittel bei <b>73 %</b> der betretenen Felder
+        ein Pokémon (7,3 Begegnungen je Zug, Chance auf einen leeren Grasszug: 0,00 %). Die Scheibe hat feste
+        Sektoren mit <b>45 % Niete und 5 % Ereignis</b>, also <b>50 % Begegnungsrate</b> – rund 5 je Zug.
+        Zusätzlich ist das Nachschlagen jetzt sofort statt über eine 20-Zahlen-Tabelle, und die Gebiete sind
+        von Ø 3,6 auf Ø 5,0 Arten aufgefüllt, sodass sie nicht mehr nach zehn Begegnungen leergefangen sind.
+        Siehe Kapitel 6 und 7.</li>
       <li><span class="badge open">offen</span> <b>Shop-Preise</b> erst nach der Niete-/Fund-Entscheidung
         anfassen: Das Dubletten-Einkommen (~11 ₽ je Grasszug) hängt direkt an der Begegnungsrate. Die
         Kampfbelohnungen sind bereits angehoben (Arena 15/20 ₽, Trainer 3 ₽ je Pokémon).</li>
@@ -3909,7 +3927,7 @@ function renderDoc(){
     <h3>🧪 Mögliche Erweiterungen</h3>
     <p class="note">Ideen für später – bewusst noch nicht ins Grundspiel übernommen, weil Umsetzung und Umfang noch offen sind.</p>
     <ul>
-      <li><span class="badge open">Erweiterung</span> <b>Schillernde Pokémon:</b> Idee gefällt, Umsetzung (W20=20 + W6=6 als erster Vorschlag) noch nicht ausgereift – aus dem Farm-Abwechslung-Vorschlag hierher verschoben, damit später in Ruhe entschieden werden kann, ob und wie sie eingebaut werden.</li>
+      <li><span class="badge open">Erweiterung</span> <b>Schillernde Pokémon:</b> Idee gefällt, Umsetzung (⭐⭐⭐⭐-Sektor + W6=6 als erster Vorschlag) noch nicht ausgereift – aus dem Farm-Abwechslung-Vorschlag hierher verschoben, damit später in Ruhe entschieden werden kann, ob und wie sie eingebaut werden.</li>
       <li><span class="badge open">Erweiterung</span> <b>Forschungsaufträge:</b> aus dem Farm-Abwechslung-Vorschlag hierher verschoben (30.07.2026) – Idee für später, Umsetzung und Umfang noch offen.</li>
     </ul>
   </div>
@@ -4169,6 +4187,17 @@ function renderDoc(){
       <li><b>02.08.2026 (7)</b> – <b>Trainer werden Chips statt Brettfelder.</b> Auf dem Brett lag ein einziges festes Trainer-Feld (Route 25), zu dem es keine Regel gab – weder Team noch Belohnung noch Einmaligkeit waren definiert. Trainer sind jetzt <b>20 lose Chips im Kachelmaß (10 mm)</b> im Reiter „Arenen": 10 Land-Trainer (Käfersammler, Wanderer, Pfadfinder, Jungtrainer, Rüpel, Gärtnerin, Bergsteiger, Picknicker, Vogelfänger, Schnösel) und 10 Wasser-Trainer (Schwimmer, Angler, Matrose, Taucher, Surfer, Seefahrer, Rettungsring, Fischer, Kapitän, Perlentaucher), je mit Rückseitenbogen für den Duplexdruck. Regel: Je Route liegt höchstens ein Chip; wer das Feld betritt, kämpft gegen <b>2 zufällige Pokémon der Route</b> (W20 in der Gebietstabelle, Niete neu würfeln, Level = Gebietslevel), bekommt 3 ₽ je besiegtem Pokémon und <b>verschiebt den Chip danach auf eine andere Route</b>. Dadurch wandern die Trainer durch Kanto und wiederholen sich nie am selben Ort, und die Trainerdichte bleibt über die Chipzahl steuerbar. Das feste Trainer-Objekt wurde vom Brett und aus der Events-Palette des Karteneditors entfernt. Nebenauftrag 19 „Kämpferherz" verlangte bis dahin <b>3 Siege gegen andere Spieler</b> – im Solospiel unlösbar und zu dritt eine erzwungene Spielerinteraktion; er verlangt jetzt <b>3 besiegte Trainer</b>.</li>
       <li><b>02.08.2026 (8)</b> – <b>Orden-Schwelle je Zone im Karteneditor.</b> Die Anleitung sagte „Manche Städte und Routen öffnen erst, wenn du genug Orden hast", nannte aber nur Vertania (7) und die Siegesstraße (8) – für alle übrigen 44 Zonen war nichts definiert. Gleichzeitig verband ein Tor <b>Alabastia direkt mit Route 21</b>, wodurch Zinnoberinsel (Lv 8) vom Startfeld aus in zwei Zügen erreichbar war. Zonen tragen jetzt ein Feld <code>orden</code>, das im Editor beim Anlegen und Bearbeiten gesetzt wird und als <b>goldenes Ordensymbol mit Zahl</b> rechts am Zonenschild erscheint (ohne Zahl = frei). Alle 46 Zonen sind mit Vorschlagswerten belegt; automatisch gegengeprüft wurde, dass <b>keine Arenastadt hinter einer höheren Schwelle liegt, als der Spieler beim Eintreffen Orden haben kann</b> (Saffronia bleibt als zentraler Verkehrsknoten früh offen, obwohl seine Arena die sechste ist). Die Inselgruppe Route 19–21/Zinnoberinsel/Seeschauminseln steht jetzt auf 5 Orden und schließt damit die Abkürzung. Außerdem: <b>Verbindungslinien deutlich sichtbarer</b> (heller Unterzug plus kräftigerer gestrichelter Strich, 0,04 → 0,10 cm) – sie sind der einzige Hinweis darauf, dass zwei weit auseinanderliegende Felder zusammengehören. Und das <b>Indigo-Plateau hat jetzt einen Pokeshop</b> (Center links unten, Shop rechts unten); vorher gab es dort nur ein Pokécenter, obwohl die Liga fünf Kämpfe ohne Pause ist und der Rucksack vorher gefüllt sein muss.</li>
       <li><b>02.08.2026 (9)</b> – <b>Konzept-Labor: zweites Kapitel „Drehscheibe statt Würfel".</b> Angestoßen von der Frage, ob ein Twister-artiger Zeiger den W20 ersetzen kann. Kern des Problems: Ein Würfel ist gebietsneutral (die Gebietstabelle übersetzt), eine Scheibe trägt ihre Bedeutung dagegen aufgedruckt mit sich – bei 47 Gebieten bräuchte es 47 Scheiben. Drei Varianten ausgearbeitet: <b>(A)</b> Scheibe zeigt nur die Zahl – 1:1-Ersatz, keine Regeländerung, aber auch kein Gewinn außer der Haptik (20 Sektoren = 18° ≈ 23 mm am Rand, 50 Sektoren nur noch 7,2° ≈ 9 mm). <b>(B)</b> Scheibe zeigt die <b>Seltenheit</b> statt der Zahl – die Gebietstabelle schrumpft von 20 Zahlenfeldern auf 2–4 Zeilen, weil je Gebiet höchstens 4 verschiedene Sterne-Stufen vorkommen (28 von 47 Gebieten haben sogar nur 2). Stichentscheid bei mehreren Arten derselben Stufe über durchnummerierte Sektoren; betroffen wären 38 Fälle mit 2, sieben mit 3 und vier mit 4 Arten. <b>(C)</b> neutrale Grundscheibe mit Papierauflage je Gebiet – genau, aber 47 Auflagen sind am Tisch unpraktisch. Zwischenstand: Variante B ist die interessanteste, greift aber tief in dieselben Gebietstabellen ein wie die noch offene Entscheidung zum Niete-/Fund-Verhältnis und sollte erst danach angefasst werden.</li>
+      <li><b>02.08.2026 (10)</b> – <b>Sterne neu vergeben (1–7), Drehscheibe ersetzt den W20, Seltenheit neu berechnet.</b> Die größte Umstellung seit dem Kampfsystem v3. Auslöser war der Befund aus dem Testlauf, dass von 151 Pokémon nur <b>zwei wild fangbare 4★</b> existierten (Aerodactyl, Garados) und <b>kein einziges 5★</b> – die obere Hälfte der Seltenheitsskala war über das Fangen unerreichbar, es gab nichts zu farmen, worüber man sich freuen konnte.
+        <ul>
+          <li><b>Neue Regel:</b> Sterne = <b>Familien-Basiswert (1–4) + Entwicklungsstufe</b>, Legendäre fest auf <b>7★</b>. Jeder Wert ist damit herleitbar statt einzeln vergeben. Verteilung über alle 151: 22/47/41/27/6/3/5. Ankerpunkte: Starter auf Stufe 1 = 4★ (Bisasam → Bisaknosp 5★ → Bisaflor 6★), Raupy/Hornliu/Taubsi 1★, Nidoran 2★, die evolutionslosen Raritäten (Aerodactyl, Rossana, Chaneira, Pantimos, Elektek, Magmar, Sichlor, Tauros, Pinsir, Lapras, Relaxo) direkt auf 4★. Ausnahme Karpador 1★ → Garados 4★ über zwei Stufen.</li>
+          <li><b>Drehscheibe statt W20:</b> Feste Sektoren für alle Gebiete – 45 % Niete, 5 % Ereignis/Legendär, 25 % ⭐, 15 % ⭐⭐, 7,5 % ⭐⭐⭐, 2,5 % ⭐⭐⭐⭐. Die Klassen ⭐ bis ⭐⭐⭐ haben eine A- und eine B-Hälfte, ⭐⭐⭐⭐ ist ungeteilt. Die Gebietstabelle nennt nur noch die Arten je Sektor, nicht mehr Würfelbereiche. Begegnungsrate fällt von 73 % auf <b>50 %</b>. Die alte Verteilungsmechanik (Niete-Korridor, Goldene Regel, Monotonie, „höchste Klasse endet auf der 20") ist ersatzlos entfallen.</li>
+          <li><b>Gebiete aufgefüllt und Safari geteilt:</b> 47 → <b>48 Gebiete</b>, jedes mit 1–2 Arten je Klasse ⭐–⭐⭐⭐ und <b>genau einer ⭐⭐⭐⭐-Art</b> (20 verschiedene über die Karte). Arten je Gebiet Ø 3,6 → <b>5,0</b>, was das Leerfangen nach zehn Begegnungen behebt. Die Safari-Zone hat vier Bereiche; <b>Sichlor, Tauros, Pinsir und Lapras sind Safari-exklusiv</b> und die einzigen vier Arten mit genau einem Fundort.</li>
+          <li><b>Seltenheit ● ◆ ★ neu berechnet (Variante B):</b> Die alte Formel aus der bloßen Zahl der Fundorte maß nach der Umstellung größtenteils dasselbe wie die Sterne – und bei den ⭐⭐⭐ sogar falsch herum (◆ 15,0 % lag unter ★ 22,5 %). Jetzt zählt die <b>echte Auffindbarkeit</b>: Sektoranteil ÷ Zahl der Arten in dieser Klasse, über alle Gebiete summiert, dann Drittel-Schnitt. Der Wert korrigiert sich selbst, wenn Gebietstabellen geändert werden. Der <b>★-Bonus sinkt von +4 auf +2 KP</b> (◆ von +2 auf +1), weil die Sterne die KP-Basis inzwischen selbst von 10 bis 22 spreizen – sonst käme ein ⭐⭐⭐⭐ ★ auf 20 KP und ein Legendäres auf 26.</li>
+          <li><b>Fangschwellen erweitert:</b> Schwelle = Sterne + 2, jetzt bis 9. ⭐⭐⭐⭐⭐⭐⭐ ist <b>nur mit Hyperball</b> fangbar (9 − 1 für ≤ ½ KP − 2 für den Ball = 6), und Legendäre haben weiterhin nur einen Versuch je Begegnung.</li>
+          <li><b>Kampfbalance geprüft:</b> Arena- und Top-4-Teams verschieben sich um höchstens ±2 KP im Mittel, kein Kampf kippt. Am stärksten betroffen sind Misty und Major Bob (−2 KP) und Erika (+1,3 KP).</li>
+          <li><b>Dokumentation:</b> Kapitel 6 und 7 komplett neu geschrieben, Kapitel 3 (Begegnung, Fangwurf, Legendäre, Ereignis) auf die Scheibe umgestellt, das Konzept-Kapitel „Drehscheibe statt Würfel" aus dem Konzept-Labor entfernt. Die Spielanleitung ist durchgesehen: Material (W20 → Scheibe), Kapitel 5 (Begegnung, A/B-Hälften, Fangschwellen bis 7★), Kapitel 10 (Ereignis-Sektor) und die Kurzübersicht sind angepasst. Karten und Volvellen zeigen statt eines Würfelbereichs jetzt den Sektor (Sterne + ggf. Hälfte).</li>
+        </ul>
+        <b>Achtung fürs Material:</b> Alle 151 Karten, alle Volvellen und die Gebietstabellen der Spielanleitung müssen neu gedruckt werden.</li>
     </ul>
   </div>`;
   groupDoneItemsInChapter14();
@@ -5034,7 +5063,7 @@ function kkKarteSVG(){
       <text class="kk-lab" x="6" y="76.4" text-anchor="start">FANGORT</text>
       <rect x="6" y="78" width="68" height="7" rx="1.2" fill="#fffdf6" fill-opacity=".82"/>
       <text class="kk-fang" x="8.5" y="82.4">🌿 Vertania-Wald</text>
-      <text class="kk-fang kk-r" x="71.5" y="82.4">W20 · 20</text>
+      <text class="kk-fang kk-r" x="71.5" y="82.4">Sektor</text>
       <text class="kk-lab" x="38" y="88.4" text-anchor="start">FÄHIGKEIT &amp; ENTWICKLUNG</text>
       <rect x="38" y="90" width="36" height="12" rx="1.2" fill="#fffdf6" fill-opacity=".82"/>
       <text class="kk-fang2" x="40" y="93.8">🗡 Zerschneider</text>
@@ -5360,255 +5389,6 @@ function renderKonzept(){
         außermittig. Das ist deutlich fehlertoleranter als jede Rastmechanik. Voraussetzung ist, dass die Scheibe
         <b>außen in einer Ringnut</b> läuft statt auf einer Mittelnabe – dann bleibt die Mitte frei und die Karte
         ist ein schlichtes Rechteck.</p>
-    </div>
-
-    <div class="kzbox">
-      <h2>Idee: Drehscheibe statt Würfel</h2>
-      <p><b>Die Idee:</b> Der W20 für die Pokémon-Suche wird durch einen <b>Zeiger auf einer Drehscheibe</b>
-        ersetzt, wie beim Twister-Spiel. Ein Schnippen statt Würfeln – kein Würfel, der vom Tisch rollt,
-        und für jüngere Kinder deutlich griffiger.</p>
-      <p><b>Der Haken, den du benannt hast:</b> Ein Würfel ist gebietsneutral – die 20 Augen bedeuten in jedem
-        Gebiet etwas anderes, das übersetzt die Gebietstabelle. Eine Drehscheibe trägt ihre Bedeutung dagegen
-        aufgedruckt mit sich. Bei <b>47 Gebieten</b> bräuchte man 47 Scheiben. Genau das ist das Problem.</p>
-
-      <h3>Variante A – Scheibe zeigt nur die Zahl</h3>
-      <p>Die Scheibe ersetzt den Würfel <b>1:1</b>: 20 (oder 50) nummerierte Sektoren, die Gebietstabellen
-        bleiben unverändert. Nachschlagen läuft wie bisher.</p>
-      <ul>
-        <li><b>Dafür:</b> keine einzige Regel- oder Tabellenänderung nötig, sofort einsetzbar.</li>
-        <li><b>Dagegen:</b> gewinnt nichts außer der Haptik – man schlägt weiterhin in der Tabelle nach.</li>
-        <li><b>Maße:</b> Bei 20 Sektoren und 15 cm Scheibe sind das 18° je Sektor ≈ 23 mm am Rand – gut lesbar.
-          Bei 50 Sektoren nur noch 7,2° ≈ 9 mm; machbar, aber die Zahlen müssen klein und der Zeiger genau sein.</li>
-      </ul>
-
-      <h3>Variante B – Scheibe zeigt die Seltenheit statt der Zahl</h3>
-      <p>Hier wird der Nachteil zum Vorteil. Die Sektoren tragen keine Zahlen, sondern <b>Seltenheitsbänder</b>:
-        <code>Niete</code> · <code>⭐</code> · <code>⭐⭐</code> · <code>⭐⭐⭐</code> · <code>⭐⭐⭐⭐</code> ·
-        <code>⭐⭐⭐⭐⭐</code> · <code>Ereignis</code>. Die Flächenanteile bilden genau die heutige
-        Wahrscheinlichkeitsverteilung ab. Die Gebietstabelle schrumpft dann von 20 Zahlenfeldern auf
-        <b>eine Zeile je Sterne-Stufe</b>.</p>
-      <p class="kz-note">Nachgerechnet am aktuellen Datenstand: Je Gebiet kommen <b>höchstens 4 verschiedene
-        Sterne-Stufen</b> vor (28 von 47 Gebieten haben nur 2, fünf sogar nur eine). Die Tabelle im Heft würde
-        also von 20 Feldern auf 2–4 Zeilen zusammenschrumpfen – ein sehr großer Gewinn beim Nachschlagen.</p>
-      <p><b>Der Rest-Haken:</b> Teilen sich mehrere Pokémon dieselbe Stufe, braucht es einen Stichentscheid.
-        Das betrifft <b>38 Fälle mit 2 Arten, 7 mit 3 und 4 mit 4 Arten</b>. Lösung ohne zweiten Wurf: Die
-        Sektoren einer Stufe werden durchnummeriert (⭐⭐-a, ⭐⭐-b …) und die Tabelle listet die Arten in
-        derselben Reihenfolge. Der Zeiger liefert Stufe und Auswahl in einem Zug.</p>
-
-      <h3>Variante C – eine Grundscheibe, Gebiete als Auflage</h3>
-      <p>Die Scheibe bleibt neutral (nur der Zeiger und eine Gradskala), und je Gebiet gibt es eine dünne
-        <b>Papierauflage</b>, die man auflegt. Damit stimmt die Beschriftung immer exakt.</p>
-      <ul>
-        <li><b>Dafür:</b> volle Genauigkeit je Gebiet, keine Kompromisse in der Verteilung.</li>
-        <li><b>Dagegen:</b> 47 Auflagen, die gewechselt werden müssen – am Tisch mühsam und leicht zu verlieren.
-          Realistisch nur für die 8–10 meistbesuchten Gebiete sinnvoll.</li>
-      </ul>
-
-      <h3>Zwischenstand</h3>
-      <p><b>Variante B ist die interessanteste</b>, weil sie das Nachschlagen wirklich vereinfacht, statt nur den
-        Würfel zu ersetzen. Sie greift aber tief in die Gebietstabellen ein und sollte erst nach der Entscheidung
-        über das Niete-/Fund-Verhältnis angefasst werden – beide betreffen dieselben Tabellen.</p>
-      <div class="kz-note"><b>Offen zu klären:</b> (1) Wie stabil ist ein selbstgebauter Zeiger? Ein
-        3D-gedruckter Pfeil auf einer Messing-Öse dreht sich gleichmäßiger als eine Büroklammer.
-        (2) Sollen Kampf- und Fangwurf (W6) ebenfalls auf die Scheibe? Dann bräuchte sie einen zweiten,
-        inneren Ring – oder es bleibt beim W6, was den Materialaufwand klein hält.
-        (3) Bei Variante B: Wie werden Legendäre abgebildet, die heute an der 1 hängen? Vermutlich als
-        eigener, sehr schmaler Sektor „Ereignis/Legendär".</div>
-    </div>
-
-    <div class="kzbox">
-      <h2>Machbarkeitsstudie: A/B-Scheibe mit Sterne-Sektoren</h2>
-      <p>Ausgearbeitet zur Idee, die Scheibe fest in Sterneklassen mit je einem <b>A-</b> und <b>B-</b>Bereich
-        zu teilen und je Route <b>mindestens 1, höchstens 2</b> Pokémon pro Klasse zu führen. Alle Zahlen unten
-        sind am aktuellen Datenstand nachgerechnet.</p>
-
-      <h3>Befund 1 – die Ausgangslage bestätigt den Verdacht</h3>
-      <p>Von den 151 Pokémon sind <b>96 wild fangbar</b>. Die Verteilung ist oben extrem dünn:</p>
-      <table class="kztable">
-        <tr><th>Sterne</th><th>gesamt</th><th>wild fangbar</th><th>nur Entwicklung/Quest</th></tr>
-        <tr><td>1★</td><td>16</td><td>16</td><td>0</td></tr>
-        <tr><td>2★</td><td>42</td><td>40</td><td>2</td></tr>
-        <tr><td>3★</td><td>61</td><td>38</td><td>23</td></tr>
-        <tr class="hi"><td>4★</td><td>23</td><td><b>2</b></td><td>21</td></tr>
-        <tr class="hi"><td>5★</td><td>9</td><td><b>0</b></td><td>9</td></tr>
-      </table>
-      <p>Wild fangbar sind an 4★ nur <b>Aerodactyl und Garados</b>, an 5★ <b>gar nichts</b>. Die Beobachtung
-        „es gibt praktisch nichts zu farmen, worüber man sich freut" trifft also exakt zu – die gesamte obere
-        Hälfte der Seltenheitsskala ist über das Fangen unerreichbar. <b>4★ fehlt in 45 von 47 Gebieten.</b></p>
-
-      <h3>Befund 2 – „höchstens 2 je Klasse" ist praktisch schon erfüllt</h3>
-      <p>Nur <b>11 Verstöße</b> im ganzen Spiel: 1★ mehr als zweimal in 1 Gebiet, 2★ in 6, 3★ in 4. Das lässt
-        sich durch Verschieben einzelner Arten glattziehen. <b>Diese Hälfte der Idee ist unkritisch.</b></p>
-
-      <h3>Befund 3 – „mindestens 1 je Klasse" ist der teure Teil</h3>
-      <p>Damit jede Route eine 4★-Art führt, bräuchte es <b>43 verschiedene Arten</b> auf 4★ (nicht 47, weil
-        einige Arten in mehreren Gebieten der Spitzenreiter wären). Deren heutige Einstufung:</p>
-      <ul>
-        <li><b>23 sind bereits 3★</b> – Beförderung kostet nur <b>+2 KP</b>, der Angriff bleibt gleich
-          (ANG = 2 + ⌊(S−1)/2⌋ steigt erst wieder bei 5★). Unkritisch.</li>
-        <li><b>15 sind 2★</b> – +4 KP und +1 Angriff. Spürbar, aber vertretbar.</li>
-        <li><b>3 sind 1★</b> – +6 KP und +1 Angriff. Hier kippt es: Ein <b>Taubsi als 4★</b> widerspricht der
-          Regel „Sterne = Entwicklungsstufe" (Kapitel 6) und auch dem Gefühl am Tisch.</li>
-      </ul>
-      <div class="kz-note"><b>Der Kern des Problems:</b> Die Sterne tragen heute <b>zwei Bedeutungen
-        gleichzeitig</b> – sie sind Kampfkraft (KP = 2×S+8, ANG = 2+⌊(S−1)/2⌋) <i>und</i> Fangschwierigkeit
-        (Schwelle = S+2). Die Scheibe braucht sie als <b>dritte</b> Größe: Fundhäufigkeit im Gebiet. Drei
-        Bedeutungen auf einer Skala gehen nicht widerspruchsfrei auf. Eine zweite Achse gibt es bereits – die
-        <b>Seltenheit ● ◆ ★</b> aus der Zahl der Fundorte –, sie wird aber von der Fangschwelle nicht benutzt.</div>
-
-      <h3>Befund 4 – ohne „mindestens 1" wird die Scheibe ungleichmäßig</h3>
-      <p>Getestet mit der Auffangregel „leerer Slot = Niete" und diesem Sektorvorschlag:</p>
-      <table class="kztable">
-        <tr><th>Sektor</th><th>Anteil</th><th>Winkel</th></tr>
-        <tr><td>1★ A / 1★ B</td><td>je 9 %</td><td>je 32,4°</td></tr>
-        <tr><td>2★ A / 2★ B</td><td>je 7 %</td><td>je 25,2°</td></tr>
-        <tr><td>3★ A / 3★ B</td><td>je 4,5 %</td><td>je 16,2°</td></tr>
-        <tr><td>4★ (einzeln)</td><td>4 %</td><td>14,4°</td></tr>
-        <tr><td>Ereignis / Legendär</td><td>5 %</td><td>18,0°</td></tr>
-        <tr><td>Niete</td><td>50 %</td><td>180,0°</td></tr>
-      </table>
-      <p>Ergebnis: Begegnungsrate im Mittel <b>23 %</b> (2,3 je Zug – gut), aber die Spanne reicht von
-        <b>9 % (Digda-Höhle, nur eine Art)</b> bis <b>41 % (Vertania-Wald, Safari Süd)</b>. Die dünn besetzten
-        frühen Routen fühlen sich dadurch tot an. <b>Genau das ist es, was „mindestens 1 je Klasse" ausgleichen
-        würde</b> – die Forderung ist also nicht kosmetisch, sondern trägt die Mechanik.</p>
-
-      <h3>Befund 5 – 6★ und 7★ funktionieren rechnerisch sehr gut</h3>
-      <p>Fangschwelle = Sterne + 2, davon −1 bei ≤ ½ KP und −1/−2 für Super-/Hyperball:</p>
-      <table class="kztable">
-        <tr><th>Stufe</th><th>Pokéball</th><th>Superball</th><th>Hyperball</th><th>Legendär (1 Versuch)</th></tr>
-        <tr><td>4★</td><td>70 %</td><td>88 %</td><td>96 %</td><td>–</td></tr>
-        <tr><td>5★</td><td>42 %</td><td>70 %</td><td>88 %</td><td>–</td></tr>
-        <tr><td>6★</td><td><b>unmöglich</b></td><td>42 %</td><td>70 %</td><td>17–33 %</td></tr>
-        <tr class="hi"><td>7★</td><td><b>unmöglich</b></td><td><b>unmöglich</b></td><td>42 %</td><td><b>17 %</b></td></tr>
-      </table>
-      <p>(Prozent = Erfolg in 3 Versuchen nach der neuen Fluchtregel.) <b>7★ für Legendäre ist eine sehr gute
-        Idee:</b> Ohne Hyperball sind sie rechnerisch nicht fangbar, mit einem einzigen Versuch je Begegnung
-        liegt die Chance bei 17 %. Das erzwingt Vorbereitung und macht den Fang zum echten Ereignis – genau das,
-        was heute fehlt. Der Meisterball behält seinen Sinn als sichere Lösung für Mewtu und Mew.
-        Werte: 7★ = 22 KP / 5 ANG Basis, das liegt im Rahmen der heutigen Legendären.</p>
-
-
-      <h3>Die Regel: Sterne = Familien-Basiswert + Entwicklungsstufe</h3>
-      <p>Jede Familie bekommt einen <b>Basiswert 1–4</b>, jede Entwicklungsstufe zählt <b>+1</b> dazu.
-        Legendäre stehen fest auf <b>7★</b>. Damit ist jeder Wert herleitbar, statt einzeln vergeben zu werden.</p>
-      <table class="kztable"><tr><th>Basis</th><th>Familien</th><th>welche</th></tr><tr><td><b>1</b></td><td>23</td><td>Bluzuk, Digda, Dodu, Enton, Flegmon, Goldini, Habitak, Hornliu, Jurob, Karpador, Krabby, Mauzi, Muschas, Myrapla, Paras, Rattfratz, Raupy, Seeper, Sterndu, Taubsi, Tentacha, Voltobal, Zubat</td></tr><tr><td><b>2</b></td><td>25</td><td>Abra, Evoli, Fukano, Kleinstein, Knofensa, Machollo, Magnetilo, Menki, Nebulak, Nidoran♀, Nidoran♂, Owei, Piepi, Pikachu, Ponita, Pummeluff, Quapsel, Rettan, Rihorn, Sandan, Sleima, Smogon, Tragosso, Traumato, Vulpix</td></tr><tr><td><b>3</b></td><td>9</td><td>Ditto, Dratini, Kangama, Kicklee, Nockchan, Onix, Porenta, Schlurp, Tangela</td></tr><tr><td><b>4</b></td><td>17</td><td>Aerodactyl, Amonitas, Bisasam, Chaneira, Elektek, Glumanda, Kabuto, Lapras, Magmar, Pantimos, Pinsir, Porygon, Relaxo, Rossana, Schiggy, Sichlor, Tauros</td></tr></table>
-      <p class="kz-note">Beispiele: Raupy 1★ → Safcon 2★ → Smettbo 3★ · Taubsi 1★ → Tauboga 2★ → Tauboss 3★ ·
-        Nidoran♀ 2★ → Nidorina 3★ → Nidoqueen 4★ · <b>Bisasam 4★ → Bisaknosp 5★ → Bisaflor 6★</b> ·
-        Karpador 1★ → <b>Garados 4★</b> (Ausnahme, damit der Brocken ein Brocken bleibt).</p>
-
-      <h3>Neue Verteilung über alle 151</h3>
-      <table class="kztable"><tr><th>Sterne</th><th>bisher</th><th>neu</th></tr><tr><td>1★</td><td>16</td><td>23</td></tr><tr><td>2★</td><td>42</td><td>47</td></tr><tr><td>3★</td><td>61</td><td>40</td></tr><tr><td>4★</td><td>23</td><td>27</td></tr><tr><td>5★</td><td>9</td><td>6</td></tr><tr><td>6★</td><td>0</td><td>3</td></tr><tr><td>7★</td><td>0</td><td>5</td></tr></table>
-      <p>Die Spitze ist jetzt besetzt: <b>27 Arten auf 4★</b> (bisher 23, davon aber nur 2 fangbar),
-        6 auf 5★, 3 auf 6★ (Bisaflor, Glurak, Turtok) und 5 auf 7★ (die Legendären).</p>
-
-      <h3>Alle 48 Gebiete – so geht die Rechnung auf</h3>
-      <p>Die Safari ist wie gewünscht in <b>vier Bereiche</b> geteilt. Jedes Gebiet hat <b>1–2 Arten je Klasse
-        1–3</b> und <b>genau eine 4★-Art</b>. Insgesamt sind 20 verschiedene 4★-Arten im Einsatz, sie
-        wiederholen sich also über die Karte – bleiben aber je Gebiet einzigartig.</p>
-      <p class="kz-note"><b>Lesehilfe:</b> Die <b>4★-Spalte ist von Hand gesetzt</b> – nach Gelände,
-        Gebietslevel und Kanto-Logik (Aerodactyl in den Mondberg, Garados ins tiefe Wasser, Sichlor/Tauros/
-        Pinsir in die Safari, die drei Starter nur an ihre drei angestammten Stellen). Die Spalten
-        <b>1★ bis 3★ hat ein Skript aufgefüllt</b>, wo der heutige Bestand Lücken ließ: typpassend zum
-        Gelände und in frühen Gebieten bevorzugt unentwickelte Arten. Das Ergebnis ist strukturell korrekt,
-        einzelne Einträge verdienen aber noch einen Blick – etwa Simsala auf Route 12 oder Piepi in der
-        Digda-Höhle. Diese Feinarbeit lohnt erst, wenn die Umstellung grundsätzlich beschlossen ist.</p>
-      <table class="kztable"><tr><th>Gebiet</th><th>1★</th><th>2★</th><th>3★</th><th>4★</th></tr><tr><td>💧 Azuria-Höhle</td><td>Flegmon</td><td>Kingler · Golking</td><td>Quaputzi</td><td>Garados</td></tr><tr><td>🪨 Azuria-Höhle</td><td>Digda</td><td>Golbat</td><td>Georok · Ditto</td><td>Geowaz</td></tr><tr><td>🪨 Digda-Höhle</td><td>Digda</td><td>Piepi</td><td>Maschock</td><td>Geowaz</td></tr><tr><td>🪨 Felstunnel</td><td>Zubat</td><td>Machollo · Kleinstein</td><td>Onix</td><td>Glumanda</td></tr><tr><td>🪨 Kraftwerk</td><td>Voltobal</td><td>Magnetilo · Sleima</td><td>Maschock</td><td>Elektek</td></tr><tr><td>🪨 Mondberg</td><td>Zubat · Paras</td><td>Piepi · Kleinstein</td><td>Onix</td><td>Aerodactyl</td></tr><tr><td>🪨 Pokémon-Turm</td><td>Digda</td><td>Nebulak · Tragosso</td><td>Maschock</td><td>Simsala</td></tr><tr><td>🌿 Route 10</td><td>Habitak</td><td>Kleinstein</td><td>Arbok</td><td>Elektek</td></tr><tr><td>💧 Route 10</td><td>Krabby · Goldini</td><td>Tentoxa</td><td>Entoron</td><td>Garados</td></tr><tr><td>🌿 Route 11</td><td>Rattfratz</td><td>Traumato</td><td>Arbok</td><td>Nidoking</td></tr><tr><td>💧 Route 12/13</td><td>Krabby · Karpador</td><td>Tentoxa</td><td>Entoron</td><td>Garados</td></tr><tr><td>🌿 Route 12</td><td>Paras</td><td>Duflor · Knofensa</td><td>Porenta</td><td>Simsala</td></tr><tr><td>🌿 Route 13</td><td>Paras</td><td>Duflor · Knofensa</td><td>Ditto</td><td>Pantimos</td></tr><tr><td>🌿 Route 14</td><td>Bluzuk</td><td>Tauboga · Knofensa</td><td>Arbok</td><td>Sarzenia</td></tr><tr><td>🌿 Route 15</td><td>Myrapla · Bluzuk</td><td>Tauboga</td><td>Arbok</td><td>Chaneira</td></tr><tr><td>🌿 Route 16</td><td>Rattfratz</td><td>Ponita</td><td>Schlurp</td><td>Simsala</td></tr><tr><td>🌿 Route 17</td><td>Dodu</td><td>Ponita · Dodri</td><td>Arbok</td><td>Machomei</td></tr><tr><td>🌿 Route 18</td><td>Paras</td><td>Rattikarl · Ibitak</td><td>Arbok</td><td>Machomei</td></tr><tr><td>💧 Route 19</td><td>Tentacha · Karpador</td><td>Tentoxa</td><td>Entoron</td><td>Rossana</td></tr><tr><td>🌿 Route 1</td><td>Taubsi · Rattfratz</td><td>Nidoran♀ · Nidoran♂</td><td>Porenta</td><td>Chaneira</td></tr><tr><td>💧 Route 20</td><td>Tentacha · Sterndu</td><td>Tentoxa</td><td>Entoron</td><td>Rossana</td></tr><tr><td>🌿 Route 21</td><td>Myrapla</td><td>Rattikarl</td><td>Tangela</td><td>Chaneira</td></tr><tr><td>💧 Route 21</td><td>Tentacha · Karpador</td><td>Tentoxa</td><td>Entoron</td><td>Garados</td></tr><tr><td>🌿 Route 22</td><td>Habitak</td><td>Nidoran♀ · Nidoran♂</td><td>Arbok</td><td>Machomei</td></tr><tr><td>🌿 Route 23</td><td>Paras</td><td>Rettan</td><td>Arbok · Sandamer</td><td>Machomei</td></tr><tr><td>💧 Route 23</td><td>Flegmon</td><td>Quapsel · Golking</td><td>Quaputzi</td><td>Garados</td></tr><tr><td>🌿 Route 24</td><td>Raupy · Myrapla</td><td>Safcon · Abra</td><td>Arbok</td><td>Sarzenia</td></tr><tr><td>💧 Route 24</td><td>Goldini · Karpador</td><td>Tentoxa</td><td>Entoron</td><td>Quappo</td></tr><tr><td>🌿 Route 25</td><td>Hornliu · Myrapla</td><td>Kokuna</td><td>Arbok</td><td>Schiggy</td></tr><tr><td>💧 Route 25</td><td>Goldini · Karpador</td><td>Tentoxa</td><td>Entoron</td><td>Rossana</td></tr><tr><td>🌿 Route 2</td><td>Taubsi · Rattfratz</td><td>Pikachu</td><td>Porenta</td><td>Pantimos</td></tr><tr><td>🌿 Route 3</td><td>Habitak</td><td>Pummeluff · Menki</td><td>Porenta</td><td>Nidoking</td></tr><tr><td>🌿 Route 4</td><td>Rattfratz</td><td>Sandan</td><td>Porenta</td><td>Nidoqueen</td></tr><tr><td>💧 Route 4</td><td>Goldini · Karpador</td><td>Enton</td><td>Dratini</td><td>Quappo</td></tr><tr><td>🌿 Route 5</td><td>Taubsi · Myrapla</td><td>Evoli</td><td>Arbok</td><td>Chaneira</td></tr><tr><td>🌿 Route 6</td><td>Taubsi · Myrapla</td><td>Rattikarl</td><td>Arbok</td><td>Nidoqueen</td></tr><tr><td>💧 Route 6</td><td>Goldini</td><td>Enton · Quapsel</td><td>Entoron</td><td>Quappo</td></tr><tr><td>🌿 Route 7</td><td>Taubsi</td><td>Vulpix · Fukano</td><td>Kicklee</td><td>Sarzenia</td></tr><tr><td>🌿 Route 8</td><td>Rattfratz</td><td>Vulpix · Fukano</td><td>Nockchan</td><td>Simsala</td></tr><tr><td>🌿 Route 9</td><td>Habitak</td><td>Sandan</td><td>Arbok</td><td>Nidoking</td></tr><tr><td>🌿 Safari 1</td><td>Paras</td><td>Nidoran♀ · Omot</td><td>Nidorino</td><td>Sichlor</td></tr><tr><td>🌿 Safari 2</td><td>Paras · Dodu</td><td>Rattikarl</td><td>Nidorina · Kangama</td><td>Tauros</td></tr><tr><td>🌿 Safari 3</td><td>Paras</td><td>Nidoran♂ · Parasek</td><td>Arbok</td><td>Pinsir</td></tr><tr><td>💧 Safari 4</td><td>Flegmon</td><td>Enton</td><td>Entoron · Dratini</td><td>Lapras</td></tr><tr><td>💧 Seeschauminseln</td><td>Flegmon · Muschas</td><td>Lahmus · Kingler</td><td>Entoron</td><td>Garados</td></tr><tr><td>🪨 Seeschauminseln</td><td>Zubat · Jurob</td><td>Golbat</td><td>Maschock</td><td>Rossana</td></tr><tr><td>🪨 Siegesstraße</td><td>Zubat</td><td>Machollo · Rihorn</td><td>Maschock · Georok</td><td>Machomei</td></tr><tr><td>🌿 Vertania-Wald</td><td>Raupy · Hornliu</td><td>Safcon · Kokuna</td><td>Porenta</td><td>Bisasam</td></tr></table>
-
-      <h3>Safari-Exklusive und die Enton-Linie</h3>
-      <p><b>Sichlor, Tauros, Pinsir und Lapras</b> stehen jetzt <b>nur noch in der Safari-Zone</b> – je einer
-        in den vier Bereichen. Ihre bisherigen Zweitvorkommen auf den Routen 11, 14, 15, 16, 18, 20, 21, 22
-        und an den Seeschauminseln sind durch andere 4★ ersetzt (Nidoking, Sarzenia, Chaneira, Simsala,
-        Machomei, Rossana, Garados). Damit sind sie die einzigen vier Arten der ganzen Karte, die an genau
-        einem Ort vorkommen – die Safari-Zone bekommt dadurch einen echten Grund, sie überhaupt zu betreten.
-        <b>Enton</b> steigt von 1★ auf <b>2★</b>, <b>Entoron</b> von 2★ auf <b>3★</b>.</p>
-
-      <h3>Und was wird aus der Seltenheit ● ◆ ★?</h3>
-      <p>Berechtigte Frage – die alte Formel („Seltenheit aus der Zahl der Fundorte der Familie: 1 = ★,
-        2 = ◆, 3+ = ●") gerät durch die Umstellung ins Rutschen. Nachgemessen am neuen Bestand:</p>
-      <table class="kztable">
-        <tr><th>Sterne</th><th>Arten</th><th>Ø Fundorte</th><th>Trefferchance je Feld</th></tr>
-        <tr><td>1★</td><td>20</td><td>3,4</td><td>17,0 %</td></tr>
-        <tr><td>2★</td><td>38</td><td>1,9</td><td>9,6 %</td></tr>
-        <tr><td>3★</td><td>17</td><td>3,1</td><td>6,3 %</td></tr>
-        <tr><td>4★</td><td>20</td><td>2,4</td><td>2,5 %</td></tr>
-      </table>
-      <p><b>Die Sterneklasse trägt die Seltenheit jetzt selbst.</b> Die Trefferchance fällt sauber von 17 %
-        auf 2,5 %, und zwar allein durch die Sektorbreite auf der Scheibe. Genau dafür ist die neue Skala ja
-        gebaut. Damit misst die alte Formel <b>weitgehend dasselbe noch einmal</b> – und an einer Stelle misst
-        sie sogar falsch: Bei den 3★ liegt ◆ (15,0 %) unter ★ (22,5 %), die Reihenfolge dreht sich um.</p>
-      <p>Wofür die Seltenheit gebraucht wird, ist der <b>Klassenbonus</b> (Tank +KP / Glaskanone +Angriff):
-        ★ gibt +4 KP, ◆ +2, ● nichts. Drei Wege:</p>
-      <ul>
-        <li><b>A · Seltenheit direkt aus den Sternen.</b> 1★/2★ = ●, 3★ = ◆, 4★+ = ★. Eine Achse, keine
-          Doppelmessung, sofort verständlich. Nachteil: Zwei 4★ sind dann gleich stark, auch wenn einer
-          an vier Orten vorkommt und der andere nur in der Safari.</li>
-        <li><b>B · Seltenheit aus der echten Auffindbarkeit.</b> Sektoranteil geteilt durch die A/B-Belegung,
-          über alle Gebiete summiert, dann in Drittel geschnitten. Ergibt 31 ● / 31 ◆ / 33 ★ und trennt
-          exakt – die Safari-Exklusiven landen ganz unten, wo sie hingehören. Das ist die
-          <b>sachlich richtige</b> Formel und rechnet sich von selbst nach, wenn ihr Gebietstabellen ändert.</li>
-        <li><b>C · Klassenbonus ganz abschaffen.</b> Die Sterne liefern über KP = 2×S+8 bereits eine
-          Spreizung von 10 bis 22 KP. Ob es daneben noch einen zweiten Verstärker braucht, ist eine
-          Balancefrage, keine Formelfrage.</li>
-      </ul>
-      <div class="kz-note"><b>Empfehlung: Variante B.</b> Sie behält die Unterscheidung, die es wirklich noch
-        gibt (gleicher Stern, unterschiedlich weit verbreitet), sie ist selbstkorrigierend, und sie bleibt eine
-        echte Formel statt einer Handvergabe. <b>Aber Vorsicht bei der Spreizung:</b> Ein 4★ ★ käme auf
-        16 + 4 = <b>20 KP</b> Basis, ein 1★ ● auf 10 – doppelt so viel. Bei den Legendären (7★ ★) wären es
-        26 KP. Wenn ihr Variante B nehmt, würde ich den Bonus für ★ von +4 auf <b>+2 KP</b> senken, damit die
-        Sterne die Hauptarbeit machen und die Seltenheit nur noch fein nachjustiert.</div>
-
-      <h3>Was jetzt noch fehlt, damit es live geht</h3>
-      <p>Die Einteilung oben ist vollständig und in sich stimmig – sie liegt aber bewusst noch <b>hier im
-        Konzept-Labor</b> und nicht in den Spielmaterialien. Denn sie zu übernehmen heißt:</p>
-      <ol>
-        <li><b>151 Sterne-Werte</b> in den Stammdaten ändern. Das verändert über die Formeln KP = 2×S+8 und
-          ANG = 2+⌊(S−1)/2⌋ auch alle Kampfwerte – <b>jede der 151 Karten und jede Volvelle muss neu
-          gedruckt</b> werden.</li>
-        <li><b>48 Gebietstabellen</b> ersetzen (bisher 47, die Safari kommt geteilt dazu). Damit ändert sich
-          das Kapitel „Gebietstabellen" der Spielanleitung komplett.</li>
-        <li>Die <b>Verteilungslogik</b> umstellen: Heute rechnet das System die W20-Augen automatisch aus den
-          Sternen; künftig gibt die Scheibe die Anteile vor und die Tabelle nennt nur noch die Arten je Klasse.</li>
-        <li>Die <b>Fangschwelle</b> auf die neue Skala prüfen – bei 7★ liegt sie auf 9, das ist nur noch mit
-          Hyperball erreichbar (siehe Befund 5 oben). Genau so gewollt, muss aber in die Anleitung.</li>
-      </ol>
-      <p class="kz-note"><b>Kampfbalance ist geprüft und unkritisch:</b> Über alle Arenaleiter und die Top 4
-        verschieben sich die Teamwerte um höchstens <b>±2 KP</b> im Mittel. Am stärksten betroffen sind Misty
-        und Major Bob (−2 KP, ihre Teams werden minimal leichter) und Erika (+1,3 KP). Kein Kampf kippt
-        dadurch. Die Liga bleibt unverändert schwer, weil Siegfried und Bruno exakt gleich bleiben.</p>
-      <p class="kz-note"><b>Was die Umstellung löst:</b> Statt 2 fangbarer 4★-Arten gibt es künftig
-        <b>eine je Gebiet</b> – 20 verschiedene über die Karte verteilt. Ein 4★ begegnet einem im Schnitt
-        alle vier Grasszüge, und mit der Fluchtregel gelingt der Fang nur in 70 % der Fälle. Damit ist das
-        „Farmen und sich freuen" da, das heute komplett fehlt.</p>
-
-      <h3>Sektoren nach deiner Vorgabe</h3>
-      <p>Aufteilung: <b>50 % Niete</b> (davon 5 % Ereignis) · <b>25 % 1★</b> · <b>15 % 2★</b> ·
-        <b>7,5 % 3★</b> · <b>2,5 % 4★</b>. Umgerechnet auf die Scheibe:</p>
-      <table class="kztable">
-        <tr><th>Sektor</th><th>Anteil</th><th>Winkel</th><th>A/B</th></tr>
-        <tr><td>Niete (leer grün)</td><td>45,0 %</td><td>162,0°</td><td>–</td></tr>
-        <tr><td>Ereignis / Legendär</td><td>5,0 %</td><td>18,0°</td><td>–</td></tr>
-        <tr><td>1★</td><td>25,0 %</td><td>90,0°</td><td>2 × 45,0°</td></tr>
-        <tr><td>2★</td><td>15,0 %</td><td>54,0°</td><td>2 × 27,0°</td></tr>
-        <tr><td>3★</td><td>7,5 %</td><td>27,0°</td><td>2 × 13,5°</td></tr>
-        <tr class="hi"><td>4★</td><td>2,5 %</td><td>9,0°</td><td>einzeln</td></tr>
-      </table>
-      <p>Der schmalste Sektor ist die 4★-Fläche mit <b>9°</b> – bei einer 15-cm-Scheibe sind das rund
-        <b>12 mm am Rand</b>. Das ist gut treffbar, solange der Zeiger eine ordentliche Achse hat.
-        Begegnungsrate <b>50 %</b> je betretenem Feld, also <b>5 Begegnungen je vollem Zug</b> – etwas mehr als
-        der Zielkorridor von 2–4, dafür ist das Nachschlagen jetzt sofort statt über eine 20-Zahlen-Tabelle.
-        Ein 4★ trifft man im Schnitt alle <b>40 Felder</b>, also etwa alle vier Züge im Gras.</p>
-
-      <h3>Gestaltung der Sektoren</h3>
-      <p>Wie gewünscht ohne Text, nur über Symbole:</p>
-      <ul>
-        <li><b>Niete</b> – leere grüne Fläche, kein Zeichen.</li>
-        <li><b>Ereignis/Legendär</b> – Fläche im Muster der Ereigniskarten-Rückseite mit <b>?</b>; darin ein
-          kleines rundes Feld mit dem Legendären-Symbol. Sitzt mittig im Niete-Bereich, damit die
-          „nichts gefunden"-Zone optisch zusammenhängt.</li>
-        <li><b>1★ bis 4★</b> – jeweils die Sternenreihe genau wie in der Kartenfußzeile, damit kein
-          Übersetzen nötig ist. A- und B-Hälfte durch eine feine Trennlinie und einen kleinen Punkt (•/••)
-          unterschieden.</li>
-      </ul>
     </div>
 
     <div class="kzbox">
