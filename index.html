@@ -2477,7 +2477,11 @@ function buildHandbuch(){
    Die Rückseite ist links/rechts gegenüber der Vorderseite gespiegelt – sonst käme Blatt 1 mit
    Rückblatt links und Deckblatt rechts aus dem Drucker, statt umgekehrt. ---- */
 function hbA5HTML(pageDivHTML){
-  return `<div class="a5"><div class="hb-scalewrap">${pageDivHTML}</div></div>`;
+  /* Die A4-Innenseite MUSS unter einem .hb-Container liegen: Alle Handbuch-Stile sind auf
+     ".hb ..." gescoped (Namensraum-Umbau 30.07.2026). Ohne diesen Wrapper fielen im Druck saemtliche
+     Textgroessen, Farben und vor allem die Grid-Layouts (Gebietstabelle!) auf Browser-Standard zurueck
+     – die Routentabelle brach dadurch in eine einzige Spalte zusammen. */
+  return `<div class="a5"><div class="hb-scalewrap"><div class="hb">${pageDivHTML}</div></div></div>`;
 }
 function hbFoldSheetHTML(label, leftHTML, rightHTML){
   return `<div class="sheet"><div class="sheetlab">${label}</div>${hbA5HTML(leftHTML)}${hbA5HTML(rightHTML)}` +
