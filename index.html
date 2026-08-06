@@ -84,7 +84,7 @@ table.hometable thead th{position:sticky; background:var(--ink); color:#fff; fon
 table.hometable thead tr:first-child th{top:0; height:26px;}
 table.hometable thead tr:first-child th.fixedhead{height:100px;}
 table.hometable th.scrollhead{height:100px; background:#4a3f2f; color:#efe8d6; font-weight:800; font-size:10.5px;}
-table.hometable thead tr:last-child th{top:26px; height:74px; padding:2px 1px;}
+table.hometable thead tr.arearow th{top:26px; height:74px; padding:2px 1px;}
 table.hometable th.regionhead{font-size:10.5px; letter-spacing:.3px; background:#4a3f2f;}
 table.hometable th.areahead{background:#544636;}
 .areahead-in{writing-mode:vertical-rl; transform:rotate(180deg); font-size:9.5px; font-weight:700;
@@ -110,6 +110,23 @@ table.hometable select.sig-sel, table.hometable select.typ-sel{font-size:10.5px;
 .ksym.kA{color:#33291f;} .ksym.kB{color:#2f7fc4;} .ksym.kC{color:#c8940f;} .ksym.kNone{color:#bbb;}
 .questbadge{background:var(--rot); color:#fff; font-size:8px; font-weight:800; padding:0 3px; border-radius:4px;}
 table.hometable input[type=checkbox]{width:14px; height:14px; cursor:pointer;}
+/* Filterzeile direkt unter dem Kopf: bleibt beim vertikalen Scrollen sichtbar (top = Kopfhoehe 100px),
+   scrollt seitlich mit den Spalten. Die drei festen Spalten sind auch hier links angeheftet. */
+table.hometable tr.filterrow th{position:sticky; top:100px; z-index:20; background:#5c4f3c; padding:2px;
+  height:auto; border-top:2px solid var(--gold);}
+table.hometable tr.filterrow th.filter-fixed{z-index:24;}
+table.hometable tr.filterrow select, table.hometable tr.filterrow input[type=text]{
+  width:100%; box-sizing:border-box; font-size:10px; font-weight:700; color:var(--ink);
+  border:1px solid #2c241a; border-radius:4px; padding:1px 2px; background:#fbf7ec;}
+table.hometable tr.filterrow .filt-abil{display:flex; justify-content:center;}
+table.hometable tr.filterrow .filt-area{display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+  padding:0 4px; color:#efe8d6; font-weight:700; font-size:10px; white-space:nowrap;}
+table.hometable tr.filterrow .filt-area select{width:auto; min-width:120px;}
+table.hometable tr.filterrow .filt-area label{display:flex; align-items:center; gap:3px;}
+table.hometable tr.filterrow .filt-abil input{width:14px; height:14px;}
+.gm-filterinfo{font-weight:700; color:var(--ink);}
+.gm-filterinfo button{margin-left:8px; font-size:11px; padding:2px 8px; border:1px solid var(--line);
+  border-radius:5px; background:#efe8d6; cursor:pointer; font-weight:800;}
 
 
 /* ===== Spielanleitung: Bildschirmansicht der Gebietstabellen ===== */
@@ -1715,11 +1732,33 @@ function renderHome(){
   });
   regions.forEach(r=>{ theadRow1 += `<th class="regionhead" colspan="${r.areas.length}">${r.region}</th>`; });
   theadRow1 += '</tr>';
-  let theadRow2 = '<tr>';
+  let theadRow2 = '<tr class="arearow">';
   state.areas.forEach(a=>{
     theadRow2 += `<th class="areahead"><div class="areahead-in">${a.terr} ${a.label}</div></th>`;
   });
   theadRow2 += '</tr>';
+
+  /* --- Filterzeile: je eine Steuerung pro Datenspalte, Fundort/Quest gebuendelt ueber die Gebietsspalten --- */
+  const sterneFilt = [1,2,3,4,5,6].map(s=>`<option value="${s}">${'★'.repeat(s)}</option>`).join('');
+  const seltFilt = [['A','● gewöhnlich'],['B','◆ ungewöhnlich'],['C','★ selten']].map(([v,l])=>`<option value="${v}">${l}</option>`).join('');
+  const sigFilt = [['kp','🛡️ Tank'],['ang','💣 Glaskanone'],['none','– normal']].map(([v,l])=>`<option value="${v}">${l}</option>`).join('');
+  const typFilt = Object.keys(TYP).map(t=>`<option value="${t}">${t}</option>`).join('');
+  const areaFilt = state.areas.map(a=>`<option value="${a.key}">${a.terr} ${a.label}</option>`).join('');
+  const abilCell = k => `<th class="filter-abil-th"><span class="filt-abil"><input type="checkbox" data-filt="ab-${k}" title="nur mit dieser Fähigkeit"></span></th>`;
+  let theadFilter = '<tr class="filterrow">'
+    + `<th class="filter-fixed" style="left:${fixedColLeft(0)}px;"></th>`
+    + `<th class="filter-fixed" style="left:${fixedColLeft(1)}px;"></th>`
+    + `<th class="filter-fixed" style="left:${fixedColLeft(2)}px;"><input type="text" data-filt="name" placeholder="Name…"></th>`
+    + `<th><select data-filt="sterne"><option value="">Sterne: alle</option>${sterneFilt}</select></th>`
+    + `<th><select data-filt="seltenheit"><option value="">alle</option>${seltFilt}</select></th>`
+    + `<th><select data-filt="signatur"><option value="">Klasse: alle</option>${sigFilt}</select></th>`
+    + `<th><select data-filt="typ"><option value="">Typ: alle</option>${typFilt}</select></th>`
+    + abilCell('schneid') + abilCell('zert') + abilCell('surf') + abilCell('fly')
+    + `<th colspan="${state.areas.length}"><div class="filt-area">`
+    +   `<label>Fundort: <select data-filt="area"><option value="">alle</option>${areaFilt}</select></label>`
+    +   `<label>Quest: <select data-filt="quest"><option value="">alle</option><option value="q">nur Quest</option><option value="nq">ohne Quest</option></select></label>`
+    +   `</div></th>`
+    + '</tr>';
 
   let body = '';
   for(let nr=1; nr<=151; nr++){
@@ -1755,11 +1794,12 @@ function renderHome(){
     <div class="home-toolbar">
       <h1>Pokémon-Tabelle · Kanto</h1>
       <div class="hint">Sterne, Klasse, Typ, Fähigkeiten und Fundorte hier ändern → Spielanleitung und Kartenset aktualisieren sich automatisch. Jedes Pokémon hat genau <b>einen</b> Typ – der Nebentyp ist am 30.07.2026 entfallen, die 18er-Typtabelle gilt unverändert. 🗡 Zerschneider · 🪨 Zertrümmerer · 🌊 Surfen · 🪽 Fliegen sind aus den Original-VM-Daten gesetzt. Seltenheit wird live aus der Anzahl gesetzter Fundorte berechnet (1 = ★ selten · 2 = ◆ ungewöhnlich · 3+ = ● gewöhnlich). Tabelle lässt sich mit dem Scrollbalken unten, Shift+Mausrad oder Zwei-Finger-Wisch seitlich scrollen.</div>
+      <div class="gm-filterinfo"><span class="gm-shown">151</span> von 151 Pokémon<button type="button" class="gm-reset">Filter zurücksetzen</button></div>
     </div>
     <div class="hometable-wrap">
       <table class="hometable" style="width:${tableWidth}px">
         ${colgroup}
-        <thead>${theadRow1}${theadRow2}</thead>
+        <thead>${theadRow1}${theadRow2}${theadFilter}</thead>
         <tbody>${body}</tbody>
       </table>
     </div>`;
@@ -1773,6 +1813,53 @@ function renderHome(){
     else if(t.matches('.sig-sel')) setSig(nr, t.value);
     else if(t.matches('.typ-sel')) setTyp(nr, t.value);
   });
+
+  /* Filter: auf jede Aenderung/Eingabe in der Filterzeile neu anwenden. */
+  const filterRow = host.querySelector('tr.filterrow');
+  filterRow.addEventListener('input', applyTableFilters);
+  filterRow.addEventListener('change', applyTableFilters);
+  host.querySelector('.gm-reset').addEventListener('click', ()=>{
+    filterRow.querySelectorAll('select').forEach(s=>s.value='');
+    filterRow.querySelectorAll('input[type=text]').forEach(i=>i.value='');
+    filterRow.querySelectorAll('input[type=checkbox]').forEach(c=>c.checked=false);
+    applyTableFilters();
+  });
+}
+
+/* Blendet Zeilen der Pokémon-Tabelle nach den Werten der Filterzeile aus.
+   Rein visuell (display:none) – die Daten selbst bleiben unangetastet. */
+function applyTableFilters(){
+  const host = document.getElementById('page-home');
+  if(!host) return;
+  const val = sel => { const el = host.querySelector(sel); return el ? el.value.trim() : ''; };
+  const fName = val('[data-filt="name"]').toLowerCase();
+  const fSterne = val('[data-filt="sterne"]');
+  const fSelt = val('[data-filt="seltenheit"]');
+  const fSig = val('[data-filt="signatur"]');
+  const fTyp = val('[data-filt="typ"]');
+  const fArea = val('[data-filt="area"]');
+  const fQuest = val('[data-filt="quest"]');
+  const abilKeys = ['schneid','zert','surf','fly'];
+  const fAbil = abilKeys.filter(k=>{ const c = host.querySelector(`[data-filt="ab-${k}"]`); return c && c.checked; });
+  let shown = 0;
+  host.querySelectorAll('tbody tr[data-row-nr]').forEach(tr=>{
+    const nr = +tr.dataset.rowNr;
+    const m = state.mons[nr];
+    let ok = !!m;
+    if(ok && fName)   ok = m.name.toLowerCase().includes(fName);
+    if(ok && fSterne) ok = m.sterne === +fSterne;
+    if(ok && fSelt)   ok = klasseOf(state, nr) === fSelt;
+    if(ok && fSig)    ok = (m.sigTarget || 'none') === fSig;
+    if(ok && fTyp)    ok = m.typen[0] === fTyp;
+    if(ok && fArea)   ok = m.orte.has(fArea);
+    if(ok && fQuest === 'q')  ok = !!m.quest;
+    if(ok && fQuest === 'nq') ok = !m.quest;
+    if(ok && fAbil.length) ok = fAbil.every(k=>m.abil[k]);
+    tr.style.display = ok ? '' : 'none';
+    if(ok) shown++;
+  });
+  const info = host.querySelector('.gm-shown');
+  if(info) info.textContent = shown;
 }
 
 
