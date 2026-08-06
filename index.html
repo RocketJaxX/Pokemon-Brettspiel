@@ -1385,7 +1385,13 @@ function computeAreaDistribution(monsInArea){
 }
 
 /* ===================== Persistence & mutation ===================== */
-const LS_KEY = 'kanto-spielsystem-v1';
+/* v2 (06.08.2026): Schluessel angehoben, damit die grosse Sterne-Neuvergabe (Skala 1-6,
+   Elite-Finals, De-Wilding von Garados/Machomei/Gengar, aufgefuellte Gebiete) wirklich
+   greift. Ein alter Auto-Save unter v1 haette die neuen Sterne/Fundorte sonst wieder
+   ueberschrieben (applyPersisted setzt sterne/orte/sig/typen aus dem Speicher). Der v1-Stand
+   bleibt im Browser liegen, wird aber nicht mehr geladen; gewollte Eigenstaende sichert man
+   ueber JSON-Export bzw. die HTML-Sicherung. */
+const LS_KEY = 'kanto-spielsystem-v2';
 
 function defaultShop(){
   /* Grundmenge = 3 Spieler x voller Rucksack (siehe RUCKSACK, Mengen je Spieler):
@@ -5327,7 +5333,7 @@ function kkKarteSVG(){
     angLeiter = `<text class="kk-lab" x="6" y="61.4" text-anchor="start">ANGRIFF</text>` + angLeiter;
   }
 
-  const sterne = '★'.repeat(kzState.sterne) + '<tspan class="kk-leer">' + '★'.repeat(Math.max(0,7-kzState.sterne)) + '</tspan>';
+  const sterne = '★'.repeat(kzState.sterne) + '<tspan class="kk-leer">' + '★'.repeat(Math.max(0,STERNE_MAX-kzState.sterne)) + '</tspan>';
   const klSym  = KZ_KLASSEN.find(k=>k.key===kzState.klasse).sym;
   const sgSym  = KZ_SIGDIR.find(s=>s.key===kzState.sigDir).sym;
 
