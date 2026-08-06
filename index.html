@@ -4256,7 +4256,8 @@ function renderDoc(){
           <li><b>Sektoren umsortiert:</b> Bisher lagen die Sterneklassen einfach absteigend hintereinander. Jetzt ist die Scheibe in zwei Hälften zu je 180° geteilt, und in beiden liegt der beste Treffer <b>genau in der Mitte</b> – die Reihenfolge lautet ⭐A · ⭐⭐A · ⭐⭐⭐A · <b>⭐⭐⭐⭐</b> · ⭐⭐⭐B · ⭐⭐B · ⭐B, gefolgt von Niete · <b>Ereignis</b> · Niete. Dadurch stehen sich das ⭐⭐⭐⭐-Feld (90°) und das Ereignisfeld (270°) exakt gegenüber, und die A/B-Hälften jeder Klasse liegen gespiegelt um die Mitte.</li>
           <li><b>Legendäre bekommen drei Fangversuche</b> statt einem. Mit nur einem Wurf hing ein Legendäres an zwei unabhängigen Glücksfällen: erst dem 5-%-Ereignisfeld, dann einer gewürfelten 6 (1/6 bei Schwelle 9 mit Hyperball und ≤ ½ KP) – zusammen <b>0,8 % je betretenem Feld</b>. Mit drei Versuchen steigt der Fang auf 42 % je Begegnung und damit auf 2,1 % je Feld. Damit bleibt es der seltenste Moment des Spiels, ist aber kein reiner Lotteriegewinn mehr. Die Ausnahmeregel „nur ein Versuch" entfällt ersatzlos, für Legendäre gilt jetzt dieselbe Drei-Versuche-Regel wie überall.</li>
           <li><b>Kartennamen wurden oben abgeschnitten:</b> <code>.pname</code> hatte <code>line-height:1</code>, wodurch die Zeilenbox exakt so hoch war wie die Schrift – zusammen mit <code>overflow:hidden</code> schnitt das die Unterlängen von p, g und j ab (Pantimos, Digda, Jurob). Auf 1.3 angehoben, der Umbruchschutz bleibt.</li>
-          <li><b>Beschriftung einheitlich radial ausgerichtet:</b> Alle Sektorbeschriftungen stehen jetzt <b>mit dem Fuß zur Mitte und dem Kopf zum Rand</b>, ohne Spiegelung. Dadurch steht jeder Sektor für den Mitspieler aufrecht, der ihm gegenübersitzt – es ist egal, wo am Tisch man Platz nimmt. Vorher wurde die Hälfte jenseits von 180° gespiegelt, wodurch eine Hälfte nach innen und die andere nach außen zeigte. Das Emblem des Ereignis-Sektors folgt derselben Regel und dreht mit seinem Sektor mit.</li>
+          <li><b>Beschriftung einheitlich ausgerichtet:</b> Alle Sektorbeschriftungen stehen jetzt <b>mit der Oberseite zum Mittelpunkt und der Unterseite zum Außenrand</b> (<code>rotate(mitte+180)</code>), ohne Spiegelung. Die Grundlinie liegt dadurch tangential, und wer am Tisch vor einem Sektor sitzt, liest ihn aufrecht – unabhängig vom Sitzplatz. Vorher wurde die Hälfte jenseits von 180° gespiegelt, wodurch eine Hälfte nach innen und die andere nach außen zeigte. Das Emblem des Ereignis-Sektors folgt derselben Regel.
+            <br><b>Nebenwirkung, die auffiel:</b> Tangential passen in den nur 9° breiten ⭐⭐⭐⭐-Sektor keine vier Sterne nebeneinander (14,4 gegen 9,0 Einheiten Bogenlänge). Dort stehen sie jetzt <b>zweizeilig 2+2</b>. Alle anderen Klassen haben genug Bogen: ⭐ 44,8 · ⭐⭐ 26,9 · ⭐⭐⭐ 13,4 Einheiten gegen 4,4 / 8,8 / 10,8 Textbreite.</li>
           <li><b>Scheibe gestaltet:</b> Statt Flachfarben liegt jetzt auf jedem Sektor ein <b>Radialverlauf</b>, darüber dieselbe <b>Wolkentextur</b> und derselbe Licht-/Schattenverlauf wie auf den Spielkarten (soft-light, 32 % Deckkraft, Licht von oben rechts). Der Ereignis-Sektor trägt das <b>Emblem der Eventkarten-Rückseite</b> – halb violett, halb hell, mit Mittelband und Fragezeichen –, daneben das goldene ✦-Feld für die Legendären. Beschriftungen jenseits von 180° werden gespiegelt, sonst stünde das Fragezeichen auf dem Kopf. Die Legendenfarben folgen jetzt denselben Verläufen wie die Sektoren.</li>
         </ul></li>
     </ul>
@@ -5031,18 +5032,25 @@ function scheibeSVG(){
                : f.art==='event' ? 'url(#sge)' : `url(#sg${f.s})`;
     sek += `<path d="${sektorPfad(CX,CY,RI,R,von,bis)}" fill="${fill}" stroke="#2c2419" stroke-width="0.45"/>`;
     if(f.art==='stern'){
+      /* Ausrichtung: Oberseite zum Mittelpunkt, Unterseite zum Aussenrand.
+         rotate(mitte+180) dreht die Schrift-Hochachse auf den Kreismittelpunkt;
+         die Grundlinie liegt dadurch tangential. Wer am Tisch vor einem Sektor
+         sitzt, liest ihn damit aufrecht – unabhaengig vom Sitzplatz. */
+      const dreh = mitte+180;
       const [tx,ty]=polar(CX,CY,R-13,mitte);
-      /* Beschriftung radial ausgerichtet, EINHEITLICH ohne Spiegelung: Fuss zur Mitte,
-         Kopf zum Rand. Dadurch steht jeder Sektor fuer den Mitspieler aufrecht, der
-         ihm gegenuebersitzt – es ist egal, wo am Tisch man Platz nimmt. Vorher wurde
-         die Haelfte jenseits von 180 Grad gespiegelt, wodurch eine Haelfte nach innen
-         und die andere nach aussen zeigte. */
-      const dreh = mitte-90;
-      const gr = f.s>=3 ? 3.6 : 4.4;
-      beschr += `<text x="${tx}" y="${ty}" transform="rotate(${dreh} ${tx} ${ty})" `
-             +  `text-anchor="middle" dominant-baseline="central" font-size="${gr}" `
-             +  `fill="#3a2c07" font-family="sans-serif" style="paint-order:stroke" `
-             +  `stroke="rgba(255,255,255,.55)" stroke-width="0.7">${'★'.repeat(f.s)}</text>`;
+      const stil = `text-anchor="middle" dominant-baseline="central" `
+                 + `fill="#3a2c07" font-family="sans-serif" style="paint-order:stroke" `
+                 + `stroke="rgba(255,255,255,.55)" stroke-width="0.7"`;
+      if(f.s===4){
+        /* Der 4★-Sektor ist nur 9° breit – tangential passen dort keine vier Sterne
+           nebeneinander (14,4 gegen 9,0 Einheiten Bogen). Deshalb zweizeilig 2+2. */
+        const [ax,ay]=polar(CX,CY,R-10.5,mitte), [bx,by]=polar(CX,CY,R-16,mitte);
+        beschr += `<text x="${ax}" y="${ay}" transform="rotate(${dreh} ${ax} ${ay})" font-size="3.2" ${stil}>★★</text>`
+               +  `<text x="${bx}" y="${by}" transform="rotate(${dreh} ${bx} ${by})" font-size="3.2" ${stil}>★★</text>`;
+      } else {
+        const gr = f.s===3 ? 3.6 : 4.4;
+        beschr += `<text x="${tx}" y="${ty}" transform="rotate(${dreh} ${tx} ${ty})" font-size="${gr}" ${stil}>${'★'.repeat(f.s)}</text>`;
+      }
       if(f.h){
         const [hx,hy]=polar(CX,CY,R-4.5,mitte);
         beschr += `<text x="${hx}" y="${hy}" transform="rotate(${dreh} ${hx} ${hy})" `
@@ -5054,9 +5062,8 @@ function scheibeSVG(){
       /* Emblem der Eventkarten-Rueckseite: halb violett, halb hell, Mittelband und
          Fragezeichen – damit der Sektor sofort als "Ereigniskarte" lesbar ist. */
       const [ex,ey]=polar(CX,CY,R-14,mitte);
-      /* Gleiche Regel wie bei den Sternen – das Emblem dreht mit seinem Sektor mit
-         und steht damit fuer den Spieler auf dieser Seite des Tisches aufrecht. */
-      const edreh = mitte-90;
+      /* Gleiche Regel wie bei den Sternen: Oberseite zum Mittelpunkt. */
+      const edreh = mitte+180;
       beschr += `<g transform="translate(${ex} ${ey}) rotate(${edreh}) scale(0.125) translate(-50 -50)">
         <path d="M4 50 A46 46 0 0 1 96 50 Z" fill="#8f83d6"/>
         <path d="M4 50 A46 46 0 0 0 96 50 Z" fill="#f4f2ff"/>
