@@ -1700,6 +1700,8 @@ const AREA_COL_WIDTH = 26;
 function fixedColLeft(i){ let l=0; for(let k=0;k<i;k++) l+=FIXED_COLS[k].width; return l; }
 
 const SIG_OPTIONS = [ {v:'kp', label:'🛡️ Tank'}, {v:'ang', label:'💣 Glaskanone'}, {v:'none', label:'– normal'} ];
+/* Geländefähigkeiten in Spaltenreihenfolge (= SCROLL_COLS 4–7 und Filterspalten). */
+const ABIL_KEYS = ['schneid','zert','surf','fly'];
 function sigSelectHTML(nr, val){
   const cur = val || 'none';
   const opts = SIG_OPTIONS.map(o=>`<option value="${o.v}" ${cur===o.v?'selected':''}>${o.label}</option>`).join('');
@@ -1741,7 +1743,7 @@ function renderHome(){
   /* --- Filterzeile: je eine Steuerung pro Datenspalte, Fundort/Quest gebuendelt ueber die Gebietsspalten --- */
   const sterneFilt = [1,2,3,4,5,6].map(s=>`<option value="${s}">${'★'.repeat(s)}</option>`).join('');
   const seltFilt = [['A','● gewöhnlich'],['B','◆ ungewöhnlich'],['C','★ selten']].map(([v,l])=>`<option value="${v}">${l}</option>`).join('');
-  const sigFilt = [['kp','🛡️ Tank'],['ang','💣 Glaskanone'],['none','– normal']].map(([v,l])=>`<option value="${v}">${l}</option>`).join('');
+  const sigFilt = SIG_OPTIONS.map(o=>`<option value="${o.v}">${o.label}</option>`).join('');
   const typFilt = Object.keys(TYP).map(t=>`<option value="${t}">${t}</option>`).join('');
   const areaFilt = state.areas.map(a=>`<option value="${a.key}">${a.terr} ${a.label}</option>`).join('');
   const abilCell = k => `<th class="filter-abil-th"><span class="filt-abil"><input type="checkbox" data-filt="ab-${k}" title="nur mit dieser Fähigkeit"></span></th>`;
@@ -1753,7 +1755,7 @@ function renderHome(){
     + `<th><select data-filt="seltenheit"><option value="">alle</option>${seltFilt}</select></th>`
     + `<th><select data-filt="signatur"><option value="">Klasse: alle</option>${sigFilt}</select></th>`
     + `<th><select data-filt="typ"><option value="">Typ: alle</option>${typFilt}</select></th>`
-    + abilCell('schneid') + abilCell('zert') + abilCell('surf') + abilCell('fly')
+    + ABIL_KEYS.map(abilCell).join('')
     + `<th colspan="${state.areas.length}"><div class="filt-area">`
     +   `<label>Fundort: <select data-filt="area"><option value="">alle</option>${areaFilt}</select></label>`
     +   `<label>Quest: <select data-filt="quest"><option value="">alle</option><option value="q">nur Quest</option><option value="nq">ohne Quest</option></select></label>`
@@ -1773,7 +1775,7 @@ function renderHome(){
     body += `<td class="seltenheit-cell" data-nr="${nr}" style="width:${SCROLL_COLS[1].width}px;">${seltenheitHTML(nr)}</td>`;
     body += `<td style="width:${SCROLL_COLS[2].width}px;">${sigSelectHTML(nr, m.sigTarget)}</td>`;
     body += `<td style="width:${SCROLL_COLS[3].width}px;">${typSelectHTML(nr, m.typen[0])}</td>`;
-    ['schneid','zert','surf','fly'].forEach((k,i)=>{
+    ABIL_KEYS.forEach((k,i)=>{
       body += `<td class="center" style="width:${SCROLL_COLS[4+i].width}px;"><input type="checkbox" class="abil-chk" data-nr="${nr}" data-key="${k}" ${m.abil[k]?'checked':''}></td>`;
     });
     state.areas.forEach(a=>{
@@ -1839,8 +1841,7 @@ function applyTableFilters(){
   const fTyp = val('[data-filt="typ"]');
   const fArea = val('[data-filt="area"]');
   const fQuest = val('[data-filt="quest"]');
-  const abilKeys = ['schneid','zert','surf','fly'];
-  const fAbil = abilKeys.filter(k=>{ const c = host.querySelector(`[data-filt="ab-${k}"]`); return c && c.checked; });
+  const fAbil = ABIL_KEYS.filter(k=>{ const c = host.querySelector(`[data-filt="ab-${k}"]`); return c && c.checked; });
   let shown = 0;
   host.querySelectorAll('tbody tr[data-row-nr]').forEach(tr=>{
     const nr = +tr.dataset.rowNr;
