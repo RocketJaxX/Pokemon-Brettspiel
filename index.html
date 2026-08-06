@@ -225,7 +225,10 @@ table.typematrix .rowlab{color:#fff; font-weight:800; font-size:7.5px; padding:0
 #page-cards .frame{position:absolute; inset:1.6mm; border:0.45mm solid #111; border-radius:1.6mm; pointer-events:none; z-index:5;}
 #page-cards .in{position:absolute; inset:1.6mm; padding:1.6mm 2.2mm; display:flex; flex-direction:column; gap:1mm;}
 #page-cards .head{display:flex; align-items:center; gap:1.4mm; min-height:6mm;}
-#page-cards .pname{font-family:'Fredoka',sans-serif; font-size:12.5px; color:#fff; line-height:1;
+/* line-height:1 machte die Zeilenbox genau so hoch wie die Schrift – zusammen mit
+   overflow:hidden schnitt das die Unterlaengen von p, g, j ab (Pantimos, Digda,
+   Jurob). 1.3 gibt der Box die noetige Reserve, der Umbruchschutz bleibt. */
+#page-cards .pname{font-family:'Fredoka',sans-serif; font-size:12.5px; color:#fff; line-height:1.3;
   text-shadow:0 1px 2px rgba(0,0,0,.45); flex:1; white-space:nowrap; overflow:hidden;}
 #page-cards .pnr{font-family:'Fredoka',sans-serif; font-size:10px; color:#fff; text-shadow:0 1px 2px rgba(0,0,0,.45);}
 #page-cards .tico{width:6mm; height:6mm; flex:none; display:inline-flex; align-items:center; justify-content:center;
@@ -2040,9 +2043,12 @@ function handbuchBloecke(){
       '<p><b>Mew</b> hat keinen festen Ort auf dem Brett – sobald dein Pokédex <b>100 Einträge</b> ' +
       'erreicht, sag das den anderen Spielern: Ihr einigt euch auf ein kurzes Geheim-Event am Tisch, bei ' +
       'dem du Mew fangen kannst.</p>' +
-      '<p>Bei Legendären hast du <b>einen einzigen Fangversuch</b> – die Drei-Versuche-Regel gilt hier nicht. ' +
-      'Geht der Wurf daneben, verschwindet das Legendäre. Du kannst es aber <b>jederzeit erneut finden</b>: ' +
-      'Dreh im richtigen Gebiet wieder das kleine runde Feld an.</p>');
+      '<p>Auch bei Legendären hast du <b>drei Fangversuche</b> wie bei jedem anderen Pokémon. Gehen alle ' +
+      'drei daneben, verschwindet das Legendäre – du kannst es aber <b>jederzeit erneut finden</b>: ' +
+      'Dreh im richtigen Gebiet wieder das kleine runde Feld an.</p>' +
+      '<div class="hbtip">Nimm den <b>Hyperball</b> mit: Bei ⭐⭐⭐⭐⭐⭐⭐ ist die Schwelle 9, und nur ' +
+      'mit Hyperball (−2) und geschwächtem Gegner (−1) kommst du auf eine erreichbare 6. Der ' +
+      '<b>Meisterball</b> fängt ohne Wurf – heb ihn dir für Mewtu und Mew auf.</div>');
 
   kap('6 · Kämpfen');
   add('<p>Jeder Kampf läuft gleich ab, egal ob gegen ein wildes Pokémon, einen Trainer oder einen Arenaleiter.</p>' +
@@ -3463,9 +3469,14 @@ function renderDoc(){
       <tr><td>Mewtu</td><td>Azuria-Höhle</td><td>Top 4 besiegt</td></tr>
       <tr><td>Mew</td><td>Geheim-Event</td><td>Pokédex ≥ 100 Einträge</td></tr></table>
     <p>Alle fünf stehen auf <b>⭐⭐⭐⭐⭐⭐⭐</b> (Schwelle 9). Ohne Hyperball sind sie rechnerisch
-      nicht fangbar, und es gibt <b>einen einzigen Versuch je Begegnung</b> – die Drei-Versuche-Regel gilt
-      hier nicht. Geht der Wurf daneben, verschwindet das Legendäre, ist aber jederzeit wieder auffindbar.
-      Der Meisterball bleibt die sichere Lösung für Mewtu und Mew.</p>
+      nicht fangbar. Es gelten <b>dieselben drei Fangversuche</b> wie bei jedem anderen Pokémon
+      (geändert am 02.08.2026, vorher nur einer). Gehen alle drei daneben, verschwindet das Legendäre,
+      ist aber jederzeit wieder auffindbar. Der Meisterball bleibt die sichere Lösung für Mewtu und Mew.</p>
+    <p class="note"><b>Warum drei statt einem Versuch:</b> Mit nur einem Wurf hing ein Legendäres an zwei
+      unabhängigen Glücksfällen – erst dem 5-%-Ereignisfeld auf der Scheibe, dann einer gewürfelten 6
+      (1/6 bei Schwelle 9 mit Hyperball und ≤ ½ KP). Zusammen <b>0,8 % je betretenem Feld</b>. Mit drei
+      Versuchen steigt der Fang auf 42 % je Begegnung und damit auf <b>2,1 % je Feld</b> – immer noch der
+      seltenste Moment des Spiels, aber kein reiner Lotteriegewinn mehr.</p>
     <p><b>Wie man sie trifft:</b> Die vier ortsgebundenen Legendären sitzen auf dem <b>kleinen runden Feld
       im Ereignis-Sektor</b> ihres Gebiets – sobald die Freischaltbedingung erfüllt ist. Vorher liegt dort
       wie überall eine Ereigniskarte. Das kostet keine Rebalance der Gebietstabellen, weil der
@@ -4240,6 +4251,13 @@ function renderDoc(){
           <li><b>Zeile „Niete" aus der Gebietstabelle entfernt.</b> Sie zeigte seit dem Umstieg „Niete undefined", weil die Verteilung keine Würfelbereiche mehr liefert. Der Anteil steht ohnehin als leere grüne Fläche auf der Scheibe – die Zeile ist ersatzlos gestrichen.</li>
           <li><b>Sieben Sterne auf allen Karten:</b> Normalkarte und Volvelle zeichnen jetzt immer die volle Skala (<code>STERNE_MAX = 7</code>), nur die erreichten Sterne sind gefärbt, der Rest blass. Vorher wurden fünf gezeichnet, wodurch 6★ und 7★ nicht darstellbar waren. Das Sterne-Dropdown in der Pokémon-Tabelle reicht ebenfalls bis 7.</li>
         </ul></li>
+      <li><b>02.08.2026 (12)</b> – <b>Scheibe symmetrisch sortiert, Legendäre mit drei Würfen, Kartennamen repariert, Scheibe gestaltet.</b>
+        <ul>
+          <li><b>Sektoren umsortiert:</b> Bisher lagen die Sterneklassen einfach absteigend hintereinander. Jetzt ist die Scheibe in zwei Hälften zu je 180° geteilt, und in beiden liegt der beste Treffer <b>genau in der Mitte</b> – die Reihenfolge lautet ⭐A · ⭐⭐A · ⭐⭐⭐A · <b>⭐⭐⭐⭐</b> · ⭐⭐⭐B · ⭐⭐B · ⭐B, gefolgt von Niete · <b>Ereignis</b> · Niete. Dadurch stehen sich das ⭐⭐⭐⭐-Feld (90°) und das Ereignisfeld (270°) exakt gegenüber, und die A/B-Hälften jeder Klasse liegen gespiegelt um die Mitte.</li>
+          <li><b>Legendäre bekommen drei Fangversuche</b> statt einem. Mit nur einem Wurf hing ein Legendäres an zwei unabhängigen Glücksfällen: erst dem 5-%-Ereignisfeld, dann einer gewürfelten 6 (1/6 bei Schwelle 9 mit Hyperball und ≤ ½ KP) – zusammen <b>0,8 % je betretenem Feld</b>. Mit drei Versuchen steigt der Fang auf 42 % je Begegnung und damit auf 2,1 % je Feld. Damit bleibt es der seltenste Moment des Spiels, ist aber kein reiner Lotteriegewinn mehr. Die Ausnahmeregel „nur ein Versuch" entfällt ersatzlos, für Legendäre gilt jetzt dieselbe Drei-Versuche-Regel wie überall.</li>
+          <li><b>Kartennamen wurden oben abgeschnitten:</b> <code>.pname</code> hatte <code>line-height:1</code>, wodurch die Zeilenbox exakt so hoch war wie die Schrift – zusammen mit <code>overflow:hidden</code> schnitt das die Unterlängen von p, g und j ab (Pantimos, Digda, Jurob). Auf 1.3 angehoben, der Umbruchschutz bleibt.</li>
+          <li><b>Scheibe gestaltet:</b> Statt Flachfarben liegt jetzt auf jedem Sektor ein <b>Radialverlauf</b>, darüber dieselbe <b>Wolkentextur</b> und derselbe Licht-/Schattenverlauf wie auf den Spielkarten (soft-light, 32 % Deckkraft, Licht von oben rechts). Der Ereignis-Sektor trägt das <b>Emblem der Eventkarten-Rückseite</b> – halb violett, halb hell, mit Mittelband und Fragezeichen –, daneben das goldene ✦-Feld für die Legendären. Beschriftungen jenseits von 180° werden gespiegelt, sonst stünde das Fragezeichen auf dem Kopf. Die Legendenfarben folgen jetzt denselben Verläufen wie die Sektoren.</li>
+        </ul></li>
     </ul>
   </div>`;
   groupDoneItemsInChapter14();
@@ -4945,14 +4963,23 @@ function renderArenen(){
 /* ===================== Drehscheibe (Beschluss 02.08.2026) =====================
    Ein Kreis, feste Sektoren fuer alle Gebiete. Beschriftung bewusst NUR ueber
    Symbole – die Sterne stehen genau so auf der Kartenfussleiste, es muss also
-   nichts uebersetzt werden. Reihenfolge im Kreis: der Niete-Block liegt am
-   Stueck, damit die "nichts gefunden"-Zone optisch zusammenhaengt; der
-   Ereignis-Sektor sitzt mittig darin. */
+   nichts uebersetzt werden.
+
+   Aufbau (Beschluss 02.08.2026): Die Scheibe ist in zwei Haelften zu je 180°
+   geteilt, und in beiden liegt der beste Treffer genau in der Mitte – dadurch
+   stehen sich 4★ und Ereignisfeld exakt gegenueber (90° und 270°):
+     Sterne-Haelfte  1★A · 2★A · 3★A · [4★] · 3★B · 2★B · 1★A-Gegenstueck 1★B
+     Niete-Haelfte   Niete · [Ereignis] · Niete
+   Die A- und B-Haelften einer Klasse liegen dadurch gespiegelt um die Mitte,
+   was die Scheibe zusaetzlich symmetrisch macht. */
 const SCHEIBE = [
-  {art:'stern', s:1, grad:45,  h:'A'}, {art:'stern', s:1, grad:45,  h:'B'},
-  {art:'stern', s:2, grad:27,  h:'A'}, {art:'stern', s:2, grad:27,  h:'B'},
-  {art:'stern', s:3, grad:13.5,h:'A'}, {art:'stern', s:3, grad:13.5,h:'B'},
+  {art:'stern', s:1, grad:45,  h:'A'},
+  {art:'stern', s:2, grad:27,  h:'A'},
+  {art:'stern', s:3, grad:13.5,h:'A'},
   {art:'stern', s:4, grad:9},
+  {art:'stern', s:3, grad:13.5,h:'B'},
+  {art:'stern', s:2, grad:27,  h:'B'},
+  {art:'stern', s:1, grad:45,  h:'B'},
   {art:'niete', grad:81},
   {art:'event', grad:18},
   {art:'niete', grad:81},
@@ -4970,45 +4997,90 @@ function sektorPfad(cx, cy, rInnen, rAussen, von, bis){
 }
 function scheibeSVG(){
   const CX=75, CY=75, R=70, RI=13;
-  let sek='', beschr='', winkel=0;
+  /* Farbverlauf je Sterneklasse statt Flachfarbe: heller Kern aussen, satter Rand
+     innen – dieselbe Anmutung wie der Lichtverlauf auf den Spielkarten. */
+  const STERN_FARBE = {
+    1:['#fdf3d8','#e9d19a'], 2:['#f7dda2','#dfae52'],
+    3:['#f0b455','#cf8420'], 4:['#e2801f','#a8500a'],
+  };
+  let defs='', sek='', beschr='', winkel=0;
+  Object.entries(STERN_FARBE).forEach(([k,[hell,dunkel]])=>{
+    defs += `<radialGradient id="sg${k}" cx="50%" cy="50%" r="62%">
+      <stop offset="35%" stop-color="${hell}"/><stop offset="100%" stop-color="${dunkel}"/></radialGradient>`;
+  });
+  defs += `<radialGradient id="sgn" cx="50%" cy="50%" r="62%">
+      <stop offset="35%" stop-color="#a9d47a"/><stop offset="100%" stop-color="#6d9c3c"/></radialGradient>
+    <radialGradient id="sge" cx="50%" cy="50%" r="62%">
+      <stop offset="30%" stop-color="#4a3f7a"/><stop offset="100%" stop-color="#201b3d"/></radialGradient>
+    <radialGradient id="lite" cx="72%" cy="14%" r="70%">
+      <stop offset="0%" stop-color="#fff" stop-opacity="0.42"/>
+      <stop offset="100%" stop-color="#fff" stop-opacity="0"/></radialGradient>
+    <linearGradient id="dark" x1="0" y1="0" x2="0.6" y2="1">
+      <stop offset="45%" stop-color="#000" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0.22"/></linearGradient>
+    <filter id="wolke" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.055" numOctaves="5" seed="11" result="n"/>
+      <feColorMatrix type="saturate" values="0" in="n"/>
+    </filter>
+    <clipPath id="ring"><circle cx="${CX}" cy="${CY}" r="${R}"/></clipPath>`;
+
   SCHEIBE.forEach(f=>{
     const von=winkel, bis=winkel+f.grad, mitte=von+f.grad/2;
-    let fill, stroke='#2c2419';
-    if(f.art==='niete') fill='#8fbe5c';
-    else if(f.art==='event') fill='#4a3f7a';
-    else fill = {1:'#f6e2a8',2:'#f0c96a',3:'#e8a93a',4:'#d4741f'}[f.s];
-    sek += `<path d="${sektorPfad(CX,CY,RI,R,von,bis)}" fill="${fill}" stroke="${stroke}" stroke-width="0.4"/>`;
+    const fill = f.art==='niete' ? 'url(#sgn)'
+               : f.art==='event' ? 'url(#sge)' : `url(#sg${f.s})`;
+    sek += `<path d="${sektorPfad(CX,CY,RI,R,von,bis)}" fill="${fill}" stroke="#2c2419" stroke-width="0.45"/>`;
     if(f.art==='stern'){
-      /* Sterne stehen radial, damit auch der 9-Grad-Sektor lesbar bleibt. */
       const [tx,ty]=polar(CX,CY,R-13,mitte);
       const dreh = mitte>180 ? mitte+90 : mitte-90;
       const gr = f.s>=3 ? 3.6 : 4.4;
       beschr += `<text x="${tx}" y="${ty}" transform="rotate(${dreh} ${tx} ${ty})" `
              +  `text-anchor="middle" dominant-baseline="central" font-size="${gr}" `
-             +  `fill="#3a2c07" font-family="sans-serif">${'★'.repeat(f.s)}</text>`;
+             +  `fill="#3a2c07" font-family="sans-serif" style="paint-order:stroke" `
+             +  `stroke="rgba(255,255,255,.55)" stroke-width="0.7">${'★'.repeat(f.s)}</text>`;
       if(f.h){
         const [hx,hy]=polar(CX,CY,R-4.5,mitte);
         beschr += `<text x="${hx}" y="${hy}" transform="rotate(${dreh} ${hx} ${hy})" `
                +  `text-anchor="middle" dominant-baseline="central" font-size="3.4" `
-               +  `font-weight="700" fill="#6b5326" font-family="sans-serif">${f.h}</text>`;
+               +  `font-weight="700" fill="#5c4620" font-family="sans-serif">${f.h}</text>`;
       }
     }
     if(f.art==='event'){
-      const [tx,ty]=polar(CX,CY,R-11,mitte);
-      beschr += `<text x="${tx}" y="${ty}" text-anchor="middle" dominant-baseline="central" `
-             +  `font-size="7" font-weight="700" fill="#f4f2ff" font-family="sans-serif">?</text>`;
-      /* Kleines rundes Feld fuer die Legendaeren – sitzt im Ereignis-Sektor. */
-      const [lx,ly]=polar(CX,CY,R-24, mitte);
-      beschr += `<circle cx="${lx}" cy="${ly}" r="5" fill="#f0c419" stroke="#8a6a10" stroke-width="0.6"/>`
+      /* Emblem der Eventkarten-Rueckseite: halb violett, halb hell, Mittelband und
+         Fragezeichen – damit der Sektor sofort als "Ereigniskarte" lesbar ist. */
+      const [ex,ey]=polar(CX,CY,R-14,mitte);
+      /* Wie bei den Sternen: jenseits von 180 Grad wird die Beschriftung gespiegelt,
+         sonst stuende das Fragezeichen auf dem Kopf. */
+      const edreh = mitte>180 ? mitte+90 : mitte-90;
+      beschr += `<g transform="translate(${ex} ${ey}) rotate(${edreh}) scale(0.125) translate(-50 -50)">
+        <path d="M4 50 A46 46 0 0 1 96 50 Z" fill="#8f83d6"/>
+        <path d="M4 50 A46 46 0 0 0 96 50 Z" fill="#f4f2ff"/>
+        <rect x="3" y="46.5" width="94" height="7" fill="#201b3d"/>
+        <circle cx="50" cy="50" r="46" fill="none" stroke="#201b3d" stroke-width="4.5"/>
+        <circle cx="50" cy="50" r="17" fill="#f4f2ff" stroke="#201b3d" stroke-width="4.5"/>
+        <text x="50" y="59" text-anchor="middle" font-family="sans-serif" font-weight="700"
+          font-size="23" fill="#4a3f7a">?</text></g>`;
+      const [lx,ly]=polar(CX,CY,R-30, mitte);
+      beschr += `<circle cx="${lx}" cy="${ly}" r="5.2" fill="#f0c419" stroke="#8a6a10" stroke-width="0.7"/>`
              +  `<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="central" `
-             +  `font-size="5" font-family="sans-serif">✦</text>`;
+             +  `font-size="5.2" font-family="sans-serif" fill="#4a3708">✦</text>`;
     }
     winkel=bis;
   });
   return `<svg viewBox="0 0 150 150" class="dsvg" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="${CX}" cy="${CY}" r="${R+2}" fill="#fdfaf2" stroke="#2c2419" stroke-width="0.8"/>
-    ${sek}${beschr}
-    <circle cx="${CX}" cy="${CY}" r="${RI}" fill="#fdfaf2" stroke="#2c2419" stroke-width="0.6"/>
+    <defs>${defs}</defs>
+    <circle cx="${CX}" cy="${CY}" r="${R+3}" fill="#fdfaf2" stroke="#2c2419" stroke-width="0.9"/>
+    <circle cx="${CX}" cy="${CY}" r="${R+1.5}" fill="none" stroke="#c7bda9" stroke-width="0.5"/>
+    ${sek}
+    <g clip-path="url(#ring)" style="mix-blend-mode:soft-light" opacity="0.32">
+      <rect x="5" y="5" width="140" height="140" filter="url(#wolke)"/>
+    </g>
+    <g clip-path="url(#ring)">
+      <rect x="5" y="5" width="140" height="140" fill="url(#lite)"/>
+      <rect x="5" y="5" width="140" height="140" fill="url(#dark)"/>
+    </g>
+    ${beschr}
+    <circle cx="${CX}" cy="${CY}" r="${RI}" fill="#fdfaf2" stroke="#2c2419" stroke-width="0.7"/>
+    <circle cx="${CX}" cy="${CY}" r="${RI-2.4}" fill="none" stroke="#c7bda9" stroke-width="0.4"/>
     <circle cx="${CX}" cy="${CY}" r="2.2" fill="#2c2419"/>
   </svg>`;
 }
@@ -5043,18 +5115,18 @@ function renderMaterial(){
         </div>
       </div>
       <div class="mat-legende">
-        <div class="ml"><span class="msw" style="background:#8fbe5c"></span>
+        <div class="ml"><span class="msw" style="background:linear-gradient(135deg,#a9d47a,#6d9c3c)"></span>
           <b>Leere grüne Fläche</b> – nichts gefunden (45 %)</div>
-        <div class="ml"><span class="msw" style="background:#4a3f7a"></span>
+        <div class="ml"><span class="msw" style="background:linear-gradient(135deg,#4a3f7a,#201b3d)"></span>
           <b>?</b> – Ereigniskarte ziehen (5 %). Das goldene Feld ✦ darin bringt am Wohnort
           eines Legendären das Legendäre selbst.</div>
-        <div class="ml"><span class="msw" style="background:#f6e2a8"></span>
+        <div class="ml"><span class="msw" style="background:linear-gradient(135deg,#fdf3d8,#e9d19a)"></span>
           <b>★</b> – 25 %, geteilt in A und B</div>
-        <div class="ml"><span class="msw" style="background:#f0c96a"></span>
+        <div class="ml"><span class="msw" style="background:linear-gradient(135deg,#f7dda2,#dfae52)"></span>
           <b>★★</b> – 15 %, geteilt in A und B</div>
-        <div class="ml"><span class="msw" style="background:#e8a93a"></span>
+        <div class="ml"><span class="msw" style="background:linear-gradient(135deg,#f0b455,#cf8420)"></span>
           <b>★★★</b> – 7,5 %, geteilt in A und B</div>
-        <div class="ml"><span class="msw" style="background:#d4741f"></span>
+        <div class="ml"><span class="msw" style="background:linear-gradient(135deg,#e2801f,#a8500a)"></span>
           <b>★★★★</b> – 2,5 %, nicht geteilt: davon gibt es je Gebiet genau eines</div>
       </div>
       <div class="mat-hinweis"><b>So wird gelesen</b>
