@@ -3826,6 +3826,8 @@ function renderDoc(){
       <li><b>Gebietstabellen:</b> Routen nach Nummer, danach Wald, Wasser, Höhle. Auf jeder Seite wird die
         Kopfzeile wiederholt, es gibt bewusst <b>keine Zwischentitel</b> – nur die durchlaufende Tabelle.</li>
       <li><b>Pokémon mit besonderem Fundort</b> (Quests, Legendäre, Fossilien).</li>
+      <li class="note">Die Gebietstabellen nennen seit dem 02.08.2026 <b>keine Niete-Zeile</b> mehr –
+        der Anteil ist als leere grüne Fläche direkt auf der Drehscheibe abgebildet.</li>
       <li><b>Typtabelle</b> als letzte Innenseite.</li>
       <li><b>Rückseite:</b> Klappentext wie bei einem Brettspiel – was das Spiel ist, für wen, wie lange.</li>
     </ol>
@@ -4229,6 +4231,15 @@ function renderDoc(){
           <li><b>Dokumentation:</b> Kapitel 6 und 7 komplett neu geschrieben, Kapitel 3 (Begegnung, Fangwurf, Legendäre, Ereignis) auf die Scheibe umgestellt, das Konzept-Kapitel „Drehscheibe statt Würfel" aus dem Konzept-Labor entfernt. Die Spielanleitung ist durchgesehen: Material (W20 → Scheibe), Kapitel 5 (Begegnung, A/B-Hälften, Fangschwellen bis 7★), Kapitel 10 (Ereignis-Sektor) und die Kurzübersicht sind angepasst. Karten und Volvellen zeigen statt eines Würfelbereichs jetzt den Sektor (Sterne + ggf. Hälfte).</li>
         </ul>
         <b>Achtung fürs Material:</b> Alle 151 Karten, alle Volvellen und die Gebietstabellen der Spielanleitung müssen neu gedruckt werden.</li>
+      <li><b>02.08.2026 (11)</b> – <b>Reiter „Spielmaterial", entzerrte Gebietsverteilung, sieben Sterne auf allen Karten.</b> Nacharbeit zur großen Umstellung:
+        <ul>
+          <li><b>Neuer Reiter „Spielmaterial":</b> Die <b>Drehscheibe</b> liegt jetzt als druckbares SVG vor (130 mm Durchmesser) mit passendem Zeiger – dessen viewBox ist eng um die Nadel gelegt, damit sie bei 48 mm Breite rund 62 mm lang wird und den Scheibenradius von 65 mm tatsächlich erreicht. Die Sektoren sind wie gewünscht <b>rein über Symbole</b> beschriftet: leere grüne Fläche für die Niete, violettes Feld mit <b>?</b> und einem goldenen ✦-Kreis darin für Ereignis/Legendär, sonst die Sternenreihen mit kleiner A/B-Kennung. Dazu Legende und eine dreischrittige Lesehilfe. Die <b>Trainer-Chips</b> sind vom Reiter „Arenen" hierher gewandert, sodass alle losen Bastelteile an einer Stelle liegen.</li>
+          <li><b>Gebietsverteilung entzerrt:</b> Der automatische Auffüller hatte einzelne Arten als Lückenfüller überstrapaziert – <b>Arbok stand in 14 von 48 Gebieten</b>, Entoron in 10, obwohl allein auf 3★ 41 Arten zur Verfügung stehen. Der Generator hat jetzt eine <b>Obergrenze von 4 Gebieten je Art</b> und bevorzugt bei jeder Auswahl die bisher am seltensten benutzte Art. Ergebnis: Arbok auf 4, häufigste Art ist jetzt Garados mit 6 (ein kuratiertes 4★), davor Machomei mit 5.</li>
+          <li><b>Abra</b> steht jetzt auch auf <b>Route 25</b> (zusätzlich zu Route 24).</li>
+          <li><b>Safcon und Kokuna entkoppelt:</b> Beide sind 2★ und standen gemeinsam im Vertania-Wald, hatten damit exakt dieselbe Erscheinungsrate <i>und</i> dieselbe Seltenheit. Jetzt sitzt <b>Safcon nur im Vertania-Wald</b> und <b>Kokuna nur auf Route 2</b> – Auffindbarkeit 15 % gegen 7,5 %. Umgesetzt über eine Exklusiv-Liste im Generator, die verhindert, dass solche Arten anderswo als Füller wieder auftauchen.</li>
+          <li><b>Zeile „Niete" aus der Gebietstabelle entfernt.</b> Sie zeigte seit dem Umstieg „Niete undefined", weil die Verteilung keine Würfelbereiche mehr liefert. Der Anteil steht ohnehin als leere grüne Fläche auf der Scheibe – die Zeile ist ersatzlos gestrichen.</li>
+          <li><b>Sieben Sterne auf allen Karten:</b> Normalkarte und Volvelle zeichnen jetzt immer die volle Skala (<code>STERNE_MAX = 7</code>), nur die erreichten Sterne sind gefärbt, der Rest blass. Vorher wurden fünf gezeichnet, wodurch 6★ und 7★ nicht darstellbar waren. Das Sterne-Dropdown in der Pokémon-Tabelle reicht ebenfalls bis 7.</li>
+        </ul></li>
     </ul>
   </div>`;
   groupDoneItemsInChapter14();
