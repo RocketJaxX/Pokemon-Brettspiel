@@ -123,7 +123,24 @@ table.hometable tr.filterrow .filt-area{display:flex; align-items:center; gap:8p
   padding:0 4px; color:#efe8d6; font-weight:700; font-size:10px; white-space:nowrap;}
 table.hometable tr.filterrow .filt-area select{width:auto; min-width:120px;}
 table.hometable tr.filterrow .filt-area label{display:flex; align-items:center; gap:3px;}
+table.hometable tr.filterrow .filt-area .mf{width:150px;}
 table.hometable tr.filterrow .filt-abil input{width:14px; height:14px;}
+/* Mehrfach-Auswahl: kompakter Knopf je Spalte, der ein Checkbox-Menue oeffnet.
+   Das Menue liegt position:fixed, damit es nicht am overflow der Tabelle abgeschnitten wird. */
+.mf{position:relative;}
+.mf-btn{width:100%; box-sizing:border-box; font-size:10px; font-weight:700; color:var(--ink);
+  border:1px solid #2c241a; border-radius:4px; padding:1px 3px; background:#fbf7ec; cursor:pointer;
+  text-align:left; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:flex; gap:2px;}
+.mf-btn .mf-cap{flex:1; overflow:hidden; text-overflow:ellipsis;}
+.mf-btn::after{content:'▾'; color:#7a6f58; flex:none;}
+.mf-btn.active{background:var(--gold2); border-color:var(--gold);}
+.mf-pop{position:fixed; z-index:200; background:#fbf7ec; border:1px solid #2c241a; border-radius:6px;
+  padding:3px; max-height:280px; overflow-y:auto; box-shadow:0 6px 18px rgba(0,0,0,.35); min-width:130px;}
+.mf-pop.hidden{display:none;}
+.mf-pop label{display:flex; align-items:center; gap:6px; font-size:11px; font-weight:700; color:var(--ink);
+  padding:2px 5px; white-space:nowrap; cursor:pointer; border-radius:3px;}
+.mf-pop label:hover{background:#efe1bf;}
+.mf-pop input{width:14px; height:14px; flex:none;}
 .gm-filterinfo{font-weight:700; color:var(--ink);}
 .gm-filterinfo button{margin-left:8px; font-size:11px; padding:2px 8px; border:1px solid var(--line);
   border-radius:5px; background:#efe8d6; cursor:pointer; font-weight:800;}
@@ -1702,6 +1719,14 @@ function fixedColLeft(i){ let l=0; for(let k=0;k<i;k++) l+=FIXED_COLS[k].width; 
 const SIG_OPTIONS = [ {v:'kp', label:'🛡️ Tank'}, {v:'ang', label:'💣 Glaskanone'}, {v:'none', label:'– normal'} ];
 /* Geländefähigkeiten in Spaltenreihenfolge (= SCROLL_COLS 4–7 und Filterspalten). */
 const ABIL_KEYS = ['schneid','zert','surf','fly'];
+
+/* Mehrfach-Auswahl-Filter: kompakter Knopf, der ein Checkbox-Menue oeffnet. options = [{v,l}]. */
+function mfilterHTML(key, label, options){
+  const boxes = options.map(o=>`<label><input type="checkbox" value="${o.v}"><span>${o.l}</span></label>`).join('');
+  return `<div class="mf" data-filt="${key}" data-label="${label}">`
+       + `<button type="button" class="mf-btn"><span class="mf-cap">${label}: alle</span></button>`
+       + `<div class="mf-pop hidden">${boxes}</div></div>`;
+}
 function sigSelectHTML(nr, val){
   const cur = val || 'none';
   const opts = SIG_OPTIONS.map(o=>`<option value="${o.v}" ${cur===o.v?'selected':''}>${o.label}</option>`).join('');
@@ -1740,24 +1765,26 @@ function renderHome(){
   });
   theadRow2 += '</tr>';
 
-  /* --- Filterzeile: je eine Steuerung pro Datenspalte, Fundort/Quest gebuendelt ueber die Gebietsspalten --- */
-  const sterneFilt = [1,2,3,4,5,6].map(s=>`<option value="${s}">${'★'.repeat(s)}</option>`).join('');
-  const seltFilt = [['A','● gewöhnlich'],['B','◆ ungewöhnlich'],['C','★ selten']].map(([v,l])=>`<option value="${v}">${l}</option>`).join('');
-  const sigFilt = SIG_OPTIONS.map(o=>`<option value="${o.v}">${o.label}</option>`).join('');
-  const typFilt = Object.keys(TYP).map(t=>`<option value="${t}">${t}</option>`).join('');
-  const areaFilt = state.areas.map(a=>`<option value="${a.key}">${a.terr} ${a.label}</option>`).join('');
+  /* --- Filterzeile: je eine Steuerung pro Datenspalte, Fundort/Quest gebuendelt ueber die Gebietsspalten.
+     Sterne/Seltenheit/Klasse/Typ/Fundort erlauben Mehrfachauswahl (ODER innerhalb einer Spalte,
+     UND zwischen den Spalten). Quest bleibt Einfachwahl (alle/nur/ohne), Name eine Textsuche. --- */
+  const OPT_STERNE = [1,2,3,4,5,6].map(s=>({v:String(s), l:'★'.repeat(s)}));
+  const OPT_SELT   = [{v:'A',l:'● gewöhnlich'},{v:'B',l:'◆ ungewöhnlich'},{v:'C',l:'★ selten'}];
+  const OPT_SIG    = SIG_OPTIONS.map(o=>({v:o.v, l:o.label}));
+  const OPT_TYP    = Object.keys(TYP).map(t=>({v:t, l:t}));
+  const OPT_AREA   = state.areas.map(a=>({v:a.key, l:a.terr+' '+a.label}));
   const abilCell = k => `<th class="filter-abil-th"><span class="filt-abil"><input type="checkbox" data-filt="ab-${k}" title="nur mit dieser Fähigkeit"></span></th>`;
   let theadFilter = '<tr class="filterrow">'
     + `<th class="filter-fixed" style="left:${fixedColLeft(0)}px;"></th>`
     + `<th class="filter-fixed" style="left:${fixedColLeft(1)}px;"></th>`
     + `<th class="filter-fixed" style="left:${fixedColLeft(2)}px;"><input type="text" data-filt="name" placeholder="Name…"></th>`
-    + `<th><select data-filt="sterne"><option value="">Sterne: alle</option>${sterneFilt}</select></th>`
-    + `<th><select data-filt="seltenheit"><option value="">alle</option>${seltFilt}</select></th>`
-    + `<th><select data-filt="signatur"><option value="">Klasse: alle</option>${sigFilt}</select></th>`
-    + `<th><select data-filt="typ"><option value="">Typ: alle</option>${typFilt}</select></th>`
+    + `<th>${mfilterHTML('sterne','Sterne',OPT_STERNE)}</th>`
+    + `<th>${mfilterHTML('seltenheit','Selt.',OPT_SELT)}</th>`
+    + `<th>${mfilterHTML('signatur','Klasse',OPT_SIG)}</th>`
+    + `<th>${mfilterHTML('typ','Typ',OPT_TYP)}</th>`
     + ABIL_KEYS.map(abilCell).join('')
     + `<th colspan="${state.areas.length}"><div class="filt-area">`
-    +   `<label>Fundort: <select data-filt="area"><option value="">alle</option>${areaFilt}</select></label>`
+    +   `<span>Fundort:</span> ${mfilterHTML('area','Fundort',OPT_AREA)}`
     +   `<label>Quest: <select data-filt="quest"><option value="">alle</option><option value="q">nur Quest</option><option value="nq">ohne Quest</option></select></label>`
     +   `</div></th>`
     + '</tr>';
@@ -1818,13 +1845,50 @@ function renderHome(){
 
   /* Filter: auf jede Aenderung/Eingabe in der Filterzeile neu anwenden. */
   const filterRow = host.querySelector('tr.filterrow');
-  filterRow.addEventListener('input', applyTableFilters);
-  filterRow.addEventListener('change', applyTableFilters);
+  const wrap = host.querySelector('.hometable-wrap');
+  const closeAllPops = ()=> host.querySelectorAll('.mf-pop').forEach(p=>p.classList.add('hidden'));
+  /* Knopf-Beschriftung: „alle“, der einzelne Wert oder eine Anzahl. */
+  function mfLabel(mf){
+    const checked = [...mf.querySelectorAll('.mf-pop input:checked')];
+    const cap = mf.querySelector('.mf-cap'), btn = mf.querySelector('.mf-btn'), label = mf.dataset.label;
+    cap.textContent = !checked.length ? label+': alle'
+      : checked.length===1 ? label+': '+checked[0].nextElementSibling.textContent
+      : label+': '+checked.length;
+    btn.classList.toggle('active', checked.length>0);
+  }
+  filterRow.addEventListener('click', e=>{
+    const btn = e.target.closest('.mf-btn');
+    if(!btn) return;
+    const pop = btn.parentElement.querySelector('.mf-pop'), wasHidden = pop.classList.contains('hidden');
+    closeAllPops();
+    if(wasHidden){
+      const r = btn.getBoundingClientRect();
+      pop.style.left = r.left+'px'; pop.style.top = r.bottom+'px';
+      pop.classList.remove('hidden');
+    }
+  });
+  filterRow.addEventListener('change', e=>{
+    const mf = e.target.closest('.mf');
+    if(mf) mfLabel(mf);
+    applyTableFilters();
+  });
+  filterRow.addEventListener('input', e=>{ if(e.target.matches('input[type=text]')) applyTableFilters(); });
+  if(wrap) wrap.addEventListener('scroll', closeAllPops);
   host.querySelector('.gm-reset').addEventListener('click', ()=>{
     filterRow.querySelectorAll('select').forEach(s=>s.value='');
     filterRow.querySelectorAll('input[type=text]').forEach(i=>i.value='');
     filterRow.querySelectorAll('input[type=checkbox]').forEach(c=>c.checked=false);
+    filterRow.querySelectorAll('.mf').forEach(mfLabel);
+    closeAllPops();
     applyTableFilters();
+  });
+}
+
+/* Menues schliessen, wenn irgendwo ausserhalb eines .mf geklickt wird. Nur einmal registriert. */
+if(!window.__mfDocClose){
+  window.__mfDocClose = true;
+  document.addEventListener('mousedown', e=>{
+    if(!e.target.closest('.mf')) document.querySelectorAll('#page-home .mf-pop').forEach(p=>p.classList.add('hidden'));
   });
 }
 
@@ -1833,26 +1897,26 @@ function renderHome(){
 function applyTableFilters(){
   const host = document.getElementById('page-home');
   if(!host) return;
-  const val = sel => { const el = host.querySelector(sel); return el ? el.value.trim() : ''; };
-  const fName = val('[data-filt="name"]').toLowerCase();
-  const fSterne = val('[data-filt="sterne"]');
-  const fSelt = val('[data-filt="seltenheit"]');
-  const fSig = val('[data-filt="signatur"]');
-  const fTyp = val('[data-filt="typ"]');
-  const fArea = val('[data-filt="area"]');
-  const fQuest = val('[data-filt="quest"]');
+  /* Mehrfachauswahl je Spalte als Menge der angehakten Werte (leer = kein Filter). */
+  const set = key => new Set([...host.querySelectorAll(`.mf[data-filt="${key}"] .mf-pop input:checked`)].map(i=>i.value));
+  const nameEl = host.querySelector('[data-filt="name"]');
+  const fName = (nameEl ? nameEl.value.trim() : '').toLowerCase();
+  const fSterne = set('sterne'), fSelt = set('seltenheit'), fSig = set('signatur'),
+        fTyp = set('typ'), fArea = set('area');
+  const questEl = host.querySelector('[data-filt="quest"]');
+  const fQuest = questEl ? questEl.value : '';
   const fAbil = ABIL_KEYS.filter(k=>{ const c = host.querySelector(`[data-filt="ab-${k}"]`); return c && c.checked; });
   let shown = 0;
   host.querySelectorAll('tbody tr[data-row-nr]').forEach(tr=>{
     const nr = +tr.dataset.rowNr;
     const m = state.mons[nr];
     let ok = !!m;
-    if(ok && fName)   ok = m.name.toLowerCase().includes(fName);
-    if(ok && fSterne) ok = m.sterne === +fSterne;
-    if(ok && fSelt)   ok = klasseOf(state, nr) === fSelt;
-    if(ok && fSig)    ok = (m.sigTarget || 'none') === fSig;
-    if(ok && fTyp)    ok = m.typen[0] === fTyp;
-    if(ok && fArea)   ok = m.orte.has(fArea);
+    if(ok && fName)        ok = m.name.toLowerCase().includes(fName);
+    if(ok && fSterne.size) ok = fSterne.has(String(m.sterne));
+    if(ok && fSelt.size)   ok = fSelt.has(klasseOf(state, nr));
+    if(ok && fSig.size)    ok = fSig.has(m.sigTarget || 'none');
+    if(ok && fTyp.size)    ok = fTyp.has(m.typen[0]);
+    if(ok && fArea.size)   ok = [...fArea].some(a=>m.orte.has(a));
     if(ok && fQuest === 'q')  ok = !!m.quest;
     if(ok && fQuest === 'nq') ok = !m.quest;
     if(ok && fAbil.length) ok = fAbil.every(k=>m.abil[k]);
